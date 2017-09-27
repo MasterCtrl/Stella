@@ -1,0 +1,16 @@
+{
+    "tasks": [
+        {
+            "taskName": "Build",
+            "command": "tsc -p tsconfig.json",
+            "type": "shell",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
