@@ -36,5 +36,5 @@ export class BuilderOptions {
     static Type: string = "builder";
     static Count: number = 3;
     //static Parts: string[] = [WORK, CARRY, MOVE];
-    static Parts: string[] = [WORK, WORK, CARRY, CARRY, MOVE, MOVE];
+    static Parts: string[] = [WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
 }

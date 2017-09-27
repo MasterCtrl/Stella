@@ -27,7 +27,7 @@ export class Upgrader extends Minion {
 
 export class UpgraderOptions {
     static Type: string = "upgrader";
-    static Count: number = 2;
+    static Count: number = 3;
     //static Parts: string[] = [WORK, CARRY, MOVE];
-    static Parts: string[] = [WORK, WORK, CARRY, CARRY, MOVE, MOVE];
+    static Parts: string[] = [WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
 }

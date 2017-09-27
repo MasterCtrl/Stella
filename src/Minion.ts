@@ -274,7 +274,7 @@ export default abstract class Minion {
         }
         let occupiedSources = _.filter(Game.creeps, creep => creep.memory.destination_id).map(creep => creep.memory.destination_id);
         let energy: Source= this.minion.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
-            filter: energy => occupiedSources.indexOf(energy.id) == -1
+            filter: energy => occupiedSources.indexOf(energy.id) == -1 || energy.energy > 500
         });
         if (energy) {
             this.SetDestination(energy.pos.x, energy.pos.y, 1, energy.id);
