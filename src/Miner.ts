@@ -19,7 +19,7 @@ export class Miner extends Minion {
 
 export class MinerOptions {
     static Type: string = "miner";
-    static Count: number = 1;
+    static Count: number = 2;
     //static Parts: string[] = [WORK, CARRY, MOVE];
     static Parts: string[] = [WORK, WORK, WORK, WORK, WORK, CARRY, MOVE];
 }
