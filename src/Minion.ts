@@ -187,7 +187,8 @@ export default abstract class Minion {
     }
 
     private RunMovingRoom(transitionState: number) {
-        if (!this.minion.memory.claimed || !this.minion.room.controller || this.minion.room.controller.my) {
+        let flag: Flag = Game.flags[this.minion.memory.claimed];
+        if (!this.minion.memory.claimed || !this.minion.room.controller || this.minion.pos.getRangeTo(flag) == 0) {
             this.minion.memory.state = transitionState;
             this.minion.memory.initialized = false;            
         }
