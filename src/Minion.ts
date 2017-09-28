@@ -57,6 +57,14 @@ export default abstract class Minion {
                 this.RunWithdrawing(Constants.STATE_MOVING);
                 break;
 
+            case Constants.STATE_MOVING_ROOM:
+                this.RunMovingRoom(Constants.STATE_MOVING);
+                break;
+            
+            case Constants.STATE_CLAIM:
+                this.RunClaiming(Constants.STATE_MOVING);
+                break;
+
             case Constants.STATE_IDLE:
                 this.RunIdle(Constants.STATE_MOVING);
                 break;
@@ -76,13 +84,16 @@ export default abstract class Minion {
     }
 
     private RunMoving(transitionState: number) {
-        let x = this.minion.memory.destination_x;
-        let y = this.minion.memory.destination_y;
-        if (this.minion.pos.getRangeTo(x, y) <= this.minion.memory.range) {
+        let roomPosition = new RoomPosition(
+            this.minion.memory.destination_x, 
+            this.minion.memory.destination_y, 
+            this.minion.memory.destination_room || this.minion.room.name
+        );
+        if (this.minion.pos.getRangeTo(roomPosition) <= this.minion.memory.range) {
             this.minion.memory.state = transitionState;
             return;
         }
-        this.minion.moveTo(x, y);
+        this.minion.moveTo(roomPosition);
     }
 
     private RunHarvesting(transitionState: number) {
@@ -175,6 +186,21 @@ export default abstract class Minion {
         }
     }
 
+    private RunMovingRoom(transitionState: number) {
+        if (!this.minion.memory.claimed || !this.minion.room.controller || this.minion.room.controller.my) {
+            this.minion.memory.state = transitionState;
+            this.minion.memory.initialized = false;            
+        }
+        this.minion.moveTo(Game.flags[this.minion.memory.claimed]);
+    }
+
+    private RunClaiming(transitionState: number) {
+        if (this.minion.claimController(this.minion.room.controller) == OK) {
+            this.minion.memory.claimed = true;
+            this.minion.memory.initialized = false;
+        }
+    }
+
     private RunIdle(transitionState: number) {
         this.minion.memory.initialized = false;        
         this.minion.memory.state = transitionState;
@@ -224,7 +250,7 @@ export default abstract class Minion {
             source = this.minion.pos.findClosestByRange(FIND_SOURCES);
         }
         if (source) {
-            this.SetDestination(source.pos.x, source.pos.y, 1, source.id);
+            this.SetDestination(source.pos.x, source.pos.y, 1, source.id, source.room.name);
             this.minion.memory.postMovingState = Constants.STATE_HARVESTING;
             return true;
         }
@@ -257,7 +283,7 @@ export default abstract class Minion {
             filter: container => container.structureType == STRUCTURE_CONTAINER ||container.structureType == STRUCTURE_STORAGE
         });
         if (container && closestSource.pos.getRangeTo(container.pos) == 1) {
-            this.SetDestination(container.pos.x, container.pos.y, 0, container.id);
+            this.SetDestination(container.pos.x, container.pos.y, 0, container.id, container.room.name);
             this.minion.memory.source_id = closestSource.id;
             this.minion.memory.postMovingState = Constants.STATE_HARVESTING;
             return true;    
@@ -275,7 +301,7 @@ export default abstract class Minion {
             filter: energy => occupiedSources.indexOf(energy.id) == -1 || energy.energy > 500
         });
         if (energy) {
-            this.SetDestination(energy.pos.x, energy.pos.y, 1, energy.id);
+            this.SetDestination(energy.pos.x, energy.pos.y, 1, energy.id, energy.room.name);
             this.minion.memory.postMovingState = Constants.STATE_PICKUP;
             return true;
         }
@@ -295,7 +321,7 @@ export default abstract class Minion {
                                   structure.energy < structure.energyCapacity 
         });
         if (storage) {
-            this.SetDestination(storage.pos.x, storage.pos.y, 1, storage.id);
+            this.SetDestination(storage.pos.x, storage.pos.y, 1, storage.id, storage.room.name);
             this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
             return true;
         }
@@ -310,7 +336,7 @@ export default abstract class Minion {
             filter: structure => structure.structureType == STRUCTURE_STORAGE && structure.store[RESOURCE_ENERGY] < structure.storeCapacity 
         });
         if (storage) {
-            this.SetDestination(storage.pos.x, storage.pos.y, 1, storage.id);
+            this.SetDestination(storage.pos.x, storage.pos.y, 1, storage.id, storage.room.name);
             this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
             return true;
         }
@@ -325,7 +351,7 @@ export default abstract class Minion {
             filter: structure => structure.structureType == STRUCTURE_STORAGE && structure.store[RESOURCE_ENERGY] != 0 
         });
         if (storage) {
-            this.SetDestination(storage.pos.x, storage.pos.y, 1, storage.id);
+            this.SetDestination(storage.pos.x, storage.pos.y, 1, storage.id, storage.room.name);
             this.minion.memory.postMovingState = Constants.STATE_WITHDRAWING;
             return true;
         }
@@ -340,7 +366,7 @@ export default abstract class Minion {
             filter: structure => structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] < structure.storeCapacity
         });
         if (container) {
-            this.SetDestination(container.pos.x, container.pos.y, 1, container.id);
+            this.SetDestination(container.pos.x, container.pos.y, 1, container.id, container.room.name);
             this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
             return true;
         }
@@ -382,11 +408,17 @@ export default abstract class Minion {
         if (this.IsEmpty) {
             return false;
         }
-        let constructionSite: ConstructionSite = this.minion.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
-        if (constructionSite) {
-            this.SetDestination(constructionSite.pos.x, constructionSite.pos.y, 3, constructionSite.id);
-            this.minion.memory.postMovingState = Constants.STATE_BUILDING;
-            return true;
+        let constructionSites = Game.constructionSites;
+        if (constructionSites) {
+            for (var id in constructionSites) {
+                let constructionSite = constructionSites[id];
+                if (!constructionSite) {
+                    continue;
+                }
+                this.SetDestination(constructionSite.pos.x, constructionSite.pos.y, 3, constructionSite.id, constructionSite.room.name);
+                this.minion.memory.postMovingState = Constants.STATE_BUILDING;
+                return true;    
+            }
         }
         return false;
     }
@@ -402,7 +434,7 @@ export default abstract class Minion {
             }
         );
         if (structure) {
-            this.SetDestination(structure.pos.x, structure.pos.y, 3, structure.id);
+            this.SetDestination(structure.pos.x, structure.pos.y, 3, structure.id, structure.room.name);
             this.minion.memory.postMovingState = Constants.STATE_REPAIRING;
             return true;                
         } 
@@ -411,7 +443,7 @@ export default abstract class Minion {
             filter: structure => structure.structureType == STRUCTURE_RAMPART && structure.hits < Configuration.RampartHp
         });
         if (rampart) {
-            this.SetDestination(rampart.pos.x, rampart.pos.y, 3, rampart.id);
+            this.SetDestination(rampart.pos.x, rampart.pos.y, 3, rampart.id, rampart.room.name);
             this.minion.memory.postMovingState = Constants.STATE_REPAIRING;
             return true;                
         }
@@ -420,7 +452,7 @@ export default abstract class Minion {
             filter: structure => structure.structureType == STRUCTURE_WALL && structure.hits < Configuration.WallHp
         });
         if (wall) {
-            this.SetDestination(wall.pos.x, wall.pos.y, 3, wall.id);
+            this.SetDestination(wall.pos.x, wall.pos.y, 3, wall.id, wall.room.name);
             this.minion.memory.postMovingState = Constants.STATE_REPAIRING;
             return true;
         }
@@ -428,15 +460,39 @@ export default abstract class Minion {
         return false;
     }
 
+    protected FindUnclaimedRoom(): boolean {
+        if (this.minion.memory.claimed) {
+            return false;
+        }
+        //let coodinates = this.minion.room.name.match("(\\D)(\\d{2})(\\D)(\\d{2})");
+        this.minion.memory.claimed = "lima";
+        this.minion.memory.state = Constants.STATE_MOVING_ROOM; 
+        return true;
+    }
+
+    protected FindUnclaimedController(): boolean {
+        if (!this.minion.memory.claimed || this.minion.room.controller.my) {
+            return false;
+        }
+        let controller = this.minion.room.controller;
+        if (controller) {
+            this.minion.memory.postMovingState = Constants.STATE_CLAIM;            
+            this.SetDestination(controller.pos.x, controller.pos.y, 1, controller.id);
+            return true;
+        }
+        return false;
+    }
+
     protected Rally() {
-        this.SetDestination(Game.flags.rally.pos.x, Game.flags.rally.pos.y, 1);
+        this.SetDestination(Game.flags.rally.pos.x, Game.flags.rally.pos.y, 1, Game.flags.rally.room.name);
         this.minion.memory.postMovingState = Constants.STATE_IDLE;
     }
 
-    protected SetDestination(x: number, y: number, range: number, id?: string) {
+    protected SetDestination(x: number, y: number, range: number, id?: string, room?: string) {
         this.minion.memory.destination_x = x;
         this.minion.memory.destination_y = y;
         this.minion.memory.destination_id = id;
+        this.minion.memory.destination_room = room;
         this.minion.memory.range = range;
     }
 }

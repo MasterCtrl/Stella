@@ -6,6 +6,7 @@ import {Upgrader, UpgraderOptions} from "./Upgrader";
 import {Builder, BuilderOptions} from "./Builder";
 import {Miner, MinerOptions} from "./Miner";
 import {Courier, CourierOptions} from "./Courier";
+import {Scout, ScoutOptions} from "./Scout";
 type CreepHash = {[creepName: string]: Creep;};
 type StructureHash = {[id: string]: Structure;};
 
@@ -60,6 +61,8 @@ export default class Manager {
                 return new Upgrader(creep);
             case BuilderOptions.Type:
                 return new Builder(creep);
+            case ScoutOptions.Type:
+                return new Scout(creep);
             default:
                 creep.suicide();
                 return null;

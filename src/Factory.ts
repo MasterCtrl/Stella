@@ -5,6 +5,7 @@ import {UpgraderOptions} from "./Upgrader";
 import {BuilderOptions} from "./Builder";
 import {MinerOptions} from "./Miner";
 import {CourierOptions} from "./Courier";
+import {ScoutOptions} from "./Scout";
 import Configuration from "./Configuration"
 type SpawnHash = {[spawnName: string]: Spawn;};
 
@@ -14,7 +15,8 @@ export default class Factory {
         MinerOptions,
         CourierOptions,
         UpgraderOptions,
-        BuilderOptions
+        BuilderOptions,
+        ScoutOptions
     ];
 
     static Spawn(spawners: SpawnHash) {
