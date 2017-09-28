@@ -20,13 +20,17 @@ export class Courier extends Minion {
             return;
         }
 
+        if (this.FindMassStorageTarget()) {
+            return;
+        }
+
         this.Rally();
     }    
 }
 
 export class CourierOptions {
     static Type: string = "courier";
-    static Count: number = 3;
+    static Count: number = 4;
     //static Parts: string[] = [WORK, CARRY, MOVE];
     static Parts: string[] = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
 }

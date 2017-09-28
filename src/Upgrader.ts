@@ -12,6 +12,10 @@ export class Upgrader extends Minion {
             return;
         }
         
+        if (this.FindMassStorageSource()) {
+            return;
+        }
+
         if (this.FindStorageSource()) {
             return;
         }

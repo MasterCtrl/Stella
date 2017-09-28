@@ -1,0 +1,22 @@
+{
+  "name": "stella",
+  "version": "1.0.0",
+  "description": "Screeps AI",
+  "main": "main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MasterCtrl/Stella.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MasterCtrl/Stella/issues"
+  },
+  "homepage": "https://github.com/MasterCtrl/Stella#readme",
+  "dependencies": {
+    "@types/lodash": "^4.14.76"
+  }
+}

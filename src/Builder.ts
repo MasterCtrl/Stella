@@ -12,6 +12,10 @@ export class Builder extends Minion {
             return;
         }
         
+        if (this.FindMassStorageSource()) {
+            return;
+        }
+
         if (this.FindStorageSource()) {
             return;
         }

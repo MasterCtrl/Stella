@@ -7,9 +7,9 @@ export default class Turret {
 
     Run() {
         let structure: Structure = this.turret.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: (structure) => (structure.structureType != STRUCTURE_WALL && 
-                                    structure.structureType != STRUCTURE_RAMPART) && 
-                                    structure.hits < structure.hitsMax
+            filter: (structure) => structure.structureType != STRUCTURE_WALL && 
+                                   structure.structureType != STRUCTURE_RAMPART && 
+                                   structure.hits < structure.hitsMax
             }
         );
         if (structure) {
