@@ -460,7 +460,7 @@ export default abstract class Minion {
         return false;
     }
 
-    protected FindUnclaimedRoom(): boolean {
+    protected FindFlaggedRoom(): boolean {
         if (this.minion.memory.claimed) {
             return false;
         }
