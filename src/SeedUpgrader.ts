@@ -1,22 +1,24 @@
 import Minion from "./Minion";
+import {UpgraderOptions} from "./Upgrader"
 import * as Constants from "./Constants"
 
-export class Upgrader extends Minion {
+export class SeedUpgrader extends Minion {
     constructor(minion: Creep) {
         super(minion);
     }
 
     Initialize() {
         this.minion.memory.initialized = true;
-        if (this.FindDroppedEnergy()) {
-            return;
-        }
         
         if (this.FindStorageSource()) {
             return;
         }
 
-        if (this.FindContainerSource()) {
+        if (this.FindFlaggedRoom("lima")) {
+            return;
+        }
+
+        if (this.FindSource(-1)) {
             return;
         }
 
@@ -29,8 +31,7 @@ export class Upgrader extends Minion {
     } 
 }
 
-export class UpgraderOptions {
-    static Type: string = "upgrader";
-    static Count: number = 3;
-    static Parts: string[] = [WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
+export class SeedUpgraderOptions extends UpgraderOptions {
+    static Type: string = "seedupgrader";
+    static Count: number = 2;
 }

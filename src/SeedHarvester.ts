@@ -1,34 +1,31 @@
 import Minion from "./Minion";
+import {HarvesterOptions} from "./Harvester"
 import * as Constants from "./Constants"
 
-export class Builder extends Minion {
+export class SeedHarvester extends Minion {
     constructor(minion: Creep) {
         super(minion);
     }
 
     Initialize() {
         this.minion.memory.initialized = true;
-        if (this.FindDroppedEnergy()) {
-            return;
-        }
-        
         if (this.FindStorageSource()) {
             return;
         }
-
-        if (this.FindContainerSource()) {
+        
+        if (this.FindFlaggedRoom("lima")) {
             return;
         }
 
         if (this.FindSource(-1)) {
             return;
         }
-        
-        if (this.FindConstructionSite()) {
+
+        if (this.FindStorage()) {
             return;
         }
 
-        if(this.FindStructureToRepair()){
+        if (this.FindContainerTarget()) {
             return;
         }
 
@@ -36,12 +33,12 @@ export class Builder extends Minion {
             return;
         }
 
-        this.Rally();
-    }    
+        this.minion.memory.initialized = false;
+        this.minion.memory.state = Constants.STATE_IDLE;
+    }
 }
 
-export class BuilderOptions {
-    static Type: string = "builder";
-    static Count: number = 3;
-    static Parts: string[] = [WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
+export class SeedHarvesterOptions extends HarvesterOptions {
+    static Type: string = "seedharvester";
+    static Count: number = 1;
 }

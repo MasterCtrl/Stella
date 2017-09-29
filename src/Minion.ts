@@ -329,7 +329,7 @@ export default abstract class Minion {
         return false;
     }
 
-    protected FindMassStorageTarget(): boolean {
+    protected FindStorageTarget(): boolean {
         if (this.IsEmpty) {
             return false;
         }
@@ -344,7 +344,7 @@ export default abstract class Minion {
         return false;
     }
 
-    protected FindMassStorageSource(): boolean {
+    protected FindStorageSource(): boolean {
         if (!this.IsEmpty) {
             return false;
         }
@@ -359,7 +359,7 @@ export default abstract class Minion {
         return false;
     }
 
-    protected FindStorageTarget(): boolean {
+    protected FindContainerTarget(): boolean {
         if (this.IsEmpty) {
             return false;
         }
@@ -374,7 +374,7 @@ export default abstract class Minion {
         return false;
     }
 
-    protected FindStorageSource(): boolean {
+    protected FindContainerSource(): boolean {
         if (!this.IsEmpty) {
             return false;
         }
@@ -409,17 +409,11 @@ export default abstract class Minion {
         if (this.IsEmpty) {
             return false;
         }
-        let constructionSites = Game.constructionSites;
-        if (constructionSites) {
-            for (var id in constructionSites) {
-                let constructionSite = constructionSites[id];
-                if (!constructionSite) {
-                    continue;
-                }
-                this.SetDestination(constructionSite.pos.x, constructionSite.pos.y, 3, constructionSite.id, constructionSite.room.name);
-                this.minion.memory.postMovingState = Constants.STATE_BUILDING;
-                return true;    
-            }
+        let constructionSite: ConstructionSite = this.minion.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
+        if (constructionSite) {
+            this.SetDestination(constructionSite.pos.x, constructionSite.pos.y, 3, constructionSite.id);
+            this.minion.memory.postMovingState = Constants.STATE_BUILDING;
+            return true;
         }
         return false;
     }
@@ -461,12 +455,12 @@ export default abstract class Minion {
         return false;
     }
 
-    protected FindFlaggedRoom(): boolean {
-        if (this.minion.memory.claimed) {
+    protected FindFlaggedRoom(flag: string): boolean {
+        if (this.minion.memory.claimed || !flag) {
             return false;
         }
         //let coodinates = this.minion.room.name.match("(\\D)(\\d{2})(\\D)(\\d{2})");
-        this.minion.memory.claimed = "lima";
+        this.minion.memory.claimed = flag;
         this.minion.memory.state = Constants.STATE_MOVING_ROOM; 
         return true;
     }

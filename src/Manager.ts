@@ -7,7 +7,9 @@ import {Builder, BuilderOptions} from "./Builder";
 import {Miner, MinerOptions} from "./Miner";
 import {Courier, CourierOptions} from "./Courier";
 import {Scout, ScoutOptions} from "./Scout";
-import {ScoutUpgrader, ScoutUpgraderOptions} from "./ScoutUpgrader";
+import {SeedHarvester, SeedHarvesterOptions} from "./SeedHarvester";
+import {SeedUpgrader, SeedUpgraderOptions} from "./SeedUpgrader";
+import {SeedBuilder, SeedBuilderOptions} from "./SeedBuilder";
 type CreepHash = {[creepName: string]: Creep;};
 type StructureHash = {[id: string]: Structure;};
 
@@ -64,8 +66,12 @@ export default class Manager {
                 return new Builder(creep);
             case ScoutOptions.Type:
                 return new Scout(creep);
-            case ScoutUpgraderOptions.Type:
-                return new ScoutUpgrader(creep);
+            case SeedHarvesterOptions.Type:
+                return new SeedHarvester(creep);
+            case SeedUpgraderOptions.Type:
+                return new SeedUpgrader(creep);
+            case SeedBuilderOptions.Type:
+                return new SeedBuilder(creep);
             default:
                 creep.suicide();
                 return null;

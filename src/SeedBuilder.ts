@@ -1,23 +1,31 @@
 import Minion from "./Minion";
+import {BuilderOptions} from "./Builder"
 import * as Constants from "./Constants"
 
-export class ScoutUpgrader extends Minion {
+export class SeedBuilder extends Minion {
     constructor(minion: Creep) {
         super(minion);
     }
 
     Initialize() {
         this.minion.memory.initialized = true;
-        
-        if (this.FindMassStorageSource()) {
+        if (this.FindStorageSource()) {
             return;
         }
 
-        if (this.FindFlaggedRoom()) {
+        if (this.FindFlaggedRoom("lima")) {
             return;
         }
 
         if (this.FindSource(-1)) {
+            return;
+        }
+        
+        if (this.FindConstructionSite()) {
+            return;
+        }
+
+        if(this.FindStructureToRepair()){
             return;
         }
 
@@ -27,12 +35,10 @@ export class ScoutUpgrader extends Minion {
 
         this.minion.memory.initialized = false;
         this.minion.memory.state = Constants.STATE_IDLE;
-    } 
+    }    
 }
 
-export class ScoutUpgraderOptions {
-    static Type: string = "scoutupgrader";
+export class SeedBuilderOptions extends BuilderOptions {
+    static Type: string = "seedbuilder";
     static Count: number = 1;
-    //static Parts: string[] = [WORK, CARRY, MOVE];
-    static Parts: string[] = [WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
 }

@@ -16,21 +16,18 @@ export class Harvester extends Minion {
             return;
         }
 
-        if (this.FindStorageTarget()) {
+        if (this.FindContainerTarget()) {
             return;
         }
 
         if (this.FindController()) {
             return;
         }
-
-        this.Rally();
     }
 }
 
 export class HarvesterOptions {
     static Type: string = "harvester";
     static Count: number = 0;
-    //static Parts: string[] = [WORK, CARRY, MOVE];
-    static Parts: string[] = [WORK, WORK, CARRY, CARRY, MOVE, MOVE];
+    static Parts: string[] = [WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
 }

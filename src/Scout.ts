@@ -8,7 +8,7 @@ export class Scout extends Minion {
 
     Initialize() {
         this.minion.memory.initialized = true;
-        if (this.FindFlaggedRoom()) {
+        if (this.FindFlaggedRoom("lima")) {
             return;
         }
         if (this.FindUnclaimedController()) {

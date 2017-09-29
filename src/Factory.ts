@@ -6,7 +6,9 @@ import {BuilderOptions} from "./Builder";
 import {MinerOptions} from "./Miner";
 import {CourierOptions} from "./Courier";
 import {ScoutOptions} from "./Scout";
-import {ScoutUpgraderOptions} from "./ScoutUpgrader";
+import {SeedHarvesterOptions} from "./SeedHarvester";
+import {SeedUpgraderOptions} from "./SeedUpgrader";
+import {SeedBuilderOptions} from "./SeedBuilder";
 import Configuration from "./Configuration"
 type SpawnHash = {[spawnName: string]: Spawn;};
 
@@ -18,7 +20,9 @@ export default class Factory {
         UpgraderOptions,
         BuilderOptions,
         ScoutOptions,
-        ScoutUpgraderOptions
+        SeedHarvesterOptions,
+        SeedUpgraderOptions,
+        SeedBuilderOptions
     ];
 
     static Spawn(spawners: SpawnHash) {

@@ -12,7 +12,7 @@ export class Courier extends Minion {
             return;
         }
 
-        if (this.FindStorageSource()) {
+        if (this.FindContainerSource()) {
             return;
         }
 
@@ -20,7 +20,7 @@ export class Courier extends Minion {
             return;
         }
 
-        if (this.FindMassStorageTarget()) {
+        if (this.FindStorageTarget()) {
             return;
         }
 
@@ -31,6 +31,5 @@ export class Courier extends Minion {
 export class CourierOptions {
     static Type: string = "courier";
     static Count: number = 4;
-    //static Parts: string[] = [WORK, CARRY, MOVE];
     static Parts: string[] = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
 }
