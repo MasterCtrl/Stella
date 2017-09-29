@@ -31,5 +31,5 @@ export class Courier extends Minion {
 export class CourierOptions {
     static Type: string = "courier";
     static Count: number = 4;
-    static Parts: string[] = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
+    static Parts: string[] = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE];
 }
