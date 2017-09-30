@@ -238,7 +238,7 @@ export default abstract class Minion {
     }
 
     protected FindSource(index: number): boolean {
-        if (this.IsFull) {
+        if (!this.IsEmpty) {
             return false;
         }
         let source: Source = null;
