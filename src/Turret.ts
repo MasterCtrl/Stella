@@ -13,7 +13,7 @@ export default class Turret {
             }
         );
         if (structure) {
-            this.turret.repair(structure)
+            this.turret.repair(structure);
         }
 
         let hostile: Creep = this.turret.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
