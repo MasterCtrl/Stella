@@ -49,7 +49,9 @@ export default class Builder extends Minion {
             Parts: []
         };
         for (var index = 0; index < rcl; index++) {
-            options.Parts.push(Minion.MinimumParts)
+            Minion.MinimumParts.forEach(element => {
+                options.Parts.push(element);
+            });
         }
 
         return options;

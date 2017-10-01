@@ -33,13 +33,15 @@ export default class Courier extends Minion {
         let rcl = Math.floor(room.controller.level / 3);
         let options = { 
             Type: this.Type,
-            Count: rcl,
+            Count: rcl * 2,
             Parts: []
         };
         for (var index = 0; index < rcl; index++) {
-            options.Parts.push(this.MinimumParts)
+            this.MinimumParts.forEach(element => {
+                options.Parts.push(element);
+            });
         }
-        return null;
+        return options;
     }
 
     

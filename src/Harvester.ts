@@ -29,13 +29,18 @@ export default class Harvester extends Minion {
 
     static GetOptions(room: Room): any {
         let rcl = Math.ceil(room.controller.level / 2);
+        if (room.controller.level >= 4) {
+            rcl = 0;
+        }
         let options = { 
             Type: this.Type,
             Count: rcl,
             Parts: []
         };
         for (var index = 0; index < rcl; index++) {
-            options.Parts.push(Minion.MinimumParts)
+            Minion.MinimumParts.forEach(element => {
+                options.Parts.push(element);
+            });
         }
 
         return options;

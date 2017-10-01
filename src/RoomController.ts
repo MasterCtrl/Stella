@@ -21,18 +21,18 @@ export default class RoomController {
             Factory.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
         }
         Manager.RunCreeps(creeps);
-        Manager.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType != STRUCTURE_TOWER }))
+        Manager.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }))
     }
 
     GetSpawnOptions(): any[] {
         let options = [];
-        for(let func in RoomController.OptionFuncs) {
-            this.AddOptions(options, func);            
+        for(let i in RoomController.OptionFuncs) {
+            this.AddOptions(options, RoomController.OptionFuncs[i]);            
         }
         return options;
     }
 
-    private AddOptions(options: any[], getFunc: any) {
+    private AddOptions(options: any[], getFunc: (room: Room) => any) {
         let opt = getFunc(this.room);
         if (opt && opt.Count != 0) {
             options.push(opt);
@@ -50,10 +50,10 @@ export default class RoomController {
     }
 
     static OptionFuncs = [
-        Harvester.GetOptions,
-        Upgrader.GetOptions,
-        Builder.GetOptions,
-        Miner.GetOptions,
-        Courier.GetOptions        
+        (room: Room): any => Harvester.GetOptions(room),
+        (room: Room): any => Courier.GetOptions(room),
+        (room: Room): any => Miner.GetOptions(room),
+        (room: Room): any => Builder.GetOptions(room),
+        (room: Room): any => Upgrader.GetOptions(room)     
     ];
 }
