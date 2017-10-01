@@ -1,7 +1,9 @@
 import Minion from "./Minion";
 import * as Constants from "./Constants"
 
-export class Upgrader extends Minion {
+export default class Upgrader extends Minion {
+    static Type: string = "upgrader";
+    
     constructor(minion: Creep) {
         super(minion);
     }
@@ -28,13 +30,17 @@ export class Upgrader extends Minion {
         this.minion.memory.state = Constants.STATE_IDLE;
     }
 
-    static GetOptions(sources: number, rcl: number): any {
-        return null;
-    }
-}
+    static GetOptions(room: Room): any {
+        let rcl = Math.ceil(room.controller.level / 2);
+        let options = { 
+            Type: this.Type,
+            Count: rcl,
+            Parts: []
+        };
+        for (var index = 0; index < rcl; index++) {
+            options.Parts.push(Minion.MinimumParts)
+        }
 
-export class UpgraderOptions {
-    static Type: string = "upgrader";
-    static Count: number = 3;
-    static Parts: string[] = [WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
+        return options;
+    }
 }

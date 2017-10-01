@@ -1,7 +1,9 @@
 import Minion from "./Minion";
 import * as Constants from "./Constants"
 
-export class Courier extends Minion {
+export default class Courier extends Minion {
+    static Type: string = "courier";
+
     constructor(minion: Creep) {
         super(minion);
     }
@@ -27,13 +29,19 @@ export class Courier extends Minion {
         this.Rally();
     }
     
-    static GetOptions(sources: number, rcl: number): any {
+    static GetOptions(room: Room): any {
+        let rcl = Math.floor(room.controller.level / 3);
+        let options = { 
+            Type: this.Type,
+            Count: rcl,
+            Parts: []
+        };
+        for (var index = 0; index < rcl; index++) {
+            options.Parts.push(this.MinimumParts)
+        }
         return null;
     }
-}
 
-export class CourierOptions {
-    static Type: string = "courier";
-    static Count: number = 4;
-    static Parts: string[] = [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE];
+    
+    static MinimumParts: string[] = [CARRY, MOVE, CARRY, MOVE];   
 }

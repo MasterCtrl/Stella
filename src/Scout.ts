@@ -1,7 +1,9 @@
 import Minion from "./Minion";
 import * as Constants from "./Constants"
 
-export class Scout extends Minion {
+export default class Scout extends Minion {
+    static Type: string = "scout";
+
     constructor(minion: Creep) {
         super(minion);
     }
@@ -17,13 +19,13 @@ export class Scout extends Minion {
         this.Rally();
     }
 
-    static GetOptions(sources: number, rcl: number): any {
-        return null;
+    static GetOptions(room: Room): any {
+        let options = { 
+            Type: this.Type,
+            Count: 0,
+            Parts: [CLAIM, MOVE]
+        };
+        
+        return options;
     }
-}
-
-export class ScoutOptions {
-    static Type: string = "scout";
-    static Count: number = 0;
-    static Parts: string[] = [CLAIM, MOVE];
 }

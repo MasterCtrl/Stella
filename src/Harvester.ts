@@ -1,7 +1,9 @@
 import Minion from "./Minion";
 import * as Constants from "./Constants"
 
-export class Harvester extends Minion {
+export default class Harvester extends Minion {
+    static Type: string = "harvester";
+
     constructor(minion: Creep) {
         super(minion);
     }
@@ -25,13 +27,17 @@ export class Harvester extends Minion {
         }
     }
 
-    static GetOptions(sources: number, rcl: number): any {
-        return null;
-    }
-}
+    static GetOptions(room: Room): any {
+        let rcl = Math.ceil(room.controller.level / 2);
+        let options = { 
+            Type: this.Type,
+            Count: rcl,
+            Parts: []
+        };
+        for (var index = 0; index < rcl; index++) {
+            options.Parts.push(Minion.MinimumParts)
+        }
 
-export class HarvesterOptions {
-    static Type: string = "harvester";
-    static Count: number = 0;
-    static Parts: string[] = [WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE];
+        return options;
+    }
 }

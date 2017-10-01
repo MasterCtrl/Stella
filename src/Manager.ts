@@ -1,15 +1,12 @@
 import * as _ from "lodash";
 import Minion from "./Minion";
 import Turret from "./Turret";
-import {Harvester, HarvesterOptions} from "./Harvester";
-import {Upgrader, UpgraderOptions} from "./Upgrader";
-import {Builder, BuilderOptions} from "./Builder";
-import {Miner, MinerOptions} from "./Miner";
-import {Courier, CourierOptions} from "./Courier";
-import {Scout, ScoutOptions} from "./Scout";
-import {SeedHarvester, SeedHarvesterOptions} from "./SeedHarvester";
-import {SeedUpgrader, SeedUpgraderOptions} from "./SeedUpgrader";
-import {SeedBuilder, SeedBuilderOptions} from "./SeedBuilder";
+import Harvester from "./Harvester";
+import Upgrader from "./Upgrader";
+import Builder from "./Builder";
+import Miner from "./Miner";
+import Courier from "./Courier";
+import Scout from "./Scout";
 type CreepHash = {[creepName: string]: Creep;};
 type StructureHash = {[id: string]: Structure;};
 
@@ -24,21 +21,7 @@ export default class Manager {
         }
     }
 
-    static RunAll(){
-        this.RunCreeps(Game.creeps);
-        this.RunTowers(Game.structures);
-    }
-
-    static RunCreeps(creeps: CreepHash) {
-        for (let name in creeps) {
-            let minion = this.ToMinion(creeps[name]);
-            if (minion) {
-                minion.Run();
-            }
-        }
-    }
-
-    static RunCreepsForRoom(creeps: Creep[]) {
+    static RunCreeps(creeps: Creep[]) {
         for (let i in creeps) {
             let minion = this.ToMinion(creeps[i]);
             if (minion) {
@@ -47,16 +30,7 @@ export default class Manager {
         }
     }
 
-    static RunTowers(structures: StructureHash) {
-        var towers = _.filter(structures, s => s.structureType == STRUCTURE_TOWER) as Tower[];
-        for (let id in towers) {
-            let turret = new Turret(towers[id]);
-            turret.Run();
-
-        }
-    }
-
-    static RunTowersForRoom(towers: Tower[]) {
+    static RunTowers(towers: Tower[]) {
         for (let i in towers) {
             let turret = new Turret(towers[i]);
             turret.Run();
@@ -65,24 +39,18 @@ export default class Manager {
     
     private static ToMinion(creep: Creep): Minion {
         switch (creep.memory.type) {
-            case HarvesterOptions.Type:
+            case Harvester.Type:
                 return new Harvester(creep);
-            case MinerOptions.Type:
+            case Miner.Type:
                 return new Miner(creep);
-            case CourierOptions.Type:
+            case Courier.Type:
                 return new Courier(creep);
-            case UpgraderOptions.Type:
+            case Upgrader.Type:
                 return new Upgrader(creep);
-            case BuilderOptions.Type:
+            case Builder.Type:
                 return new Builder(creep);
-            case ScoutOptions.Type:
+            case Scout.Type:
                 return new Scout(creep);
-            case SeedHarvesterOptions.Type:
-                return new SeedHarvester(creep);
-            case SeedUpgraderOptions.Type:
-                return new SeedUpgrader(creep);
-            case SeedBuilderOptions.Type:
-                return new SeedBuilder(creep);
             default:
                 creep.suicide();
                 return null;

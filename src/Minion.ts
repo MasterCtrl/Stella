@@ -477,7 +477,8 @@ export default abstract class Minion {
     }
 
     protected Rally() {
-        this.SetDestination(Game.flags.rally.pos.x, Game.flags.rally.pos.y, 1, Game.flags.rally.room.name);
+        let spawn: Spawn = this.minion.pos.findClosestByPath(FIND_MY_SPAWNS);
+        this.SetDestination(spawn.pos.x, spawn.pos.y, 1, spawn.room.name);
         this.minion.memory.postMovingState = Constants.STATE_IDLE;
     }
 
@@ -502,4 +503,6 @@ export default abstract class Minion {
         }
         return underAttack;
     }
+    
+    static MinimumParts: string[] = [WORK, CARRY, MOVE];    
 }
