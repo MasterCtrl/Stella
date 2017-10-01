@@ -9,5 +9,4 @@ export const STATE_BUILDING: number = 6;
 export const STATE_REPAIRING: number = 7;
 export const STATE_WITHDRAWING: number = 8;
 export const STATE_IDLE: number = 9;
-export const STATE_MOVING_ROOM = 10
 export const STATE_CLAIM: number = 11;

@@ -56,10 +56,6 @@ export default abstract class Minion {
             case Constants.STATE_WITHDRAWING:
                 this.RunWithdrawing(Constants.STATE_MOVING);
                 break;
-
-            case Constants.STATE_MOVING_ROOM:
-                this.RunMovingRoom(Constants.STATE_MOVING);
-                break;
             
             case Constants.STATE_CLAIM:
                 this.RunClaiming(Constants.STATE_MOVING);
@@ -294,12 +290,12 @@ export default abstract class Minion {
     }
 
     protected FindDroppedEnergy(): boolean {
-        if (!this.IsEmpty) {
+        if (!this.IsEmpty || Minion.UnderAttack(this.minion.room.name)) {
             return false;
         }
         let occupiedSources = _.filter(Game.creeps, creep => creep.memory.destination_id).map(creep => creep.memory.destination_id);
         let energy: Source= this.minion.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
-            filter: energy => occupiedSources.indexOf(energy.id) == -1 || energy.energy > 500
+            filter: energy => (occupiedSources.indexOf(energy.id) == -1 || energy.energy > 500) && this.minion.room.name == energy.room.name
         });
         if (energy) {
             this.SetDestination(energy.pos.x, energy.pos.y, 1, energy.id, energy.room.name);
@@ -455,13 +451,15 @@ export default abstract class Minion {
         return false;
     }
 
-    protected FindFlaggedRoom(flag: string): boolean {
-        if (this.minion.memory.claimed || !flag) {
+    protected FindFlaggedRoom(flagName: string): boolean {
+        if (this.minion.memory.claimed || !flagName) {
             return false;
         }
         //let coodinates = this.minion.room.name.match("(\\D)(\\d{2})(\\D)(\\d{2})");
-        this.minion.memory.claimed = flag;
-        this.minion.memory.state = Constants.STATE_MOVING_ROOM; 
+        this.minion.memory.claimed = flagName;
+        let flag = Game.flags[flagName];
+        this.SetDestination(flag.pos.x, flag.pos.y, 1, null, flag.room.name);
+        this.minion.memory.state = Constants.STATE_MOVING; 
         return true;
     }
 
@@ -471,7 +469,7 @@ export default abstract class Minion {
         }
         let controller = this.minion.room.controller;
         if (controller) {
-            this.minion.memory.postMovingState = Constants.STATE_CLAIM;            
+            this.minion.memory.postMovingState = Constants.STATE_CLAIM;
             this.SetDestination(controller.pos.x, controller.pos.y, 1, controller.id);
             return true;
         }
@@ -489,5 +487,17 @@ export default abstract class Minion {
         this.minion.memory.destination_id = id;
         this.minion.memory.destination_room = room;
         this.minion.memory.range = range;
+    }
+
+    private static roomsUnderAttack:  { [roomName: string]: boolean; } = {};
+
+    private static UnderAttack(room: string): boolean {
+        let underAttack = this.roomsUnderAttack[room]; 
+        if (underAttack == undefined) {
+            let hostiles = Game.rooms[room].find(FIND_HOSTILE_CREEPS);
+            underAttack = hostiles.length != 0;
+            this.roomsUnderAttack[room] = underAttack;
+        }
+        return underAttack;
     }
 }
