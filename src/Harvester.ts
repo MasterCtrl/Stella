@@ -24,6 +24,10 @@ export class Harvester extends Minion {
             return;
         }
     }
+
+    static GetOptions(sources: number, rcl: number): any {
+        return null;
+    }
 }
 
 export class HarvesterOptions {

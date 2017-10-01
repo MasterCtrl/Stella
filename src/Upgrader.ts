@@ -26,7 +26,11 @@ export class Upgrader extends Minion {
 
         this.minion.memory.initialized = false;
         this.minion.memory.state = Constants.STATE_IDLE;
-    } 
+    }
+
+    static GetOptions(sources: number, rcl: number): any {
+        return null;
+    }
 }
 
 export class UpgraderOptions {

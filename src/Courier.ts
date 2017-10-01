@@ -25,7 +25,11 @@ export class Courier extends Minion {
         }
 
         this.Rally();
-    }    
+    }
+    
+    static GetOptions(sources: number, rcl: number): any {
+        return null;
+    }
 }
 
 export class CourierOptions {

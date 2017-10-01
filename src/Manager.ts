@@ -31,7 +31,16 @@ export default class Manager {
 
     static RunCreeps(creeps: CreepHash) {
         for (let name in creeps) {
-            let minion = this.ToMinion(creeps, name);
+            let minion = this.ToMinion(creeps[name]);
+            if (minion) {
+                minion.Run();
+            }
+        }
+    }
+
+    static RunCreepsForRoom(creeps: Creep[]) {
+        for (let i in creeps) {
+            let minion = this.ToMinion(creeps[i]);
             if (minion) {
                 minion.Run();
             }
@@ -41,18 +50,20 @@ export default class Manager {
     static RunTowers(structures: StructureHash) {
         var towers = _.filter(structures, s => s.structureType == STRUCTURE_TOWER) as Tower[];
         for (let id in towers) {
-            let turret = this.ToTurret(towers, id);
-            if (turret) {
-                turret.Run();
-            }
+            let turret = new Turret(towers[id]);
+            turret.Run();
+
+        }
+    }
+
+    static RunTowersForRoom(towers: Tower[]) {
+        for (let i in towers) {
+            let turret = new Turret(towers[i]);
+            turret.Run();
         }
     }
     
-    private static ToMinion(creeps: CreepHash, name: string): Minion {
-        if (!creeps.hasOwnProperty(name)) {
-            return null;
-        }
-        let creep = creeps[name];
+    private static ToMinion(creep: Creep): Minion {
         switch (creep.memory.type) {
             case HarvesterOptions.Type:
                 return new Harvester(creep);
@@ -76,13 +87,5 @@ export default class Manager {
                 creep.suicide();
                 return null;
         }
-    }
-
-    private static ToTurret(towers: Tower[], id: string) {
-        if (!towers.hasOwnProperty(id)) {
-            return null;
-        }
-        let tower = towers[id];
-        return new Turret(tower);
     }
 }

@@ -1,5 +1,6 @@
+import * as _ from "lodash";
 import Factory from "./Factory";
-import Manager from "./Manager"
+import Manager from "./Manager";
 
 export const loop = function () {
 

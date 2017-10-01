@@ -492,11 +492,13 @@ export default abstract class Minion {
     private static roomsUnderAttack:  { [roomName: string]: boolean; } = {};
 
     private static UnderAttack(room: string): boolean {
-        let underAttack = this.roomsUnderAttack[room]; 
-        if (underAttack == undefined) {
+        let underAttack: boolean; 
+        if (!this.roomsUnderAttack.hasOwnProperty(room)) {
             let hostiles = Game.rooms[room].find(FIND_HOSTILE_CREEPS);
             underAttack = hostiles.length != 0;
             this.roomsUnderAttack[room] = underAttack;
+        } else {
+            underAttack = this.roomsUnderAttack[room];
         }
         return underAttack;
     }

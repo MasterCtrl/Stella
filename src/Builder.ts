@@ -37,7 +37,11 @@ export class Builder extends Minion {
         }
 
         this.Rally();
-    }    
+    }
+
+    static GetOptions(sources: number, rcl: number): any {
+        return null;
+    }
 }
 
 export class BuilderOptions {

@@ -15,7 +15,11 @@ export class Scout extends Minion {
             return;
         }
         this.Rally();
-    }    
+    }
+
+    static GetOptions(sources: number, rcl: number): any {
+        return null;
+    }
 }
 
 export class ScoutOptions {

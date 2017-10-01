@@ -4,7 +4,6 @@ import * as Constants from "./Constants"
 export class Miner extends Minion {
     constructor(minion: Creep) {
         super(minion);
-        //harvest source
     }
 
     Initialize() {
@@ -14,6 +13,10 @@ export class Miner extends Minion {
         }
         this.minion.memory.initialized = false;
         this.minion.memory.state = Constants.STATE_IDLE;        
+    }
+
+    static GetOptions(sources: number, rcl: number): any {
+        return null;
     }
 }
 
