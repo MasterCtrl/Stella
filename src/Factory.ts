@@ -1,4 +1,3 @@
-import * as _ from "lodash";
 import Minion from "./Minion";
 import Configuration from "./Configuration"
 type SpawnHash = {[spawnName: string]: Spawn;};

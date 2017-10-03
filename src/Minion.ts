@@ -1,5 +1,4 @@
-﻿import * as _ from "lodash";
-import * as Constants from "./Constants"
+﻿import * as Constants from "./Constants"
 import Configuration from "./Configuration"
 
 export default abstract class Minion {
@@ -504,5 +503,18 @@ export default abstract class Minion {
         return underAttack;
     }
     
-    static MinimumParts: string[] = [WORK, CARRY, MOVE];    
+    private static MinimumParts: string[] = [WORK, CARRY, MOVE];
+
+    static GetParts(rcl: number, partsToAdd?: string[]): string[] {
+        let parts = [];
+        if (!partsToAdd) {
+            partsToAdd = this.MinimumParts;
+        }
+        for (var index = 0; index < rcl; index++) {
+            partsToAdd.forEach(element => {
+                parts.push(element);
+            });
+        }
+        return parts
+    }
 }

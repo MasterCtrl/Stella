@@ -31,19 +31,17 @@ export default class Courier extends Minion {
     
     static GetOptions(room: Room): any {
         let rcl = Math.floor(room.controller.level / 3);
-        let options = { 
-            Type: this.Type,
-            Count: rcl * 2,
-            Parts: []
-        };
-        for (var index = 0; index < rcl; index++) {
-            this.MinimumParts.forEach(element => {
-                options.Parts.push(element);
-            });
+        let count = room.find(FIND_SOURCES).length;
+        if (room.controller.level >= 4) {
+            count = 0;
         }
-        return options;
+        return { 
+            Type: this.Type,
+            Count: count * 2,
+            Parts: Minion.GetParts(rcl, this.CourierParts)
+        };
     }
 
     
-    static MinimumParts: string[] = [CARRY, MOVE, CARRY, MOVE];   
+    private static CourierParts: string[] = [CARRY, MOVE, CARRY, MOVE];   
 }

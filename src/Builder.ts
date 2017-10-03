@@ -43,17 +43,11 @@ export default class Builder extends Minion {
 
     static GetOptions(room: Room): any {
         let rcl = Math.ceil(room.controller.level / 2);
-        let options = { 
+        let count = room.find(FIND_SOURCES).length;
+        return { 
             Type: this.Type,
-            Count: rcl,
-            Parts: []
+            Count: count + 1,
+            Parts: Minion.GetParts(rcl)
         };
-        for (var index = 0; index < rcl; index++) {
-            Minion.MinimumParts.forEach(element => {
-                options.Parts.push(element);
-            });
-        }
-
-        return options;
     }
 }

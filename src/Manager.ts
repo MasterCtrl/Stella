@@ -1,4 +1,3 @@
-import * as _ from "lodash";
 import Minion from "./Minion";
 import Turret from "./Turret";
 import Harvester from "./Harvester";

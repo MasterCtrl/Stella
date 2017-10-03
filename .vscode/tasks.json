@@ -7,10 +7,23 @@
             "problemMatcher": [
                 "$tsc"
             ],
+            "group": "build",
+        },
+        {
+            "taskName": "Package",
+            "command": "./node_modules/.bin/webpack",
+            "windows": {
+                "command": ".\\node_modules\\.bin\\webpack.cmd"
+            },
+            "type": "shell",
+            "problemMatcher": [],
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+            "dependsOn": [
+                "Build"
+            ]
         }
     ]
 }
