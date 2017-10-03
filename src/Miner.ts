@@ -19,12 +19,9 @@ export default class Miner extends Minion {
 
     static GetOptions(room: Room): any {
         let count = room.find(FIND_SOURCES).length;
-        if (room.controller.level < 4) {
-            count = 0;
-        }
         return { 
             Type: this.Type,
-            Count: count,
+            Count: room.controller.level < 4 ? 0 : count,
             Parts: [WORK, WORK, WORK, WORK, WORK, MOVE]
         };
     }
