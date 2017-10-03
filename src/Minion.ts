@@ -1,5 +1,4 @@
-﻿import * as _ from "lodash";
-import * as Constants from "./Constants"
+﻿import * as Constants from "./Constants"
 import Configuration from "./Configuration"
 
 export default abstract class Minion {
@@ -451,15 +450,19 @@ export default abstract class Minion {
         return false;
     }
 
-    protected FindFlaggedRoom(flagName: string): boolean {
-        if (this.minion.memory.claimed || !flagName) {
+    protected FindFlaggedRoom(flagColor: number): boolean {
+        if (this.minion.memory.claimed) {
             return false;
         }
-        //let coodinates = this.minion.room.name.match("(\\D)(\\d{2})(\\D)(\\d{2})");
-        this.minion.memory.claimed = flagName;
-        let flag = Game.flags[flagName];
-        this.SetDestination(flag.pos.x, flag.pos.y, 1, null, flag.room.name);
-        this.minion.memory.state = Constants.STATE_MOVING; 
+        let occupiedFlags = _.filter(Game.creeps, creep => creep.memory.claimed).map(creep => creep.memory.claimed);
+        let flags = _.filter(Game.flags, flag => flag.color == COLOR_GREEN && occupiedFlags.indexOf(flag.name) == -1);
+        if (flags.length == 0) {
+            return false;
+        }
+        let flag = flags[0];
+        this.minion.memory.claimed = flag.pos.roomName;
+        this.SetDestination(flag.pos.x, flag.pos.y, 1, null, flag.pos.roomName);
+        this.minion.memory.state = Constants.STATE_MOVING;
         return true;
     }
 
@@ -477,7 +480,8 @@ export default abstract class Minion {
     }
 
     protected Rally() {
-        this.SetDestination(Game.flags.rally.pos.x, Game.flags.rally.pos.y, 1, Game.flags.rally.room.name);
+        let spawn: Spawn = this.minion.pos.findClosestByPath(FIND_MY_SPAWNS);
+        this.SetDestination(spawn.pos.x, spawn.pos.y, 1, spawn.room.name);
         this.minion.memory.postMovingState = Constants.STATE_IDLE;
     }
 
@@ -492,12 +496,29 @@ export default abstract class Minion {
     private static roomsUnderAttack:  { [roomName: string]: boolean; } = {};
 
     private static UnderAttack(room: string): boolean {
-        let underAttack = this.roomsUnderAttack[room]; 
-        if (underAttack == undefined) {
+        let underAttack: boolean; 
+        if (!this.roomsUnderAttack.hasOwnProperty(room)) {
             let hostiles = Game.rooms[room].find(FIND_HOSTILE_CREEPS);
             underAttack = hostiles.length != 0;
             this.roomsUnderAttack[room] = underAttack;
+        } else {
+            underAttack = this.roomsUnderAttack[room];
         }
         return underAttack;
+    }
+    
+    private static MinimumParts: string[] = [WORK, CARRY, MOVE];
+
+    static GetParts(rcl: number, partsToAdd?: string[]): string[] {
+        let parts = [];
+        if (!partsToAdd) {
+            partsToAdd = this.MinimumParts;
+        }
+        for (var index = 0; index < rcl; index++) {
+            partsToAdd.forEach(element => {
+                parts.push(element);
+            });
+        }
+        return parts
     }
 }

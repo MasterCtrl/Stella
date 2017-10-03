@@ -1,8 +1,8 @@
 import Minion from "./Minion";
 import * as Constants from "./Constants"
 
-export default class Builder extends Minion {
-    static Type: string = "builder";
+export default class Seeder extends Minion {
+    static Type: string = "seeder";
 
     constructor(minion: Creep) {
         super(minion);
@@ -10,15 +10,11 @@ export default class Builder extends Minion {
 
     Initialize() {
         this.minion.memory.initialized = true;
-        if (this.FindDroppedEnergy()) {
-            return;
-        }
-        
         if (this.FindStorageSource()) {
             return;
         }
 
-        if (this.FindContainerSource()) {
+        if (this.FindFlaggedRoom(COLOR_BLUE)) {
             return;
         }
 
@@ -30,7 +26,7 @@ export default class Builder extends Minion {
             return;
         }
 
-        if(this.FindStructureToRepair()){
+        if (this.FindStructureToRepair()) {
             return;
         }
 
@@ -43,10 +39,11 @@ export default class Builder extends Minion {
 
     static GetOptions(room: Room): any {
         let rcl = Math.ceil(room.controller.level / 2);
-        let count = room.find(FIND_SOURCES).length;
+        let flags = _.filter(Game.flags, flag => flag.color == COLOR_BLUE);
+        let roomsWithFlags = _.filter(flags, flag => flag.pos.roomName).map(flag => flag.pos.roomName);
         return { 
             Type: this.Type,
-            Count: count + 1,
+            Count: roomsWithFlags.indexOf(room.name) != -1 ? 0 : flags.length * 2,
             Parts: Minion.GetParts(rcl)
         };
     }

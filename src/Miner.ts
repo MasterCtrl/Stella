@@ -1,10 +1,11 @@
 import Minion from "./Minion";
 import * as Constants from "./Constants"
 
-export class Miner extends Minion {
+export default class Miner extends Minion {
+    static Type: string = "miner";
+
     constructor(minion: Creep) {
         super(minion);
-        //harvest source
     }
 
     Initialize() {
@@ -15,10 +16,13 @@ export class Miner extends Minion {
         this.minion.memory.initialized = false;
         this.minion.memory.state = Constants.STATE_IDLE;        
     }
-}
 
-export class MinerOptions {
-    static Type: string = "miner";
-    static Count: number = 2;
-    static Parts: string[] = [WORK, WORK, WORK, WORK, WORK, MOVE];
+    static GetOptions(room: Room): any {
+        let count = room.find(FIND_SOURCES).length;
+        return { 
+            Type: this.Type,
+            Count: room.controller.level < 4 ? 0 : count,
+            Parts: [WORK, WORK, WORK, WORK, WORK, MOVE]
+        };
+    }
 }

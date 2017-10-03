@@ -47,5 +47,7 @@ Temporary Items
 .apdisk
 
 dist
+lib
 node_modules
+private.json
 package-lock.json
