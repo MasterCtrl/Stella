@@ -450,15 +450,19 @@ export default abstract class Minion {
         return false;
     }
 
-    protected FindFlaggedRoom(flagName: string): boolean {
-        if (this.minion.memory.claimed || !flagName) {
+    protected FindFlaggedRoom(flagColor: number): boolean {
+        if (this.minion.memory.claimed) {
             return false;
         }
-        //let coodinates = this.minion.room.name.match("(\\D)(\\d{2})(\\D)(\\d{2})");
-        this.minion.memory.claimed = flagName;
-        let flag = Game.flags[flagName];
-        this.SetDestination(flag.pos.x, flag.pos.y, 1, null, flag.room.name);
-        this.minion.memory.state = Constants.STATE_MOVING; 
+        let occupiedFlags = _.filter(Game.creeps, creep => creep.memory.claimed).map(creep => creep.memory.claimed);
+        let flags = _.filter(Game.flags, flag => flag.color == COLOR_GREEN && occupiedFlags.indexOf(flag.name) == -1);
+        if (flags.length == 0) {
+            return false;
+        }
+        let flag = flags[0];
+        this.minion.memory.claimed = flag.pos.roomName;
+        this.SetDestination(flag.pos.x, flag.pos.y, 1, null, flag.pos.roomName);
+        this.minion.memory.state = Constants.STATE_MOVING;
         return true;
     }
 

@@ -32,7 +32,7 @@ export default class Courier extends Minion {
     static GetOptions(room: Room): any {
         let rcl = Math.floor(room.controller.level / 3);
         let count = room.find(FIND_SOURCES).length;
-        if (room.controller.level >= 4) {
+        if (room.controller.level < 4) {
             count = 0;
         }
         return { 

@@ -5,6 +5,8 @@ import Upgrader from "./Upgrader";
 import Builder from "./Builder";
 import Miner from "./Miner";
 import Courier from "./Courier";
+import Scout from "./Scout";
+import Seeder from "./Seeder";
 type RoomHash = {[roomName: string]: Room;};
 
 export default class RoomController {
@@ -54,6 +56,8 @@ export default class RoomController {
         (room: Room): any => Courier.GetOptions(room),
         (room: Room): any => Miner.GetOptions(room),
         (room: Room): any => Builder.GetOptions(room),
-        (room: Room): any => Upgrader.GetOptions(room)     
+        (room: Room): any => Upgrader.GetOptions(room),
+        (room: Room): any => Scout.GetOptions(room),
+        (room: Room): any => Seeder.GetOptions(room)
     ];
 }

@@ -10,7 +10,7 @@ export default class Scout extends Minion {
 
     Initialize() {
         this.minion.memory.initialized = true;
-        if (this.FindFlaggedRoom("lima")) {
+        if (this.FindFlaggedRoom(COLOR_GREEN)) {
             return;
         }
         if (this.FindUnclaimedController()) {
@@ -20,9 +20,10 @@ export default class Scout extends Minion {
     }
 
     static GetOptions(room: Room): any {
+        let flags = _.filter(Game.flags, flag => flag.color == COLOR_GREEN);
         let options = { 
             Type: this.Type,
-            Count: 0,
+            Count: flags.length,
             Parts: [CLAIM, MOVE]
         };
         
