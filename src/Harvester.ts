@@ -55,7 +55,7 @@ export default class Harvester extends Minion {
      * @memberof Harvester
      */
     public static GetOptions(room: Room): any {
-        let rcl = Math.ceil(room.controller.level / 2);
+        let rcl = Math.ceil(room.controller.level / 3);
         let count = room.find(FIND_SOURCES).length;
         return { 
             Type: this.Type,
