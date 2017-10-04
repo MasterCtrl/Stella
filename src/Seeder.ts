@@ -66,7 +66,7 @@ export default class Seeder extends Minion {
      * @memberof Seeder
      */
     public static GetOptions(room: Room): any {
-        let rcl = Math.ceil(room.controller.level / 2);
+        let rcl = Math.ceil(room.controller.level / 3);
         let flags = _.filter(Game.flags, flag => flag.color == COLOR_BLUE);
         let roomsWithFlags = _.filter(flags, flag => flag.pos.roomName).map(flag => flag.pos.roomName);
         return { 

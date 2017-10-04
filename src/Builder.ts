@@ -32,11 +32,11 @@ export default class Builder extends Minion {
             return;
         }
         
-        if (this.FindContainerSource()) {
+        if (this.FindStorageSource()) {
             return;
         }
 
-        if (this.FindStorageSource()) {
+        if (this.FindContainerSource()) {
             return;
         }
 
@@ -68,7 +68,7 @@ export default class Builder extends Minion {
      * @memberof Builder
      */
     public static GetOptions(room: Room): any {
-        let rcl = Math.ceil(room.controller.level / 2);
+        let rcl = Math.ceil(room.controller.level / 3);
         let count = room.find(FIND_SOURCES).length;
         return { 
             Type: this.Type,
