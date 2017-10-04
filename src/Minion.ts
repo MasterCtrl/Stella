@@ -202,18 +202,8 @@ export default abstract class Minion {
         }
     }
 
-    private RunMovingRoom(transitionState: number) {
-        let flag: Flag = Game.flags[this.minion.memory.claimed];
-        if (!this.minion.memory.claimed || !this.minion.room.controller || this.minion.pos.getRangeTo(flag) == 0) {
-            this.minion.memory.state = transitionState;
-            this.minion.memory.initialized = false;            
-        }
-        this.minion.moveTo(Game.flags[this.minion.memory.claimed]);
-    }
-
     private RunClaiming(transitionState: number) {
         if (this.minion.claimController(this.minion.room.controller) == OK) {
-            this.minion.memory.claimed = true;
             this.minion.memory.initialized = false;
         }
     }
@@ -577,26 +567,47 @@ export default abstract class Minion {
     }
 
     /**
-     * Finds a room that contains a flag of the specified color and sets it as the destination.
+     * Finds an unoccupied flag of the specified color and sets it as the destination.
      * 
      * @protected
      * @param {number} flagColor 
      * @returns {boolean} 
      * @memberof Minion
      */
-    protected FindFlaggedRoom(flagColor: number): boolean {
-        if (this.minion.memory.claimed) {
+    protected FindUnoccupiedRoom(flagColor: number): boolean {
+        if (this.minion.memory.flag) {
             return false;
         }
-        //TODO: this is a bit off, seeders will call this and see other seeders already moving there and not move...
-        //      maybe split into 2 methods, one for just moving to a flag and one for specifically moving to an unclaimed room
-        let occupiedFlags = _.filter(Game.creeps, creep => creep.memory.claimed).map(creep => creep.memory.claimed);
+        let occupiedFlags = _.filter(Game.creeps, creep => creep.memory.flag).map(creep => creep.memory.flag);
         let flags = _.filter(Game.flags, flag => flag.color == flagColor && occupiedFlags.indexOf(flag.name) == -1);
         if (flags.length == 0) {
             return false;
         }
         let flag = flags[0];
-        this.minion.memory.claimed = flag.pos.roomName;
+        this.minion.memory.flag = flag.name;
+        this.SetDestination(flag.pos.x, flag.pos.y, 1, null, flag.pos.roomName);
+        this.minion.memory.state = Constants.STATE_MOVING;
+        return true;
+    }
+
+    /**
+     * Finds a flag of the specified color and sets it as the destination.
+     * 
+     * @protected
+     * @param {number} flagColor 
+     * @returns {boolean} 
+     * @memberof Minion
+     */
+    protected FindFlag(flagColor: number): boolean {
+        if (this.minion.memory.flag) {
+            return false;
+        }
+        let flags = _.filter(Game.flags, flag => flag.color == flagColor);
+        if (flags.length == 0) {
+            return false;
+        }
+        let flag = flags[0];
+        this.minion.memory.flag = flag.name;
         this.SetDestination(flag.pos.x, flag.pos.y, 1, null, flag.pos.roomName);
         this.minion.memory.state = Constants.STATE_MOVING;
         return true;
@@ -610,7 +621,7 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected FindUnclaimedController(): boolean {
-        if (!this.minion.memory.claimed || this.minion.room.controller.my) {
+        if (!this.minion.memory.flag || this.minion.room.controller.my) {
             return false;
         }
         let controller = this.minion.room.controller;
@@ -630,8 +641,12 @@ export default abstract class Minion {
      */
     protected Rally() {
         let spawn: Spawn = this.minion.pos.findClosestByPath(FIND_MY_SPAWNS);
-        this.SetDestination(spawn.pos.x, spawn.pos.y, 1, spawn.room.name);
-        this.minion.memory.postMovingState = Constants.STATE_IDLE;
+        if (spawn) {
+            this.SetDestination(spawn.pos.x, spawn.pos.y, 1, spawn.room.name);            
+            this.minion.memory.postMovingState = Constants.STATE_IDLE;
+        } else {
+            this.minion.memory.state = Constants.STATE_IDLE;
+        }
     }
 
     /**

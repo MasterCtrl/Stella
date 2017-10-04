@@ -33,7 +33,7 @@ export default class Seeder extends Minion {
             return;
         }
 
-        if (this.FindFlaggedRoom(COLOR_BLUE)) {
+        if (this.FindFlag(COLOR_BLUE)) {
             return;
         }
 

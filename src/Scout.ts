@@ -29,7 +29,7 @@ export default class Scout extends Minion {
      */
     public Initialize() {
         this.minion.memory.initialized = true;
-        if (this.FindFlaggedRoom(COLOR_GREEN)) {
+        if (this.FindUnoccupiedRoom(COLOR_GREEN)) {
             return;
         }
         if (this.FindUnclaimedController()) {

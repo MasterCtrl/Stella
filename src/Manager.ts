@@ -6,6 +6,7 @@ import Builder from "./Builder";
 import Miner from "./Miner";
 import Courier from "./Courier";
 import Scout from "./Scout";
+import Seeder from "./Seeder";
 type CreepHash = {[creepName: string]: Creep;};
 type StructureHash = {[id: string]: Structure;};
 
@@ -78,8 +79,11 @@ export default class Manager {
                 return new Builder(creep);
             case Scout.Type:
                 return new Scout(creep);
+            case Seeder.Type:
+                return new Seeder(creep);
             default:
-                creep.suicide();
+                creep.say("Im not a minion dummy!");
+                console.log(creep.name + " is not a minion and has nothing to do.");
                 return null;
         }
     }
