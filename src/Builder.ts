@@ -1,24 +1,42 @@
 import Minion from "./Minion";
 import * as Constants from "./Constants"
 
+/**
+ * Builder minion, used to build and repair structures.
+ * 
+ * @export
+ * @class Builder
+ * @extends {Minion}
+ */
 export default class Builder extends Minion {
     static Type: string = "builder";
 
+    /**
+     * Creates an instance of Builder.
+     * @param {Creep} minion 
+     * @memberof Builder
+     */
     constructor(minion: Creep) {
         super(minion);
     }
 
-    Initialize() {
+    /**
+     * Initializes the Builder, sets state and destination.
+     * 
+     * @returns 
+     * @memberof Builder
+     */
+    public Initialize() {
         this.minion.memory.initialized = true;
         if (this.FindDroppedEnergy()) {
             return;
         }
         
-        if (this.FindStorageSource()) {
+        if (this.FindContainerSource()) {
             return;
         }
 
-        if (this.FindContainerSource()) {
+        if (this.FindStorageSource()) {
             return;
         }
 
@@ -41,7 +59,15 @@ export default class Builder extends Minion {
         this.Rally();
     }
 
-    static GetOptions(room: Room): any {
+    /**
+     * Gets the options for the Builder minion based on the room.
+     * 
+     * @static
+     * @param {Room} room 
+     * @returns {*} 
+     * @memberof Builder
+     */
+    public static GetOptions(room: Room): any {
         let rcl = Math.ceil(room.controller.level / 2);
         let count = room.find(FIND_SOURCES).length;
         return { 

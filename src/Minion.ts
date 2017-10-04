@@ -1,16 +1,37 @@
 ﻿import * as Constants from "./Constants"
 import Configuration from "./Configuration"
 
+/**
+ * Minion base class, holds all the common logic for all the minion types.
+ * 
+ * @class Minion
+ */
 export default abstract class Minion {
-    readonly minion: Creep;
+    protected readonly minion: Creep;
 
+    /**
+     * Creates an instance of Minion.
+     * @param {Creep} minion 
+     * @memberof Minion
+     */
     protected constructor(minion: Creep) {
         this.minion = minion;
     }
 
-    abstract Initialize();
+    /**
+     * Initializes the minion, sets state and destination.
+     * 
+     * @returns 
+     * @memberof Minion
+     */
+    public abstract Initialize();
 
-    Run() {
+    /**
+     * Runs the minion
+     * 
+     * @memberof Minion
+     */
+    public Run() {
         if (!this.minion.memory.state) {
             this.minion.memory.state = Constants.STATE_SPAWNING;
         }
@@ -181,18 +202,8 @@ export default abstract class Minion {
         }
     }
 
-    private RunMovingRoom(transitionState: number) {
-        let flag: Flag = Game.flags[this.minion.memory.claimed];
-        if (!this.minion.memory.claimed || !this.minion.room.controller || this.minion.pos.getRangeTo(flag) == 0) {
-            this.minion.memory.state = transitionState;
-            this.minion.memory.initialized = false;            
-        }
-        this.minion.moveTo(Game.flags[this.minion.memory.claimed]);
-    }
-
     private RunClaiming(transitionState: number) {
         if (this.minion.claimController(this.minion.room.controller) == OK) {
-            this.minion.memory.claimed = true;
             this.minion.memory.initialized = false;
         }
     }
@@ -209,29 +220,63 @@ export default abstract class Minion {
         this.minion.suicide();
     }
 
+    /**
+     * Gets the Name of the minion
+     * 
+     * @readonly
+     * @protected
+     * @type {string}
+     * @memberof Minion
+     */
     protected get Name(): string{
         return this.minion.name;
     }
 
+    /**
+     * Gets if the minions energy is empty
+     * 
+     * @readonly
+     * @protected
+     * @type {boolean}
+     * @memberof Minion
+     */
     protected get IsEmpty(): boolean {
         return this.minion.carry.energy == 0;
     }
 
+    /**
+     * Gets if the minions energy is full
+     * 
+     * @readonly
+     * @protected
+     * @type {boolean}
+     * @memberof Minion
+     */
     protected get IsFull(): boolean {
         return !this.IsEmpty && this.minion.carry.energy >= this.minion.carryCapacity;
     }
 
+    /**
+     * Gets the minions type
+     * 
+     * @readonly
+     * @protected
+     * @type {string}
+     * @memberof Minion
+     */
     protected get Type(): string {
         return this.minion.memory.type;
     }
 
-    protected FindEnergy(index: number): boolean {
-        if (!this.IsEmpty) {
-            return false;
-        }
-        return this.FindSource(index) || this.FindDroppedEnergy();
-    }
-
+    /**
+     * Finds a source to mine and sets it as the destination.
+     * Set index = -1 to find closest source.
+     * 
+     * @protected
+     * @param {number} index 
+     * @returns {boolean} 
+     * @memberof Minion
+     */
     protected FindSource(index: number): boolean {
         if (!this.IsEmpty) {
             return false;
@@ -253,6 +298,13 @@ export default abstract class Minion {
         return false;
     }
 
+    /**
+     * Finds an unoccupied source to mine from and sets it as the destination.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
     protected FindUnoccupiedSource(): boolean {
         if (this.IsFull) {
             return false;
@@ -288,6 +340,13 @@ export default abstract class Minion {
         return false;
     }
 
+    /**
+     * Finds a dropped energy source and sets it as the destination.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
     protected FindDroppedEnergy(): boolean {
         if (!this.IsEmpty || Minion.UnderAttack(this.minion.room.name)) {
             return false;
@@ -304,6 +363,14 @@ export default abstract class Minion {
         return false;
     }
 
+    /**
+     * Finds somewhere to store energy and sets it as the destination.
+     * One of Spawn, Extension, or Tower that doesn't already have a minion delivering to it.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
     protected FindStorage(): boolean {
         if (this.IsEmpty) {
             return false;
@@ -324,6 +391,13 @@ export default abstract class Minion {
         return false;
     }
 
+    /**
+     * Finds a Storage structure to store energy in and sets it as the destination.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
     protected FindStorageTarget(): boolean {
         if (this.IsEmpty) {
             return false;
@@ -339,6 +413,13 @@ export default abstract class Minion {
         return false;
     }
 
+    /**
+     * Finds a Storage structure to withdraw energy from and sets it as the destination.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
     protected FindStorageSource(): boolean {
         if (!this.IsEmpty) {
             return false;
@@ -354,6 +435,13 @@ export default abstract class Minion {
         return false;
     }
 
+    /**
+     * Finds a Container structure to store energy in and sets it as the destination.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
     protected FindContainerTarget(): boolean {
         if (this.IsEmpty) {
             return false;
@@ -369,6 +457,13 @@ export default abstract class Minion {
         return false;
     }
 
+    /**
+     * Finds a Storage structure to withdraw energy from and sets it as the destination.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
     protected FindContainerSource(): boolean {
         if (!this.IsEmpty) {
             return false;
@@ -387,6 +482,13 @@ export default abstract class Minion {
         return false;
     }
 
+    /**
+     * Finds the controller to upgrade and sets it as the destination.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
     protected FindController(): boolean {
         if (this.IsEmpty) {
             return false;
@@ -400,6 +502,13 @@ export default abstract class Minion {
         return false;
     }
 
+    /**
+     * Finds the closest construction site and sets it as the destination.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
     protected FindConstructionSite(): boolean {
         if (this.IsEmpty) {
             return false;
@@ -413,6 +522,13 @@ export default abstract class Minion {
         return false;
     }
 
+    /**
+     * Finds the closest structure to repair and sets it as the destination.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
     protected FindStructureToRepair(): boolean {
         if (this.IsEmpty) {
             return false;
@@ -450,24 +566,62 @@ export default abstract class Minion {
         return false;
     }
 
-    protected FindFlaggedRoom(flagColor: number): boolean {
-        if (this.minion.memory.claimed) {
+    /**
+     * Finds an unoccupied flag of the specified color and sets it as the destination.
+     * 
+     * @protected
+     * @param {number} flagColor 
+     * @returns {boolean} 
+     * @memberof Minion
+     */
+    protected FindUnoccupiedRoom(flagColor: number): boolean {
+        if (this.minion.memory.flag) {
             return false;
         }
-        let occupiedFlags = _.filter(Game.creeps, creep => creep.memory.claimed).map(creep => creep.memory.claimed);
-        let flags = _.filter(Game.flags, flag => flag.color == COLOR_GREEN && occupiedFlags.indexOf(flag.name) == -1);
+        let occupiedFlags = _.filter(Game.creeps, creep => creep.memory.flag).map(creep => creep.memory.flag);
+        let flags = _.filter(Game.flags, flag => flag.color == flagColor && occupiedFlags.indexOf(flag.name) == -1);
         if (flags.length == 0) {
             return false;
         }
         let flag = flags[0];
-        this.minion.memory.claimed = flag.pos.roomName;
+        this.minion.memory.flag = flag.name;
         this.SetDestination(flag.pos.x, flag.pos.y, 1, null, flag.pos.roomName);
         this.minion.memory.state = Constants.STATE_MOVING;
         return true;
     }
 
+    /**
+     * Finds a flag of the specified color and sets it as the destination.
+     * 
+     * @protected
+     * @param {number} flagColor 
+     * @returns {boolean} 
+     * @memberof Minion
+     */
+    protected FindFlag(flagColor: number): boolean {
+        if (this.minion.memory.flag) {
+            return false;
+        }
+        let flags = _.filter(Game.flags, flag => flag.color == flagColor);
+        if (flags.length == 0) {
+            return false;
+        }
+        let flag = flags[0];
+        this.minion.memory.flag = flag.name;
+        this.SetDestination(flag.pos.x, flag.pos.y, 1, null, flag.pos.roomName);
+        this.minion.memory.state = Constants.STATE_MOVING;
+        return true;
+    }
+
+    /**
+     * Finds an unclaimed controller in the room and sets it as the destination.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
     protected FindUnclaimedController(): boolean {
-        if (!this.minion.memory.claimed || this.minion.room.controller.my) {
+        if (!this.minion.memory.flag || this.minion.room.controller.my) {
             return false;
         }
         let controller = this.minion.room.controller;
@@ -479,12 +633,33 @@ export default abstract class Minion {
         return false;
     }
 
+    /**
+     * Rallies the minion to the closest spawn
+     * 
+     * @protected
+     * @memberof Minion
+     */
     protected Rally() {
         let spawn: Spawn = this.minion.pos.findClosestByPath(FIND_MY_SPAWNS);
-        this.SetDestination(spawn.pos.x, spawn.pos.y, 1, spawn.room.name);
-        this.minion.memory.postMovingState = Constants.STATE_IDLE;
+        if (spawn) {
+            this.SetDestination(spawn.pos.x, spawn.pos.y, 1, spawn.room.name);            
+            this.minion.memory.postMovingState = Constants.STATE_IDLE;
+        } else {
+            this.minion.memory.state = Constants.STATE_IDLE;
+        }
     }
 
+    /**
+     * Sets the destination for the minion
+     * 
+     * @protected
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} range 
+     * @param {string} [id] 
+     * @param {string} [room] 
+     * @memberof Minion
+     */
     protected SetDestination(x: number, y: number, range: number, id?: string, room?: string) {
         this.minion.memory.destination_x = x;
         this.minion.memory.destination_y = y;
@@ -492,8 +667,29 @@ export default abstract class Minion {
         this.minion.memory.destination_room = room;
         this.minion.memory.range = range;
     }
-
-    private static roomsUnderAttack:  { [roomName: string]: boolean; } = {};
+   
+    /**
+     * Builds a list of parts based on the rcl of the room
+     * 
+     * @static
+     * @param {number} rcl 
+     * @param {string[]} [partsToAdd] 
+     * @returns {string[]} 
+     * @memberof Minion
+     */
+    public static GetParts(rcl: number, partsToAdd?: string[]): string[] {
+        let parts = [];
+        if (!partsToAdd) {
+            partsToAdd = this.MinimumParts;
+        }
+        for (var index = 0; index < rcl; index++) {
+            partsToAdd.forEach(element => {
+                parts.push(element);
+            });
+        }
+        return parts
+    }
+    private static MinimumParts: string[] = [WORK, CARRY, MOVE];
 
     private static UnderAttack(room: string): boolean {
         let underAttack: boolean; 
@@ -506,19 +702,5 @@ export default abstract class Minion {
         }
         return underAttack;
     }
-    
-    private static MinimumParts: string[] = [WORK, CARRY, MOVE];
-
-    static GetParts(rcl: number, partsToAdd?: string[]): string[] {
-        let parts = [];
-        if (!partsToAdd) {
-            partsToAdd = this.MinimumParts;
-        }
-        for (var index = 0; index < rcl; index++) {
-            partsToAdd.forEach(element => {
-                parts.push(element);
-            });
-        }
-        return parts
-    }
+    private static roomsUnderAttack:  { [roomName: string]: boolean; } = {};
 }

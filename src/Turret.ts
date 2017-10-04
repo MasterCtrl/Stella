@@ -1,11 +1,32 @@
+/**
+ * Turret, used to defend and repair structures in a room.
+ * 
+ * @export
+ * @class Turret
+ */
 export default class Turret {
-    turret: StructureTower;
+    private readonly turret: StructureTower;
 
+    /**
+     * Creates an instance of Turret.
+     * @param {Tower} tower 
+     * @memberof Turret
+     */
     constructor(tower: Tower) {
         this.turret = tower;
     }
 
-    Run() {
+    /**
+     * Runs the turret
+     * 
+     * @memberof Turret
+     */
+    public Run() {
+        let hostile: Creep = this.turret.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        if (hostile) {
+            this.turret.attack(hostile);
+        }
+
         let structure: Structure = this.turret.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => structure.structureType != STRUCTURE_WALL && 
                                    structure.structureType != STRUCTURE_RAMPART && 
@@ -14,11 +35,6 @@ export default class Turret {
         );
         if (structure) {
             this.turret.repair(structure);
-        }
-
-        let hostile: Creep = this.turret.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        if (hostile) {
-            this.turret.attack(hostile);
         }
     }
 }

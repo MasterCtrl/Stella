@@ -1,14 +1,33 @@
 import Minion from "./Minion";
 import * as Constants from "./Constants"
 
+/**
+ * Courier minion, used to purely to move energy from sources to fill spawns, extensions, towers, and containers.
+ * Only spawns if the rcl is >= 4 and have stopped harvester spawning.
+ * 
+ * @export
+ * @class Courier
+ * @extends {Minion}
+ */
 export default class Courier extends Minion {
-    static Type: string = "courier";
+    public static Type: string = "courier";
 
+    /**
+     * Creates an instance of Courier.
+     * @param {Creep} minion 
+     * @memberof Courier
+     */
     constructor(minion: Creep) {
         super(minion);
     }
 
-    Initialize() {
+    /**
+     * Initializes the Courier, sets state and destination.
+     * 
+     * @returns 
+     * @memberof Courier
+     */
+    public Initialize() {
         this.minion.memory.initialized = true;
         if (this.FindDroppedEnergy()) {
             return;
@@ -29,7 +48,15 @@ export default class Courier extends Minion {
         this.Rally();
     }
     
-    static GetOptions(room: Room): any {
+    /**
+     * Gets the options for the Courier minion based on the room.
+     * 
+     * @static
+     * @param {Room} room 
+     * @returns {*} 
+     * @memberof Courier
+     */
+    public static GetOptions(room: Room): any {
         let rcl = Math.floor(room.controller.level / 3);
         let count = room.find(FIND_SOURCES).length;
         return { 

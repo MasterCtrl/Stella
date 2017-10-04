@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/MasterCtrl/Stella#readme",
   "dependencies": {
+    "grunt": "^1.0.1",
+    "grunt-screeps": "^1.3.0",
     "sodb": "^1.2.5",
     "webpack": "^3.6.0"
   }
