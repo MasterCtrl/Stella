@@ -32,11 +32,11 @@ export default class Upgrader extends Minion {
             return;
         }
         
-        if (this.FindStorageSource()) {
+        if (this.FindContainerSource()) {
             return;
         }
 
-        if (this.FindContainerSource()) {
+        if (this.FindStorageSource()) {
             return;
         }
 
