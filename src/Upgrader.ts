@@ -1,14 +1,32 @@
 import Minion from "./Minion";
 import * as Constants from "./Constants"
 
+/**
+ * Upgrader minion, used to constantly upgrade the controller in the room.
+ * 
+ * @export
+ * @class Upgrader
+ * @extends {Minion}
+ */
 export default class Upgrader extends Minion {
-    static Type: string = "upgrader";
+    public static Type: string = "upgrader";
     
+    /**
+     * Creates an instance of Upgrader.
+     * @param {Creep} minion 
+     * @memberof Upgrader
+     */
     constructor(minion: Creep) {
         super(minion);
     }
 
-    Initialize() {
+    /**
+     * Initializes the Upgrader, sets state and destination.
+     * 
+     * @returns 
+     * @memberof Upgrader
+     */
+    public Initialize() {
         this.minion.memory.initialized = true;
         if (this.FindDroppedEnergy()) {
             return;
@@ -30,7 +48,15 @@ export default class Upgrader extends Minion {
         this.minion.memory.state = Constants.STATE_IDLE;
     }
 
-    static GetOptions(room: Room): any {
+    /**
+     * Gets the options for the Upgrader minion based on the room.
+     * 
+     * @static
+     * @param {Room} room 
+     * @returns {*} 
+     * @memberof Upgrader
+     */
+    public static GetOptions(room: Room): any {
         let rcl = Math.ceil(room.controller.level / 2);
         let count = room.find(FIND_SOURCES).length;
         return { 

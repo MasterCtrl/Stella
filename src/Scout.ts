@@ -1,14 +1,33 @@
 import Minion from "./Minion";
 import * as Constants from "./Constants"
 
+/**
+ * Scout minion, used to claim additional rooms.
+ * Sends 1 minion to claim a room with a COLOR_GREEN flag.
+ * 
+ * @export
+ * @class Scout
+ * @extends {Minion}
+ */
 export default class Scout extends Minion {
-    static Type: string = "scout";
+    public static Type: string = "scout";
 
+    /**
+     * Creates an instance of Scout.
+     * @param {Creep} minion 
+     * @memberof Scout
+     */
     constructor(minion: Creep) {
         super(minion);
     }
 
-    Initialize() {
+    /**
+     * Initializes the Scout, sets state and destination.
+     * 
+     * @returns 
+     * @memberof Scout
+     */
+    public Initialize() {
         this.minion.memory.initialized = true;
         if (this.FindFlaggedRoom(COLOR_GREEN)) {
             return;
@@ -19,12 +38,22 @@ export default class Scout extends Minion {
         this.Rally();
     }
 
-    static GetOptions(room: Room): any {
-        let flags = _.filter(Game.flags, flag => flag.color == COLOR_GREEN);
-        let roomsWithFlags = _.filter(flags, flag => flag.pos.roomName).map(flag => flag.pos.roomName);
+    /**
+     * Gets the options for the Scout minion based on the game state.
+     * 
+     * @static
+     * @param {Room} room 
+     * @returns {*} 
+     * @memberof Scout
+     */
+    public static GetOptions(room: Room): any {
+        let scouts = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
+        let rooms = _.filter(Game.flags, flag => flag.color == COLOR_GREEN).map(flag => flag.pos.roomName);
+        let count = rooms.length - scouts.length;
+        //TODO: could have multiple spawners try and spawn a scout at the same time meaning we get too many
         let options = { 
             Type: this.Type,
-            Count: roomsWithFlags.indexOf(room.name) != -1 ? 0 : flags.length,
+            Count: count < 0 ? 0 : count,
             Parts: [CLAIM, MOVE]
         };
         

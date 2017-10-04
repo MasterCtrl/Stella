@@ -2,27 +2,40 @@
     "tasks": [
         {
             "taskName": "Build",
-            "command": "tsc -p tsconfig.json",
             "type": "shell",
+            "command": "tsc -p tsconfig.json",
+            "group": "build",
             "problemMatcher": [
                 "$tsc"
-            ],
-            "group": "build",
+            ]
         },
         {
             "taskName": "Package",
+            "type": "shell",
             "command": "./node_modules/.bin/webpack",
             "windows": {
                 "command": ".\\node_modules\\.bin\\webpack.cmd"
             },
-            "type": "shell",
-            "problemMatcher": [],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
+            "problemMatcher": [],
             "dependsOn": [
                 "Build"
+            ]
+        },
+        {
+            "taskName": "Deploy",
+            "type": "shell",
+            "command": "./node_modules/.bin/grunt screeps",
+            "windows": {
+                "command": ".\\node_modules\\.bin\\grunt.cmd screeps"
+            },
+            "group": "build",
+            "problemMatcher": [],
+            "dependsOn": [
+                "Package"
             ]
         }
     ]

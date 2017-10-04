@@ -1,16 +1,35 @@
 import Minion from "./Minion";
 import * as Constants from "./Constants"
 
+/**
+ * Harvester minion, used to mine and fill spawns, extensions, towers, and containers.
+ * Only spawns if the rcl is < 4 at which point we switch over to miners/couriers.
+ * 
+ * @export
+ * @class Harvester
+ * @extends {Minion}
+ */
 export default class Harvester extends Minion {
-    static Type: string = "harvester";
+    public static Type: string = "harvester";
 
+    /**
+     * Creates an instance of Harvester.
+     * @param {Creep} minion 
+     * @memberof Harvester
+     */
     constructor(minion: Creep) {
         super(minion);
     }
 
-    Initialize() {
+    /**
+     * Initializes the Harvester, sets state and destination.
+     * 
+     * @returns 
+     * @memberof Harvester
+     */
+    public Initialize() {
         this.minion.memory.initialized = true;
-        if (this.FindEnergy(0)) {
+        if (this.FindSource(-1)) {
             return;
         }
 
@@ -27,7 +46,15 @@ export default class Harvester extends Minion {
         }
     }
 
-    static GetOptions(room: Room): any {
+    /**
+     * Gets the options for the Harvester minion based on the room.
+     * 
+     * @static
+     * @param {Room} room 
+     * @returns {*} 
+     * @memberof Harvester
+     */
+    public static GetOptions(room: Room): any {
         let rcl = Math.ceil(room.controller.level / 2);
         let count = room.find(FIND_SOURCES).length;
         return { 
