@@ -65,3 +65,5 @@ export default class Factory {
         return false;
     }
 }
+
+require("screeps-profiler").registerClass(Factory, 'Factory');
