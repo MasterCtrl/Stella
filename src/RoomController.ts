@@ -98,4 +98,4 @@ export default class RoomController {
     ];
 }
 
-require("screeps-profiler").registerClass(RoomController, 'RoomController');
+require("screeps-profiler").registerClass(RoomController, "RoomController");

@@ -78,4 +78,4 @@ export default class Builder extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(Builder, 'Builder');
+require("screeps-profiler").registerClass(Builder, "Builder");

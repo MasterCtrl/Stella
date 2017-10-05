@@ -77,4 +77,4 @@ export default class Seeder extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(Seeder, 'Seeder');
+require("screeps-profiler").registerClass(Seeder, "Seeder");

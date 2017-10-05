@@ -67,4 +67,4 @@ export default class Upgrader extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(Upgrader, 'Upgrader');
+require("screeps-profiler").registerClass(Upgrader, "Upgrader");

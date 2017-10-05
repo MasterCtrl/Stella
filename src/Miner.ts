@@ -54,4 +54,4 @@ export default class Miner extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(Miner, 'Miner');
+require("screeps-profiler").registerClass(Miner, "Miner");
