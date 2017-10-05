@@ -640,6 +640,26 @@ export default abstract class Minion {
     }
 
     /**
+     * Finds the closest link to put energy into.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
+    protected FindLink(): boolean {
+        if (this.IsEmpty) {
+            return false;
+        }
+        let link: Link = this.minion.pos.findClosestByRange(FIND_MY_STRUCTURES, {filter : link => link.structureType == STRUCTURE_LINK});
+        if (link && link.energy < link.energyCapacity) {
+            this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
+            this.SetDestination(link.pos.x, link.pos.y, 1, link.id, link.room.name);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Rallies the minion to the closest spawn
      * 
      * @protected
