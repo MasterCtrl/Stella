@@ -10,8 +10,8 @@ import * as Constants from "./Constants"
  * @extends {Minion}
  */
 export default class Seeder extends Minion {
-    public static Type: string = "seeder";
-
+    public static Type: string = "Seeder";
+    
     /**
      * Creates an instance of Seeder.
      * @param {Creep} minion 

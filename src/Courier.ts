@@ -10,7 +10,7 @@ import * as Constants from "./Constants"
  * @extends {Minion}
  */
 export default class Courier extends Minion {
-    public static Type: string = "courier";
+    public static Type: string = "Courier";
 
     /**
      * Creates an instance of Courier.

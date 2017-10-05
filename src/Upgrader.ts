@@ -9,7 +9,7 @@ import * as Constants from "./Constants"
  * @extends {Minion}
  */
 export default class Upgrader extends Minion {
-    public static Type: string = "upgrader";
+    public static Type: string = "Upgrader";
     
     /**
      * Creates an instance of Upgrader.

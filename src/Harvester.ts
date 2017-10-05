@@ -10,8 +10,8 @@ import * as Constants from "./Constants"
  * @extends {Minion}
  */
 export default class Harvester extends Minion {
-    public static Type: string = "harvester";
-
+    public static Type: string = "Harvester";
+    
     /**
      * Creates an instance of Harvester.
      * @param {Creep} minion 

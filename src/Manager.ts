@@ -30,7 +30,6 @@ export default class Manager {
         for(let name in inMemory) {
             if(!inGame[name]) {
                 delete inMemory[name];
-                console.log('RIP:', name);
             }
         }
     }
@@ -64,27 +63,15 @@ export default class Manager {
             turret.Run();
         }
     }
-    
+
     private static ToMinion(creep: Creep): Minion {
-        switch (creep.memory.type) {
-            case Harvester.Type:
-                return new Harvester(creep);
-            case Miner.Type:
-                return new Miner(creep);
-            case Courier.Type:
-                return new Courier(creep);
-            case Upgrader.Type:
-                return new Upgrader(creep);
-            case Builder.Type:
-                return new Builder(creep);
-            case Scout.Type:
-                return new Scout(creep);
-            case Seeder.Type:
-                return new Seeder(creep);
-            default:
-                creep.say("Im not a minion dummy!");
-                console.log(creep.name + " is not a minion and has nothing to do.");
-                return null;
+        var type = require("./" + creep.memory.type);
+        if (type) {
+            return new type.default(creep);
+        } else {
+            creep.say("Invalid");
+            console.log(creep.name + " is not a minion and has nothing to do.");
+            return null;
         }
     }
 }
