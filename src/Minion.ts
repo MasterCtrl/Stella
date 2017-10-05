@@ -147,6 +147,12 @@ export default abstract class Minion {
             return;
         }
         let storage: any = Game.getObjectById(this.minion.memory.destination_id);
+        if (!storage) {
+            this.minion.memory.state = transitionState;
+            this.minion.memory.initialized = false;
+            this.Run();
+            return;
+        }
         if (storage.energy >= storage.energyCapacity) {
             this.minion.memory.state = transitionState;
             this.minion.memory.initialized = false;
@@ -704,3 +710,5 @@ export default abstract class Minion {
     }
     private static roomsUnderAttack:  { [roomName: string]: boolean; } = {};
 }
+
+require("screeps-profiler").registerClass(Minion, 'Minion');

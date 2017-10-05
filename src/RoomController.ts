@@ -97,3 +97,5 @@ export default class RoomController {
         (room: Room): any => Seeder.GetOptions(room)
     ];
 }
+
+require("screeps-profiler").registerClass(RoomController, 'RoomController');

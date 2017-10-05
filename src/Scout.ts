@@ -60,3 +60,5 @@ export default class Scout extends Minion {
         return options;
     }
 }
+
+require("screeps-profiler").registerClass(Scout, 'Scout');

@@ -69,3 +69,5 @@ export default class Courier extends Minion {
     
     private static CourierParts: string[] = [CARRY, MOVE, CARRY, MOVE];   
 }
+
+require("screeps-profiler").registerClass(Courier, 'Courier');

@@ -88,3 +88,5 @@ export default class Manager {
         }
     }
 }
+
+require("screeps-profiler").registerClass(Manager, 'Manager');
