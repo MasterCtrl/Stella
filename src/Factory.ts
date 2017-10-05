@@ -59,11 +59,11 @@ export default class Factory {
         let creepsOfType = _.filter(creeps, c => c.memory.type == type);
         if (creepsOfType.length < count && spawner.canCreateCreep(parts, undefined) == OK) {
             let name = spawner.createCreep(parts, undefined, {type: type});
-            console.log(spawner.room.name + ': Spawning new ' + type + ': ' + name);
+            console.log(spawner.room.name + ": Spawning new " + type + ": " + name);
             return true;
         }
         return false;
     }
 }
 
-require("screeps-profiler").registerClass(Factory, 'Factory');
+require("screeps-profiler").registerClass(Factory, "Factory");

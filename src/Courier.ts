@@ -10,7 +10,7 @@ import * as Constants from "./Constants"
  * @extends {Minion}
  */
 export default class Courier extends Minion {
-    public static Type: string = "courier";
+    public static Type: string = "Courier";
 
     /**
      * Creates an instance of Courier.
@@ -70,4 +70,4 @@ export default class Courier extends Minion {
     private static CourierParts: string[] = [CARRY, MOVE, CARRY, MOVE];   
 }
 
-require("screeps-profiler").registerClass(Courier, 'Courier');
+require("screeps-profiler").registerClass(Courier, "Courier");

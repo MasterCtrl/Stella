@@ -9,8 +9,8 @@ import * as Constants from "./Constants"
  * @extends {Minion}
  */
 export default class Builder extends Minion {
-    static Type: string = "builder";
-
+    public static Type: string = "Builder";
+    
     /**
      * Creates an instance of Builder.
      * @param {Creep} minion 
@@ -78,4 +78,4 @@ export default class Builder extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(Builder, 'Builder');
+require("screeps-profiler").registerClass(Builder, "Builder");

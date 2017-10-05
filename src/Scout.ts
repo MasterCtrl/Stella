@@ -10,8 +10,8 @@ import * as Constants from "./Constants"
  * @extends {Minion}
  */
 export default class Scout extends Minion {
-    public static Type: string = "scout";
-
+    public static Type: string = "Scout";
+    
     /**
      * Creates an instance of Scout.
      * @param {Creep} minion 
@@ -61,4 +61,4 @@ export default class Scout extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(Scout, 'Scout');
+require("screeps-profiler").registerClass(Scout, "Scout");

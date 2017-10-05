@@ -711,4 +711,4 @@ export default abstract class Minion {
     private static roomsUnderAttack:  { [roomName: string]: boolean; } = {};
 }
 
-require("screeps-profiler").registerClass(Minion, 'Minion');
+require("screeps-profiler").registerClass(Minion, "Minion");
