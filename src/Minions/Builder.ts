@@ -1,5 +1,5 @@
+import * as Constants from "../Constants"
 import Minion from "./Minion";
-import * as Constants from "./Constants"
 
 /**
  * Builder minion, used to build and repair structures.

@@ -1,6 +1,4 @@
-import Minion from "./Minion";
-import Configuration from "./Configuration"
-type SpawnHash = {[spawnName: string]: Spawn;};
+import Minion from "./Minions/Minion";
 
 /**
  * Factory, used to spawn minions from a spawner
@@ -19,9 +17,9 @@ export default class Factory {
      * @memberof Factory
      */
     public static Spawn(spawners: Spawn[], creeps: Creep[], spawnOptions?: any[]){
-        for (let key in spawners) {
-            Factory.SpawnMinions(spawners[key], creeps, spawnOptions);
-        }
+        spawners.forEach(s => {
+            Factory.SpawnMinions(s, creeps, spawnOptions);
+        });
     }
 
     /**

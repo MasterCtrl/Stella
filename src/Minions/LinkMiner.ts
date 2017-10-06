@@ -1,5 +1,5 @@
+import * as Constants from "../Constants"
 import Minion from "./Minion";
-import * as Constants from "./Constants"
 
 /**
  * LinkMiner minion, used to purely to mine a source as efficiently as possible and deposit into a link.
@@ -33,7 +33,7 @@ export default class LinkMiner extends Minion {
             return;
         }
 
-        if (this.FindLink()) {
+        if (this.FindLinkTarget()) {
             return;
         }
         
@@ -51,8 +51,7 @@ export default class LinkMiner extends Minion {
      */
     public static GetOptions(room: Room): any {
         let count = room.find(FIND_SOURCES).length;
-        let links = room.find(FIND_MY_STRUCTURES, {filter : link => link.structureType == STRUCTURE_LINK}).length;
-        if (links <= count){
+        if (!Minion.AreWeLinkMining(room)){
             count = 0;
         }
         return { 

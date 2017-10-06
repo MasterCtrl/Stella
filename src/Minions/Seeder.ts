@@ -1,5 +1,5 @@
+import * as Constants from "../Constants"
 import Minion from "./Minion";
-import * as Constants from "./Constants"
 
 /**
  * Seeder minion, used to provide support to another room.

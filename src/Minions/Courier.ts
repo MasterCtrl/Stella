@@ -1,5 +1,5 @@
+import * as Constants from "../Constants"
 import Minion from "./Minion";
-import * as Constants from "./Constants"
 
 /**
  * Courier minion, used to purely to move energy from sources to fill spawns, extensions, towers, and containers.
@@ -34,6 +34,10 @@ export default class Courier extends Minion {
         }
 
         if (this.FindContainerSource()) {
+            return;
+        }
+
+        if (this.FindStorageSource()) {
             return;
         }
 

@@ -1,7 +1,8 @@
+import * as Constants from "../Constants"
 import Minion from "./Minion"
 
 /**
- * Filler minion, used to purely to move energy from links and fill containers.
+ * Filler minion, used to purely to move energy from links and fill storage.
  * Only spawns if there is a link network in the room.
  * 
  * @export
@@ -28,15 +29,16 @@ export default class Filler extends Minion {
      */
     public Initialize() {
         this.minion.memory.initialized = true;
-        if (this.FindLink()) {
+        if (this.FindLinkSource()) {
             return;
         }
 
-        if (this.FindContainerTarget()) {
+        if (this.FindStorageTarget()) {
             return;
         }
-
-        this.Rally();
+        
+        this.minion.memory.initialized = false;
+        this.minion.memory.state = Constants.STATE_IDLE;
     }
 
     /**
@@ -48,11 +50,9 @@ export default class Filler extends Minion {
      * @memberof Filler
      */
     public static GetOptions(room: Room): any {
-        let sources = room.find(FIND_SOURCES).length;
-        let links = room.find(FIND_MY_STRUCTURES, {filter : link => link.structureType == STRUCTURE_LINK}).length;
         return { 
             Type: this.Type,
-            Count: links <= sources ? 0 : 1,
+            Count: Minion.AreWeLinkMining(room) ? 1 : 0,
             Parts: [CARRY, CARRY, CARRY, CARRY, MOVE]
         };
     }

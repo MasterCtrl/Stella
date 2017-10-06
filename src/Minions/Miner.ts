@@ -1,5 +1,5 @@
+import * as Constants from "../Constants"
 import Minion from "./Minion";
-import * as Constants from "./Constants"
 
 /**
  * Miner minion, used to purely to mine a source as efficiently as possible.
@@ -46,9 +46,12 @@ export default class Miner extends Minion {
      */
     public static GetOptions(room: Room): any {
         let count = room.find(FIND_SOURCES).length;
+        if (Minion.AreWeLinkMining(room) || room.controller.level < 4 ) {
+            count = 0;
+        }        
         return { 
             Type: this.Type,
-            Count: room.controller.level < 4 ? 0 : count,
+            Count: count,
             Parts: [WORK, WORK, WORK, WORK, WORK, MOVE]
         };
     }
