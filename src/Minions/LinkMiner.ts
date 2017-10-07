@@ -13,9 +13,9 @@ export default class LinkMiner extends Minion {
     public static Type: string = "LinkMiner";
 
     /**
-     * Creates an instance of Miner.
+     * Creates an instance of LinkMiner.
      * @param {Creep} minion 
-     * @memberof Miner
+     * @memberof LinkMiner
      */
     constructor(minion: Creep) {
         super(minion);
@@ -57,7 +57,7 @@ export default class LinkMiner extends Minion {
         return { 
             Type: this.Type,
             Count: count,
-            Parts: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, MOVE]
+            Parts: [WORK, WORK, WORK, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, MOVE]
         };
     }
 }

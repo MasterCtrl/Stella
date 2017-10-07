@@ -30,15 +30,15 @@ export default class Link {
     }
 
     /**
-     * Gets if this link is a source
+     * Gets if this link is a target
      * 
      * @readonly
      * @protected
      * @type {boolean}
      * @memberof Link
      */
-    public get IsSource(): boolean {
-        return this.link.pos.findInRange(FIND_SOURCES, 3).length > 0;
+    public get IsTarget(): boolean {
+        return this.link.pos.findInRange(FIND_MY_STRUCTURES, 3, { filter: storage => storage.structureType == STRUCTURE_STORAGE }).length > 0;
     }
 
     /**
@@ -47,23 +47,18 @@ export default class Link {
      * @memberof Link
      */
     public Run() {
-        if (this.IsOnCooldown) {
+        if (this.IsOnCooldown || this.IsTarget || this.link.energy / this.link.energyCapacity < 0.5) {
+            return;
+        }
+        
+        let target: StructureLink = this.link.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter : (link: StructureLink) => link.structureType == STRUCTURE_LINK && link.id != this.link.id
+        });
+        if (!target || target.energy == target.energyCapacity) {
             return;
         }
 
-        if (this.IsSource) {
-            let percentage = this.link.energy / this.link.energyCapacity;
-            if (percentage < 0.5) {
-                return;
-            }
-            let target: StructureLink = this.link.pos.findClosestByRange(FIND_STRUCTURES, {
-                filter : (link: StructureLink) => link.structureType == STRUCTURE_LINK && link.id != this.link.id
-            });
-            if (!target || target.energy == target.energyCapacity) {
-                return;
-            }
-            this.TransferToTarget(target, target.energyCapacity - target.energy);
-        }
+        this.TransferToTarget(target, target.energyCapacity - target.energy);
     }
 
     private TransferToTarget(target: StructureLink | Creep, targetFreeSpace: number) {
