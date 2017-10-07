@@ -40,6 +40,7 @@ export default abstract class Minion {
             this.Initialize();
         }
 
+
         switch (this.minion.memory.state) {
             case Constants.STATE_SPAWNING:
                 this.RunSpawning(Constants.STATE_MOVING);
@@ -108,6 +109,9 @@ export default abstract class Minion {
         if (this.minion.pos.getRangeTo(roomPosition) <= this.minion.memory.range) {
             this.minion.memory.state = transitionState;
             this.Run();
+            return;
+        }
+        if (this.minion.fatigue > 0) {
             return;
         }
         this.minion.moveTo(roomPosition);
