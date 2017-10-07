@@ -1,5 +1,5 @@
+import * as Constants from "../Constants"
 import Minion from "./Minion";
-import * as Constants from "./Constants"
 
 /**
  * Scout minion, used to claim additional rooms.

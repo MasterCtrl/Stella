@@ -1,30 +1,30 @@
+import * as Constants from "../Constants"
 import Minion from "./Minion";
-import * as Constants from "./Constants"
 
 /**
- * Upgrader minion, used to constantly upgrade the controller in the room.
+ * Builder minion, used to build and repair structures.
  * 
  * @export
- * @class Upgrader
+ * @class Builder
  * @extends {Minion}
  */
-export default class Upgrader extends Minion {
-    public static Type: string = "Upgrader";
+export default class Builder extends Minion {
+    public static Type: string = "Builder";
     
     /**
-     * Creates an instance of Upgrader.
+     * Creates an instance of Builder.
      * @param {Creep} minion 
-     * @memberof Upgrader
+     * @memberof Builder
      */
     constructor(minion: Creep) {
         super(minion);
     }
 
     /**
-     * Initializes the Upgrader, sets state and destination.
+     * Initializes the Builder, sets state and destination.
      * 
      * @returns 
-     * @memberof Upgrader
+     * @memberof Builder
      */
     public Initialize() {
         this.minion.memory.initialized = true;
@@ -40,21 +40,32 @@ export default class Upgrader extends Minion {
             return;
         }
 
+        if (this.FindSource(-1)) {
+            return;
+        }
+        
+        if (this.FindConstructionSite()) {
+            return;
+        }
+
+        if(this.FindStructureToRepair()){
+            return;
+        }
+
         if (this.FindController()) {
             return;
         }
 
-        this.minion.memory.initialized = false;
-        this.minion.memory.state = Constants.STATE_IDLE;
+        this.Rally();
     }
 
     /**
-     * Gets the options for the Upgrader minion based on the room.
+     * Gets the options for the Builder minion based on the room.
      * 
      * @static
      * @param {Room} room 
      * @returns {*} 
-     * @memberof Upgrader
+     * @memberof Builder
      */
     public static GetOptions(room: Room): any {
         let rcl = Math.ceil(room.controller.level / 3);
@@ -67,4 +78,4 @@ export default class Upgrader extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(Upgrader, "Upgrader");
+require("screeps-profiler").registerClass(Builder, "Builder");

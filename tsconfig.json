@@ -4,6 +4,8 @@
         "module": "commonjs",
         "sourceMap": false,
         "baseUrl": "./src/",
-        "outDir": "./lib"
+        "outDir": "./lib",
+        "listEmittedFiles": true,
+        "diagnostics": true
     }
 }

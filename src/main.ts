@@ -1,12 +1,12 @@
-const Profiler = require("screeps-profiler");
-import Manager from "./Manager";
-import RoomController from "./RoomController";
+import MinionController from "./Controllers/MinionController";
+import RoomController from "./Controllers/RoomController";
 
+const Profiler = require("screeps-profiler");
 Profiler.enable();
 
 export const loop = function() {
     Profiler.wrap(function() {
-        Manager.Sync(Memory.creeps, Game.creeps);
+        MinionController.Sync(Memory.creeps, Game.creeps);
         RoomController.RunRooms(Game.rooms);    
     });
 }

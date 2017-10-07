@@ -1,22 +1,15 @@
-import Minion from "./Minion";
-import Turret from "./Turret";
-import Harvester from "./Harvester";
-import Upgrader from "./Upgrader";
-import Builder from "./Builder";
-import Miner from "./Miner";
-import Courier from "./Courier";
-import Scout from "./Scout";
-import Seeder from "./Seeder";
+import Link from "../Structures/Link"
+import Minion from "../Minions/Minion";
+import Turret from "../Structures/Turret";
 type CreepHash = {[creepName: string]: Creep;};
-type StructureHash = {[id: string]: Structure;};
 
 /**
- * Manager, used to run a collection of minions.
+ * MinionController, used to run a collection of minions.
  * 
  * @export
- * @class Manager
+ * @class MinionController
  */
-export default class Manager {
+export default class MinionController {
 
     /**
      * Syncs the in memory creep cache with the actual creeps.
@@ -24,7 +17,7 @@ export default class Manager {
      * @static
      * @param {CreepHash} inMemory 
      * @param {CreepHash} inGame 
-     * @memberof Manager
+     * @memberof MinionController
      */
     public static Sync(inMemory: CreepHash, inGame: CreepHash) {
         for(let name in inMemory) {
@@ -39,15 +32,15 @@ export default class Manager {
      * 
      * @static
      * @param {Creep[]} creeps 
-     * @memberof Manager
+     * @memberof MinionController
      */
     public static RunCreeps(creeps: Creep[]) {
-        for (let i in creeps) {
-            let minion = this.ToMinion(creeps[i]);
+        creeps.forEach(c => {
+            let minion = this.ToMinion(c);
             if (minion) {
                 minion.Run();
-            }
-        }
+            }           
+        });
     }
 
     /**
@@ -55,25 +48,39 @@ export default class Manager {
      * 
      * @static
      * @param {Tower[]} towers 
-     * @memberof Manager
+     * @memberof MinionController
      */
     public static RunTowers(towers: Tower[]) {
-        for (let i in towers) {
-            let turret = new Turret(towers[i]);
-            turret.Run();
-        }
+        towers.forEach(t => {
+            let turret = new Turret(t);
+            turret.Run();            
+        });
+    }
+
+    /**
+     * Runs each of the links in the specified collection.
+     * 
+     * @static
+     * @param {StructureLink[]} links 
+     * @memberof MinionController
+     */
+    public static RunLinks(links: StructureLink[]) {
+        links.forEach(l => {
+            let link = new Link(l);
+            link.Run();
+        });
     }
 
     private static ToMinion(creep: Creep): Minion {
-        var type = require("./" + creep.memory.type);
+        var type = require("../Minions/" + creep.memory.type);
         if (type) {
             return new type.default(creep);
         } else {
-            creep.say("Invalid");
+            creep.say("❗");
             console.log(creep.name + " is not a minion and has nothing to do.");
             return null;
         }
     }
 }
 
-require("screeps-profiler").registerClass(Manager, "Manager");
+require("screeps-profiler").registerClass(MinionController, "MinionController");

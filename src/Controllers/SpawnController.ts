@@ -1,14 +1,12 @@
-import Minion from "./Minion";
-import Configuration from "./Configuration"
-type SpawnHash = {[spawnName: string]: Spawn;};
+import Minion from "../Minions/Minion";
 
 /**
- * Factory, used to spawn minions from a spawner
+ * SpawnController, used to spawn minions from a spawner
  * 
  * @export
- * @class Factory
+ * @class SpawnController
  */
-export default class Factory {
+export default class SpawnController {
     /**
      * Spawns minions from each of the specified Spawners.
      * 
@@ -16,12 +14,12 @@ export default class Factory {
      * @param {Spawn[]} spawners 
      * @param {Creep[]} creeps 
      * @param {any[]} [spawnOptions] 
-     * @memberof Factory
+     * @memberof SpawnController
      */
     public static Spawn(spawners: Spawn[], creeps: Creep[], spawnOptions?: any[]){
-        for (let key in spawners) {
-            Factory.SpawnMinions(spawners[key], creeps, spawnOptions);
-        }
+        spawners.forEach(s => {
+            SpawnController.SpawnMinions(s, creeps, spawnOptions);
+        });
     }
 
     /**
@@ -31,10 +29,13 @@ export default class Factory {
      * @param {Spawn} spawner 
      * @param {Creep[]} creeps 
      * @param {any[]} spawnOptions 
-     * @memberof Factory
+     * @memberof SpawnController
      */
     public static SpawnMinions(spawner: Spawn, creeps: Creep[], spawnOptions: any[]) {
         for (var index in spawnOptions) {
+            if (!spawner.isActive() || spawner.spawning) {
+                return;
+            }
             var options = spawnOptions[index];
             if (this.SpawnMinion(spawner, creeps, options.Type, options.Count, options.Parts)) {
                 break;
@@ -53,7 +54,7 @@ export default class Factory {
      * @param {number} count 
      * @param {string[]} parts 
      * @returns {boolean} 
-     * @memberof Factory
+     * @memberof SpawnController
      */
     private static SpawnMinion(spawner: Spawn, creeps: Creep[], type: string, count: number, parts: string[]): boolean {
         let creepsOfType = _.filter(creeps, c => c.memory.type == type);
@@ -66,4 +67,4 @@ export default class Factory {
     }
 }
 
-require("screeps-profiler").registerClass(Factory, "Factory");
+require("screeps-profiler").registerClass(SpawnController, "SpawnController");

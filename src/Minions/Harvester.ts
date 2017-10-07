@@ -1,5 +1,5 @@
+import * as Constants from "../Constants"
 import Minion from "./Minion";
-import * as Constants from "./Constants"
 
 /**
  * Harvester minion, used to mine and fill spawns, extensions, towers, and containers.

@@ -1,30 +1,30 @@
+import * as Constants from "../Constants"
 import Minion from "./Minion";
-import * as Constants from "./Constants"
 
 /**
- * Builder minion, used to build and repair structures.
+ * Upgrader minion, used to constantly upgrade the controller in the room.
  * 
  * @export
- * @class Builder
+ * @class Upgrader
  * @extends {Minion}
  */
-export default class Builder extends Minion {
-    public static Type: string = "Builder";
+export default class Upgrader extends Minion {
+    public static Type: string = "Upgrader";
     
     /**
-     * Creates an instance of Builder.
+     * Creates an instance of Upgrader.
      * @param {Creep} minion 
-     * @memberof Builder
+     * @memberof Upgrader
      */
     constructor(minion: Creep) {
         super(minion);
     }
 
     /**
-     * Initializes the Builder, sets state and destination.
+     * Initializes the Upgrader, sets state and destination.
      * 
      * @returns 
-     * @memberof Builder
+     * @memberof Upgrader
      */
     public Initialize() {
         this.minion.memory.initialized = true;
@@ -40,42 +40,31 @@ export default class Builder extends Minion {
             return;
         }
 
-        if (this.FindSource(-1)) {
-            return;
-        }
-        
-        if (this.FindConstructionSite()) {
-            return;
-        }
-
-        if(this.FindStructureToRepair()){
-            return;
-        }
-
         if (this.FindController()) {
             return;
         }
 
-        this.Rally();
+        this.minion.memory.initialized = false;
+        this.minion.memory.state = Constants.STATE_IDLE;
     }
 
     /**
-     * Gets the options for the Builder minion based on the room.
+     * Gets the options for the Upgrader minion based on the room.
      * 
      * @static
      * @param {Room} room 
      * @returns {*} 
-     * @memberof Builder
+     * @memberof Upgrader
      */
     public static GetOptions(room: Room): any {
         let rcl = Math.ceil(room.controller.level / 3);
         let count = room.find(FIND_SOURCES).length;
         return { 
             Type: this.Type,
-            Count: count + 1,
+            Count: count,
             Parts: Minion.GetParts(rcl)
         };
     }
 }
 
-require("screeps-profiler").registerClass(Builder, "Builder");
+require("screeps-profiler").registerClass(Upgrader, "Upgrader");

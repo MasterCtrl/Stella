@@ -1,13 +1,14 @@
-import Factory from "./Factory";
-import Manager from "./Manager";
-import Harvester from "./Harvester";
-import Upgrader from "./Upgrader";
-import Builder from "./Builder";
-import Miner from "./Miner";
-import Courier from "./Courier";
-import Scout from "./Scout";
-import Seeder from "./Seeder";
-type RoomHash = {[roomName: string]: Room;};
+import Builder from "../Minions/Builder";
+import Courier from "../Minions/Courier";
+import Filler from "../Minions/Filler"
+import Harvester from "../Minions/Harvester";
+import LinkMiner from "../Minions/LinkMiner"
+import Miner from "../Minions/Miner";
+import MinionController from "./MinionController";
+import Scout from "../Minions/Scout";
+import Seeder from "../Minions/Seeder";
+import SpawnController from "./SpawnController";
+import Upgrader from "../Minions/Upgrader";
 
 /**
  * RoomController, used to run all aspects of a room.
@@ -37,10 +38,11 @@ export default class RoomController {
         let spawnOptions = this.GetSpawnOptions();
         let creeps: Creep[] = this.room.find(FIND_MY_CREEPS);
         if (spawnOptions) {
-            Factory.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
+            SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
         }
-        Manager.RunCreeps(creeps);
-        Manager.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }))
+        MinionController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));
+        MinionController.RunCreeps(creeps);
+        MinionController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));
     }
 
     /**
@@ -51,9 +53,9 @@ export default class RoomController {
      */
     public GetSpawnOptions(): any[] {
         let options = [];
-        for(let i in RoomController.OptionFuncs) {
-            this.AddOptions(options, RoomController.OptionFuncs[i]);            
-        }
+        RoomController.OptionFuncs.forEach(f =>{
+            this.AddOptions(options, f);
+        });
         return options;
     }
 
@@ -68,10 +70,10 @@ export default class RoomController {
      * Runs each of the rooms in the specified room hash.
      * 
      * @static
-     * @param {RoomHash} rooms 
+     * @param {{[roomName: string]: Room;}} rooms 
      * @memberof RoomController
      */
-    public static RunRooms(rooms: RoomHash) {
+    public static RunRooms(rooms: {[roomName: string]: Room;}) {
         for (let key in rooms) {
             if (!rooms.hasOwnProperty(key)) {
                 continue;
@@ -89,8 +91,10 @@ export default class RoomController {
      */
     public static OptionFuncs = [
         (room: Room): any => Harvester.GetOptions(room),
-        (room: Room): any => Courier.GetOptions(room),
         (room: Room): any => Miner.GetOptions(room),
+        (room: Room): any => LinkMiner.GetOptions(room),
+        (room: Room): any => Filler.GetOptions(room),
+        (room: Room): any => Courier.GetOptions(room),
         (room: Room): any => Builder.GetOptions(room),
         (room: Room): any => Upgrader.GetOptions(room),
         (room: Room): any => Scout.GetOptions(room),
