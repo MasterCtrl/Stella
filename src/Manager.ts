@@ -76,7 +76,7 @@ export default class Manager {
         if (type) {
             return new type.default(creep);
         } else {
-            creep.say("Invalid");
+            creep.say("❗");
             console.log(creep.name + " is not a minion and has nothing to do.");
             return null;
         }

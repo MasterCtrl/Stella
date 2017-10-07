@@ -61,7 +61,7 @@ export default class Upgrader extends Minion {
         let count = room.find(FIND_SOURCES).length;
         return { 
             Type: this.Type,
-            Count: count + 1,
+            Count: count,
             Parts: Minion.GetParts(rcl)
         };
     }
