@@ -107,6 +107,7 @@ export default abstract class Minion {
         );
         if (this.minion.pos.getRangeTo(roomPosition) <= this.minion.memory.range) {
             this.minion.memory.state = transitionState;
+            this.Run();
             return;
         }
         this.minion.moveTo(roomPosition);
@@ -116,6 +117,7 @@ export default abstract class Minion {
         if (this.IsFull) {
             this.minion.memory.state = transitionState;
             this.minion.memory.initialized = false;
+            this.Run();
             return;
         }
         let source: Source = Game.getObjectById(this.minion.memory.source_id);
@@ -125,6 +127,7 @@ export default abstract class Minion {
         if (source.energy == 0) {
             this.minion.memory.state = transitionState;
             this.minion.memory.initialized = false;
+            this.Run();
             return;
         }
         this.minion.harvest(source);
