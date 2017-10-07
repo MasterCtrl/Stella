@@ -1,5 +1,5 @@
 ﻿import Configuration from "../Configuration"
-import * as Constants from "../Constants"
+import Constants from "../Constants"
 
 /**
  * Minion base class, holds all the common logic for all the minion types.

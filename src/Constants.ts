@@ -1,12 +1,20 @@
-export const STATE_SUICIDE: number = -1;
-export const STATE_SPAWNING: number = 0;
-export const STATE_MOVING: number = 1;
-export const STATE_HARVESTING: number = 2;
-export const STATE_PICKUP: number = 3;
-export const STATE_TRANSFERRING: number = 4;
-export const STATE_UPGRADING: number = 5;
-export const STATE_BUILDING: number = 6;
-export const STATE_REPAIRING: number = 7;
-export const STATE_WITHDRAWING: number = 8;
-export const STATE_IDLE: number = 9;
-export const STATE_CLAIM: number = 10;
+/**
+ * Constants file
+ * 
+ * @export
+ * @class Constants
+ */
+export default class Constants {
+    static STATE_SUICIDE: number = -1;
+    static STATE_SPAWNING: number = 0;
+    static STATE_MOVING: number = 1;
+    static STATE_HARVESTING: number = 2;
+    static STATE_PICKUP: number = 3;
+    static STATE_TRANSFERRING: number = 4;
+    static STATE_UPGRADING: number = 5;
+    static STATE_BUILDING: number = 6;
+    static STATE_REPAIRING: number = 7;
+    static STATE_WITHDRAWING: number = 8;
+    static STATE_IDLE: number = 9;
+    static STATE_CLAIM: number = 10;
+}
