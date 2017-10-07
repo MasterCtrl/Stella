@@ -33,6 +33,9 @@ export default class SpawnController {
      */
     public static SpawnMinions(spawner: Spawn, creeps: Creep[], spawnOptions: any[]) {
         for (var index in spawnOptions) {
+            if (!spawner.isActive() || spawner.spawning) {
+                return;
+            }
             var options = spawnOptions[index];
             if (this.SpawnMinion(spawner, creeps, options.Type, options.Count, options.Parts)) {
                 break;

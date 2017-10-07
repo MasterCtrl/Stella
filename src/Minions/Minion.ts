@@ -262,7 +262,7 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected get IsFull(): boolean {
-        return !this.IsEmpty && this.minion.carry.energy >= this.minion.carryCapacity;
+        return !this.IsEmpty && this.minion.getActiveBodyparts(WORK) * 2 >= this.minion.carryCapacity - this.minion.carry.energy;
     }
 
     /**
@@ -561,17 +561,18 @@ export default abstract class Minion {
             return true;                
         } 
 
-        let rampart: Structure = this.minion.pos.findClosestByRange(FIND_STRUCTURES, { 
-            filter: structure => structure.structureType == STRUCTURE_RAMPART && structure.hits < Configuration.RampartHp
+        let ramparts: StructureRampart[] = this.minion.room.find(FIND_STRUCTURES, { 
+            filter: rampart => rampart.structureType == STRUCTURE_RAMPART && rampart.hits < Configuration.RampartHp
         });
-        if (rampart) {
+        if (ramparts.length > 0) {
+            let rampart: StructureRampart = ramparts.length != 1 ? _.sortBy(ramparts, r => r.hits)[0] : ramparts[0];                
             this.SetDestination(rampart.pos.x, rampart.pos.y, 3, rampart.id, rampart.room.name);
             this.minion.memory.postMovingState = Constants.STATE_REPAIRING;
             return true;                
         }
 
-        let wall: Structure = this.minion.pos.findClosestByRange(FIND_STRUCTURES, { 
-            filter: structure => structure.structureType == STRUCTURE_WALL && structure.hits < Configuration.WallHp
+        let wall: StructureWall = this.minion.pos.findClosestByRange(FIND_STRUCTURES, { 
+            filter: wall => wall.structureType == STRUCTURE_WALL && wall.hits < Configuration.WallHp
         });
         if (wall) {
             this.SetDestination(wall.pos.x, wall.pos.y, 3, wall.id, wall.room.name);
