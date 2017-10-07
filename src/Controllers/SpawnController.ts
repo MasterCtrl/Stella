@@ -1,12 +1,12 @@
-import Minion from "./Minions/Minion";
+import Minion from "../Minions/Minion";
 
 /**
- * Factory, used to spawn minions from a spawner
+ * SpawnController, used to spawn minions from a spawner
  * 
  * @export
- * @class Factory
+ * @class SpawnController
  */
-export default class Factory {
+export default class SpawnController {
     /**
      * Spawns minions from each of the specified Spawners.
      * 
@@ -14,11 +14,11 @@ export default class Factory {
      * @param {Spawn[]} spawners 
      * @param {Creep[]} creeps 
      * @param {any[]} [spawnOptions] 
-     * @memberof Factory
+     * @memberof SpawnController
      */
     public static Spawn(spawners: Spawn[], creeps: Creep[], spawnOptions?: any[]){
         spawners.forEach(s => {
-            Factory.SpawnMinions(s, creeps, spawnOptions);
+            SpawnController.SpawnMinions(s, creeps, spawnOptions);
         });
     }
 
@@ -29,7 +29,7 @@ export default class Factory {
      * @param {Spawn} spawner 
      * @param {Creep[]} creeps 
      * @param {any[]} spawnOptions 
-     * @memberof Factory
+     * @memberof SpawnController
      */
     public static SpawnMinions(spawner: Spawn, creeps: Creep[], spawnOptions: any[]) {
         for (var index in spawnOptions) {
@@ -51,7 +51,7 @@ export default class Factory {
      * @param {number} count 
      * @param {string[]} parts 
      * @returns {boolean} 
-     * @memberof Factory
+     * @memberof SpawnController
      */
     private static SpawnMinion(spawner: Spawn, creeps: Creep[], type: string, count: number, parts: string[]): boolean {
         let creepsOfType = _.filter(creeps, c => c.memory.type == type);
@@ -64,4 +64,4 @@ export default class Factory {
     }
 }
 
-require("screeps-profiler").registerClass(Factory, "Factory");
+require("screeps-profiler").registerClass(SpawnController, "SpawnController");

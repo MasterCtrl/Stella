@@ -1,15 +1,15 @@
-import Link from "./Structures/Link"
-import Minion from "./Minions/Minion";
-import Turret from "./Structures/Turret";
+import Link from "../Structures/Link"
+import Minion from "../Minions/Minion";
+import Turret from "../Structures/Turret";
 type CreepHash = {[creepName: string]: Creep;};
 
 /**
- * Manager, used to run a collection of minions.
+ * MinionController, used to run a collection of minions.
  * 
  * @export
- * @class Manager
+ * @class MinionController
  */
-export default class Manager {
+export default class MinionController {
 
     /**
      * Syncs the in memory creep cache with the actual creeps.
@@ -17,7 +17,7 @@ export default class Manager {
      * @static
      * @param {CreepHash} inMemory 
      * @param {CreepHash} inGame 
-     * @memberof Manager
+     * @memberof MinionController
      */
     public static Sync(inMemory: CreepHash, inGame: CreepHash) {
         for(let name in inMemory) {
@@ -32,7 +32,7 @@ export default class Manager {
      * 
      * @static
      * @param {Creep[]} creeps 
-     * @memberof Manager
+     * @memberof MinionController
      */
     public static RunCreeps(creeps: Creep[]) {
         creeps.forEach(c => {
@@ -48,7 +48,7 @@ export default class Manager {
      * 
      * @static
      * @param {Tower[]} towers 
-     * @memberof Manager
+     * @memberof MinionController
      */
     public static RunTowers(towers: Tower[]) {
         towers.forEach(t => {
@@ -62,7 +62,7 @@ export default class Manager {
      * 
      * @static
      * @param {StructureLink[]} links 
-     * @memberof Manager
+     * @memberof MinionController
      */
     public static RunLinks(links: StructureLink[]) {
         links.forEach(l => {
@@ -72,7 +72,7 @@ export default class Manager {
     }
 
     private static ToMinion(creep: Creep): Minion {
-        var type = require("./Minions/" + creep.memory.type);
+        var type = require("../Minions/" + creep.memory.type);
         if (type) {
             return new type.default(creep);
         } else {
@@ -83,4 +83,4 @@ export default class Manager {
     }
 }
 
-require("screeps-profiler").registerClass(Manager, "Manager");
+require("screeps-profiler").registerClass(MinionController, "MinionController");

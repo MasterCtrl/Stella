@@ -1,14 +1,14 @@
-import Builder from "./Minions/Builder";
-import Courier from "./Minions/Courier";
-import Factory from "./Factory";
-import Filler from "./Minions/Filler"
-import Harvester from "./Minions/Harvester";
-import LinkMiner from "./Minions/LinkMiner"
-import Manager from "./Manager";
-import Miner from "./Minions/Miner";
-import Scout from "./Minions/Scout";
-import Seeder from "./Minions/Seeder";
-import Upgrader from "./Minions/Upgrader";
+import Builder from "../Minions/Builder";
+import Courier from "../Minions/Courier";
+import Filler from "../Minions/Filler"
+import Harvester from "../Minions/Harvester";
+import LinkMiner from "../Minions/LinkMiner"
+import Miner from "../Minions/Miner";
+import MinionController from "./MinionController";
+import Scout from "../Minions/Scout";
+import Seeder from "../Minions/Seeder";
+import SpawnController from "./SpawnController";
+import Upgrader from "../Minions/Upgrader";
 
 /**
  * RoomController, used to run all aspects of a room.
@@ -38,11 +38,11 @@ export default class RoomController {
         let spawnOptions = this.GetSpawnOptions();
         let creeps: Creep[] = this.room.find(FIND_MY_CREEPS);
         if (spawnOptions) {
-            Factory.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
+            SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
         }
-        Manager.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));
-        Manager.RunCreeps(creeps);
-        Manager.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));
+        MinionController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));
+        MinionController.RunCreeps(creeps);
+        MinionController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));
     }
 
     /**
