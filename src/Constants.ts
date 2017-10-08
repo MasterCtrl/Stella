@@ -17,4 +17,5 @@ export default class Constants {
     static STATE_WITHDRAWING: number = 8;
     static STATE_IDLE: number = 9;
     static STATE_CLAIM: number = 10;
+    static STATE_RESET: number = 11;
 }

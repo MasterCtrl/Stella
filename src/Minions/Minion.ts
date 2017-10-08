@@ -85,6 +85,10 @@ export default abstract class Minion {
             case Constants.STATE_IDLE:
                 this.RunIdle(Constants.STATE_MOVING);
                 break;
+
+            case Constants.STATE_RESET:
+                this.RunReset(this.minion.memory.postMovingState);
+                break;
             
             case Constants.STATE_SUICIDE:
                 this.RunSuicide();
@@ -224,12 +228,18 @@ export default abstract class Minion {
 
     private RunIdle(transitionState: number) {
         if (this.minion.memory.idle != undefined && this.minion.memory.idle > 0) {
-            this.minion.say("idle: " + this.minion.memory.idle);
+            this.minion.say("🚬");
             this.minion.memory.idle--;
             return;
         }
         this.minion.memory.initialized = false;        
         this.minion.memory.state = transitionState;
+    }
+
+    private RunReset(transitionState: number) {
+        this.minion.memory.state = transitionState;
+        this.minion.memory.initialized = false;
+        this.Run();
     }
 
     private RunSuicide() {
@@ -613,7 +623,7 @@ export default abstract class Minion {
         let flag = flags[0];
         this.minion.memory.flag = flag.name;
         this.SetDestination(flag.pos.x, flag.pos.y, 1, null, flag.pos.roomName);
-        this.minion.memory.state = Constants.STATE_MOVING;
+        this.minion.memory.postMovingState = Constants.STATE_RESET;
         return true;
     }
 
@@ -636,7 +646,6 @@ export default abstract class Minion {
         let flag = flags[0];
         this.minion.memory.flag = flag.name;
         this.SetDestination(flag.pos.x, flag.pos.y, 1, null, flag.pos.roomName);
-        this.minion.memory.state = Constants.STATE_MOVING;
         return true;
     }
 
