@@ -219,9 +219,15 @@ export default abstract class Minion {
         if (this.minion.claimController(this.minion.room.controller) == OK) {
             this.minion.memory.initialized = false;
         }
+        this.minion.reserveController(this.minion.room.controller);
     }
 
     private RunIdle(transitionState: number) {
+        if (this.minion.memory.idle != undefined && this.minion.memory.idle > 0) {
+            this.minion.say("idle: " + this.minion.memory.idle);
+            this.minion.memory.idle--;
+            return;
+        }
         this.minion.memory.initialized = false;        
         this.minion.memory.state = transitionState;
     }
@@ -709,6 +715,7 @@ export default abstract class Minion {
             this.SetDestination(flag.pos.x, flag.pos.y, 1, flag.room.name);            
             this.minion.memory.postMovingState = Constants.STATE_IDLE;
         }
+        this.minion.memory.idle = 5;
     }
 
     /**
