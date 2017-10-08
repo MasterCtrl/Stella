@@ -52,7 +52,7 @@ export default class Miner extends Minion {
         return { 
             Type: this.Type,
             Count: count,
-            Parts: [WORK, WORK, WORK, WORK, WORK, MOVE]
+            Parts: [WORK, WORK, WORK, WORK, MOVE, WORK, MOVE]
         };
     }
 }

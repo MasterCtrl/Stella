@@ -54,7 +54,7 @@ export default class Scout extends Minion {
         let options = { 
             Type: this.Type,
             Count: count < 0 ? 0 : count,
-            Parts: [CLAIM, CLAIM, MOVE, CLAIM, MOVE]
+            Parts: [CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE]
         };
         
         return options;

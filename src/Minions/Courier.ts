@@ -61,11 +61,11 @@ export default class Courier extends Minion {
      * @memberof Courier
      */
     public static GetOptions(room: Room): any {
-        let rcl = Math.floor(room.controller.level / 3);
+        let rcl = Math.floor(room.controller.level / 2);
         let count = room.find(FIND_SOURCES).length;
         return { 
             Type: this.Type,
-            Count: room.controller.level < 4 ? 0 : count * 2,
+            Count: room.controller.level < 4 ? 0 : count + 1,
             Parts: Minion.GetParts(rcl, this.CourierParts)
         };
     }

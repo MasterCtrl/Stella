@@ -57,7 +57,7 @@ export default class LinkMiner extends Minion {
         return { 
             Type: this.Type,
             Count: count,
-            Parts: [WORK, WORK, WORK, WORK, CARRY, WORK, CARRY, WORK, CARRY, MOVE]
+            Parts: [WORK, WORK, WORK, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE]
         };
     }
 }
