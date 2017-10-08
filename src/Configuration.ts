@@ -5,6 +5,6 @@
  * @class Configuration
  */
 export default class Configuration {
-    static WallHp: number = 300000;
-    static RampartHp: number = 250000;
+    static WallHp: number = 400000;
+    static RampartHp: number = 350000;
 }
