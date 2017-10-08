@@ -37,7 +37,7 @@ export default class Seeder extends Minion {
             return;
         }
 
-        if (this.FindSource(-1)) {
+        if (this.FindSource()) {
             return;
         }
         

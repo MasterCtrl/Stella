@@ -29,7 +29,7 @@ export default class Harvester extends Minion {
      */
     public Initialize() {
         this.minion.memory.initialized = true;
-        if (this.FindSource(-1)) {
+        if (this.FindSource()) {
             return;
         }
 

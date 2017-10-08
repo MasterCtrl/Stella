@@ -31,12 +31,16 @@ export default class Upgrader extends Minion {
         if (this.FindDroppedEnergy()) {
             return;
         }
-        
+
         if (this.FindStorageSource()) {
             return;
         }
 
         if (this.FindContainerSource()) {
+            return;
+        }
+
+        if (this.FindSource()) {
             return;
         }
 

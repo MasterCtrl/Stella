@@ -32,9 +32,11 @@ export default class Scout extends Minion {
         if (this.FindUnoccupiedRoom(COLOR_GREEN)) {
             return;
         }
+        
         if (this.FindUnclaimedController()) {
             return;
         }
+
         this.Rally();
     }
 

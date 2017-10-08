@@ -298,29 +298,36 @@ export default abstract class Minion {
     }
 
     /**
-     * Finds a source to mine and sets it as the destination.
-     * Set index = -1 to find closest source.
+     * Finds the lests populated source to mine and sets it as the destination.
      * 
      * @protected
-     * @param {number} index 
      * @returns {boolean} 
      * @memberof Minion
      */
-    protected FindSource(index: number): boolean {
+    protected FindSource(): boolean {
         if (!this.IsEmpty) {
             return false;
         }
         let source: Source = null;
-        if (index != -1) {
+        if(!this.minion.memory.source_id){
+            let assignedSources = _.countBy(this.minion.room.find(FIND_MY_CREEPS, { filter: creep => creep.memory.source_id }), (creep: Creep) => creep.memory.source_id);
             let sources: Source[] = this.minion.room.find(FIND_SOURCES);
-            if (sources.length > 0) {
-                source = sources[index];
-            }
+            let lowestCount: number = Object.keys(assignedSources).length < sources.length ? 0 :_.sortBy(assignedSources)[0];
+            for (let i in sources) {
+                let currentSource = sources[i];
+                let count = assignedSources[currentSource.id];
+                if (!count || count == lowestCount) {
+                    source = currentSource;
+                    break;
+                }
+            }    
         } else {
-            source = this.minion.pos.findClosestByRange(FIND_SOURCES);
+            source = Game.getObjectById(this.minion.memory.source_id);
         }
+
         if (source) {
             this.SetDestination(source.pos.x, source.pos.y, 1, source.id, source.room.name);
+            this.minion.memory.source_id = source.id;
             this.minion.memory.postMovingState = Constants.STATE_HARVESTING;
             return true;
         }

@@ -40,7 +40,7 @@ export default class Builder extends Minion {
             return;
         }
 
-        if (this.FindSource(-1)) {
+        if (this.FindSource()) {
             return;
         }
         
