@@ -38,14 +38,17 @@ export default class Seeder extends Minion {
         }
 
         if (this.FindSource()) {
+            this.minion.memory.state = Constants.STATE_MOVING;
             return;
         }
         
         if (this.FindConstructionSite()) {
+            this.minion.memory.state = Constants.STATE_MOVING;
             return;
         }
 
         if (this.FindController()) {
+            this.minion.memory.state = Constants.STATE_MOVING;
             return;
         }
 
@@ -65,10 +68,10 @@ export default class Seeder extends Minion {
         let rcl = Math.ceil(room.controller.level / 3);
         let seeders = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
         let rooms = _.filter(Game.flags, flag => flag.color == COLOR_BLUE).map(flag => flag.pos.roomName);
-        let count = rooms.indexOf(room.name) == -1 ? rooms.length - seeders.length : 0;
+        let count = rooms.indexOf(room.name) == -1 ? (rooms.length * 4) - seeders.length : 0;
         return { 
             Type: this.Type,
-            Count: count * 4,
+            Count: count,
             Parts: Minion.GetParts(rcl)
         };
     }
