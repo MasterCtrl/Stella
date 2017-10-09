@@ -93,10 +93,10 @@ export default class RoomController {
      */
     public static OptionFuncs = [
         (room: Room): any => Harvester.GetOptions(room),
+        (room: Room): any => Courier.GetOptions(room),
         (room: Room): any => Miner.GetOptions(room),
         (room: Room): any => LinkMiner.GetOptions(room),
         (room: Room): any => Filler.GetOptions(room),
-        (room: Room): any => Courier.GetOptions(room),
         (room: Room): any => Builder.GetOptions(room),
         (room: Room): any => Upgrader.GetOptions(room),
         (room: Room): any => Scout.GetOptions(room),

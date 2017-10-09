@@ -193,7 +193,7 @@ export default abstract class Minion {
         if (!constructionSite) {
             this.minion.memory.state = transitionState;
             this.minion.memory.initialized = false;
-            return;            
+            return;
         }
         this.minion.build(constructionSite);
     }
@@ -694,6 +694,7 @@ export default abstract class Minion {
         let flag = flags[0];
         this.minion.memory.flag = flag.name;
         this.SetDestination(flag.pos.x, flag.pos.y, 1, null, flag.pos.roomName);
+        this.minion.memory.postMovingState = Constants.STATE_RESET;
         return true;
     }
 

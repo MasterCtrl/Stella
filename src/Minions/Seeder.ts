@@ -65,7 +65,7 @@ export default class Seeder extends Minion {
         let rcl = Math.ceil(room.controller.level / 3);
         let seeders = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
         let rooms = _.filter(Game.flags, flag => flag.color == COLOR_BLUE).map(flag => flag.pos.roomName);
-        let count = rooms.length - seeders.length;
+        let count = rooms.indexOf(room.name) == -1 ? rooms.length - seeders.length : 0;
         return { 
             Type: this.Type,
             Count: count * 4,
