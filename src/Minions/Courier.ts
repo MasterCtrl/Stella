@@ -69,8 +69,6 @@ export default class Courier extends Minion {
             Parts: Minion.GetParts(rcl, this.CourierParts)
         };
     }
-
-    
     private static CourierParts: string[] = [CARRY, MOVE, CARRY, MOVE];   
 }
 

@@ -1,10 +1,11 @@
 import Builder from "../Minions/Builder";
 import Courier from "../Minions/Courier";
+import Drone from "../Minions/Drone";
 import Filler from "../Minions/Filler"
 import Harvester from "../Minions/Harvester";
 import LinkMiner from "../Minions/LinkMiner"
 import Miner from "../Minions/Miner";
-import MinionController from "./MinionController";
+import EntityController from "./EntityController";
 import Scout from "../Minions/Scout";
 import Seeder from "../Minions/Seeder";
 import SpawnController from "./SpawnController";
@@ -40,9 +41,10 @@ export default class RoomController {
         if (spawnOptions) {
             SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
         }
-        MinionController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));
-        MinionController.RunCreeps(creeps);
-        MinionController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));
+        EntityController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));
+        EntityController.RunCreeps(creeps);
+        EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));
+        EntityController.RunTerminal(this.room.terminal);
     }
 
     /**
@@ -98,7 +100,8 @@ export default class RoomController {
         (room: Room): any => Builder.GetOptions(room),
         (room: Room): any => Upgrader.GetOptions(room),
         (room: Room): any => Scout.GetOptions(room),
-        (room: Room): any => Seeder.GetOptions(room)
+        (room: Room): any => Seeder.GetOptions(room),
+        (room: Room): any => Drone.GetOptions(room)
     ];
 }
 

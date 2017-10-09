@@ -1,4 +1,5 @@
 import Minion from "../Minions/Minion";
+type Options = {Type: string, Count: number, Parts: string[]};
 
 /**
  * SpawnController, used to spawn minions from a spawner
@@ -13,10 +14,10 @@ export default class SpawnController {
      * @static
      * @param {Spawn[]} spawners 
      * @param {Creep[]} creeps 
-     * @param {any[]} [spawnOptions] 
+     * @param {Options[]} [spawnOptions] 
      * @memberof SpawnController
      */
-    public static Spawn(spawners: Spawn[], creeps: Creep[], spawnOptions?: any[]){
+    public static Spawn(spawners: Spawn[], creeps: Creep[], spawnOptions?: Options[]){
         spawners.forEach(s => {
             SpawnController.SpawnMinions(s, creeps, spawnOptions);
         });
@@ -28,16 +29,16 @@ export default class SpawnController {
      * @static
      * @param {Spawn} spawner 
      * @param {Creep[]} creeps 
-     * @param {any[]} spawnOptions 
+     * @param {Options[]} spawnOptions 
      * @memberof SpawnController
      */
-    public static SpawnMinions(spawner: Spawn, creeps: Creep[], spawnOptions: any[]) {
+    public static SpawnMinions(spawner: Spawn, creeps: Creep[], spawnOptions: Options[]) {
         for (var index in spawnOptions) {
             if (!spawner.isActive() || spawner.spawning) {
                 return;
             }
             var options = spawnOptions[index];
-            if (this.SpawnMinion(spawner, creeps, options.Type, options.Count, options.Parts)) {
+            if (options.Count != 0 && this.SpawnMinion(spawner, creeps, options.Type, options.Count, options.Parts)) {
                 break;
             }
         }
