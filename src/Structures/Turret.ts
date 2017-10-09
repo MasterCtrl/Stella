@@ -25,6 +25,7 @@ export default class Turret {
         let hostile: Creep = this.turret.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
         if (hostile) {
             this.turret.attack(hostile);
+            return;
         }
 
         let structure: Structure = this.turret.pos.findClosestByRange(FIND_STRUCTURES, {
