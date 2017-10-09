@@ -348,7 +348,7 @@ export default abstract class Minion {
 
         let closestSource: Source;
         if (!this.minion.memory.source_id) {
-            let occupiedSources = _.filter(Game.creeps, creep => creep.memory.source_id).map(creep => creep.memory.source_id);
+            let occupiedSources = _.filter(Game.creeps, creep => creep.memory.source_id && creep.memory.type == this.Type).map(creep => creep.memory.source_id);
             closestSource = this.minion.pos.findClosestByRange(FIND_SOURCES, {
                 filter: source => occupiedSources.indexOf(source.id) == -1
             });
