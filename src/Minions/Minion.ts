@@ -630,7 +630,7 @@ export default abstract class Minion {
         } 
 
         let ramparts: StructureRampart[] = this.minion.room.find(FIND_STRUCTURES, { 
-            filter: rampart => rampart.structureType == STRUCTURE_RAMPART && rampart.hits < Configuration.RampartHp
+            filter: rampart => rampart.structureType == STRUCTURE_RAMPART && rampart.hits < Configuration.Defenses[rampart.structureType]
         });
         if (ramparts.length > 0) {
             let rampart: StructureRampart = ramparts.length != 1 ? _.sortBy(ramparts, r => r.hits)[0] : ramparts[0];                
@@ -640,7 +640,7 @@ export default abstract class Minion {
         }
 
         let wall: StructureWall = this.minion.pos.findClosestByPath(FIND_STRUCTURES, { 
-            filter: wall => wall.structureType == STRUCTURE_WALL && wall.hits < Configuration.WallHp
+            filter: wall => wall.structureType == STRUCTURE_WALL && wall.hits < Configuration.Defenses[wall.structureType]
         });
         if (wall) {
             this.SetDestination(wall.pos.x, wall.pos.y, 3, wall.id, wall.room.name);
