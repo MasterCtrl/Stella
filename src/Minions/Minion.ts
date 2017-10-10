@@ -87,7 +87,7 @@ export default abstract class Minion {
                 break;
 
             case Constants.STATE_RESET:
-                this.RunReset(this.minion.memory.postMovingState);
+                this.RunReset(Constants.STATE_MOVING);
                 break;
             
             case Constants.STATE_SUICIDE:

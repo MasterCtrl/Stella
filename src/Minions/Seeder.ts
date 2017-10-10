@@ -38,17 +38,14 @@ export default class Seeder extends Minion {
         }
 
         if (this.FindSource()) {
-            this.minion.memory.state = Constants.STATE_MOVING;
             return;
         }
         
         if (this.FindConstructionSite()) {
-            this.minion.memory.state = Constants.STATE_MOVING;
             return;
         }
 
         if (this.FindController()) {
-            this.minion.memory.state = Constants.STATE_MOVING;
             return;
         }
 
