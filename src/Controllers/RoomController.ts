@@ -1,10 +1,11 @@
 import Builder from "../Minions/Builder";
 import Courier from "../Minions/Courier";
+import Drone from "../Minions/Drone";
 import Filler from "../Minions/Filler"
 import Harvester from "../Minions/Harvester";
 import LinkMiner from "../Minions/LinkMiner"
 import Miner from "../Minions/Miner";
-import MinionController from "./MinionController";
+import EntityController from "./EntityController";
 import Scout from "../Minions/Scout";
 import Seeder from "../Minions/Seeder";
 import SpawnController from "./SpawnController";
@@ -40,9 +41,10 @@ export default class RoomController {
         if (spawnOptions) {
             SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
         }
-        MinionController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));
-        MinionController.RunCreeps(creeps);
-        MinionController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));
+        EntityController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));
+        EntityController.RunCreeps(creeps);
+        EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));
+        EntityController.RunTerminal(this.room.terminal);
     }
 
     /**
@@ -91,15 +93,81 @@ export default class RoomController {
      */
     public static OptionFuncs = [
         (room: Room): any => Harvester.GetOptions(room),
+        (room: Room): any => Courier.GetOptions(room),
         (room: Room): any => Miner.GetOptions(room),
         (room: Room): any => LinkMiner.GetOptions(room),
         (room: Room): any => Filler.GetOptions(room),
-        (room: Room): any => Courier.GetOptions(room),
         (room: Room): any => Builder.GetOptions(room),
         (room: Room): any => Upgrader.GetOptions(room),
         (room: Room): any => Scout.GetOptions(room),
-        (room: Room): any => Seeder.GetOptions(room)
+        (room: Room): any => Seeder.GetOptions(room),
+        (room: Room): any => Drone.GetOptions(room)
     ];
+
+    /**
+     * Gets if we are link mining in this room
+     * 
+     * @static
+     * @param {Room} room 
+     * @returns {boolean} 
+     * @memberof RoomController
+     */
+    public static AreWeLinkMining(room: Room): boolean {
+        let areWeLinkMining: boolean; 
+        if (!this.areWeLinkMining.hasOwnProperty(room.name)) {
+            let sources = room.find(FIND_SOURCES).length;
+            let links = room.find(FIND_MY_STRUCTURES, {filter : link => link.structureType == STRUCTURE_LINK}).length;
+            areWeLinkMining = links > sources;
+            this.areWeLinkMining[room.name] = areWeLinkMining;
+        } else {
+            areWeLinkMining = this.areWeLinkMining[room.name];
+        }
+        return areWeLinkMining;
+    }
+    private static areWeLinkMining: { [roomName: string]: boolean; } = {};
+
+    /**
+     * Gets if we are container mining in this room
+     * 
+     * @static
+     * @param {Room} room 
+     * @returns {boolean} 
+     * @memberof RoomController
+     */
+    public static AreWeContainerMining(room: Room): boolean {
+        let areWeContainerMining: boolean; 
+        if (!this.areWeContainerMining.hasOwnProperty(room.name)) {
+            let sources = room.find(FIND_SOURCES).length;
+            let containers = room.find(FIND_STRUCTURES, {filter : container => container.structureType == STRUCTURE_CONTAINER}).length;
+            areWeContainerMining = containers == sources;
+            this.areWeContainerMining[room.name] = areWeContainerMining;
+        } else {
+            areWeContainerMining = this.areWeContainerMining[room.name];
+        }
+        return areWeContainerMining;
+    }
+    private static areWeContainerMining: { [roomName: string]: boolean; } = {};
+
+    /**
+     * Gets if we are under attack in this room
+     * 
+     * @static
+     * @param {string} room 
+     * @returns {boolean} 
+     * @memberof RoomController
+     */
+    public static UnderAttack(room: string): boolean {
+        let underAttack: boolean; 
+        if (!this.roomsUnderAttack.hasOwnProperty(room)) {
+            let hostiles = Game.rooms[room].find(FIND_HOSTILE_CREEPS);
+            underAttack = hostiles.length != 0;
+            this.roomsUnderAttack[room] = underAttack;
+        } else {
+            underAttack = this.roomsUnderAttack[room];
+        }
+        return underAttack;
+    }
+    private static roomsUnderAttack: { [roomName: string]: boolean; } = {};
 }
 
 require("screeps-profiler").registerClass(RoomController, "RoomController");

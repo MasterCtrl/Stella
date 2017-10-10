@@ -1,5 +1,6 @@
-import * as Constants from "../Constants"
+import Constants from "../Constants"
 import Minion from "./Minion";
+import RoomController from "../Controllers/RoomController";
 
 /**
  * Courier minion, used to purely to move energy from sources to fill spawns, extensions, towers, and containers.
@@ -61,16 +62,17 @@ export default class Courier extends Minion {
      * @memberof Courier
      */
     public static GetOptions(room: Room): any {
-        let rcl = Math.floor(room.controller.level / 3);
-        let count = room.find(FIND_SOURCES).length;
+        let rcl = Math.floor(room.controller.level / 2);
+        let count = room.find(FIND_SOURCES).length + 1;
+        if (!RoomController.AreWeContainerMining(room) && !RoomController.AreWeLinkMining(room)) {
+            count = 0;
+        }
         return { 
             Type: this.Type,
-            Count: room.controller.level < 4 ? 0 : count * 2,
+            Count: count,
             Parts: Minion.GetParts(rcl, this.CourierParts)
         };
     }
-
-    
     private static CourierParts: string[] = [CARRY, MOVE, CARRY, MOVE];   
 }
 

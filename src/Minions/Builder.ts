@@ -1,4 +1,3 @@
-import * as Constants from "../Constants"
 import Minion from "./Minion";
 
 /**
@@ -40,7 +39,7 @@ export default class Builder extends Minion {
             return;
         }
 
-        if (this.FindSource(-1)) {
+        if (this.FindSource()) {
             return;
         }
         
@@ -68,11 +67,11 @@ export default class Builder extends Minion {
      * @memberof Builder
      */
     public static GetOptions(room: Room): any {
-        let rcl = Math.ceil(room.controller.level / 3);
-        let count = room.find(FIND_SOURCES).length;
+        let rcl = Math.ceil(room.controller.level / 2);
+        let count = room.find(FIND_SOURCES).length + 1;
         return { 
             Type: this.Type,
-            Count: count + 1,
+            Count: count,
             Parts: Minion.GetParts(rcl)
         };
     }

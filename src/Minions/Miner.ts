@@ -1,5 +1,6 @@
-import * as Constants from "../Constants"
+import Constants from "../Constants"
 import Minion from "./Minion";
+import RoomController from "../Controllers/RoomController";
 
 /**
  * Miner minion, used to purely to mine a source as efficiently as possible.
@@ -46,13 +47,13 @@ export default class Miner extends Minion {
      */
     public static GetOptions(room: Room): any {
         let count = room.find(FIND_SOURCES).length;
-        if (Minion.AreWeLinkMining(room) || room.controller.level < 4 ) {
+        if (RoomController.AreWeLinkMining(room) || !RoomController.AreWeContainerMining(room)) {
             count = 0;
         }        
         return { 
             Type: this.Type,
             Count: count,
-            Parts: [WORK, WORK, WORK, WORK, WORK, MOVE]
+            Parts: [WORK, WORK, WORK, WORK, MOVE, WORK, MOVE]
         };
     }
 }

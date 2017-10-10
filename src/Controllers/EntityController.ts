@@ -1,15 +1,16 @@
 import Link from "../Structures/Link"
 import Minion from "../Minions/Minion";
 import Turret from "../Structures/Turret";
+import Terminal from "../Structures/Terminal";
 type CreepHash = {[creepName: string]: Creep;};
 
 /**
- * MinionController, used to run a collection of minions.
+ * EntityController, used to run a entities.
  * 
  * @export
- * @class MinionController
+ * @class EntityController
  */
-export default class MinionController {
+export default class EntityController {
 
     /**
      * Syncs the in memory creep cache with the actual creeps.
@@ -17,7 +18,7 @@ export default class MinionController {
      * @static
      * @param {CreepHash} inMemory 
      * @param {CreepHash} inGame 
-     * @memberof MinionController
+     * @memberof EntityController
      */
     public static Sync(inMemory: CreepHash, inGame: CreepHash) {
         for(let name in inMemory) {
@@ -32,7 +33,7 @@ export default class MinionController {
      * 
      * @static
      * @param {Creep[]} creeps 
-     * @memberof MinionController
+     * @memberof EntityController
      */
     public static RunCreeps(creeps: Creep[]) {
         creeps.forEach(c => {
@@ -48,7 +49,7 @@ export default class MinionController {
      * 
      * @static
      * @param {Tower[]} towers 
-     * @memberof MinionController
+     * @memberof EntityController
      */
     public static RunTowers(towers: Tower[]) {
         towers.forEach(t => {
@@ -62,13 +63,28 @@ export default class MinionController {
      * 
      * @static
      * @param {StructureLink[]} links 
-     * @memberof MinionController
+     * @memberof EntityController
      */
     public static RunLinks(links: StructureLink[]) {
         links.forEach(l => {
             let link = new Link(l);
             link.Run();
         });
+    }
+
+    /**
+     * Runs the terminal in the room.
+     * 
+     * @static
+     * @param {StructureTerminal} term 
+     * @memberof EntityController
+     */
+    public static RunTerminal(term: StructureTerminal) {
+        if(!term){
+            return;
+        }
+        let terminal = new Terminal(term);
+        terminal.Run();
     }
 
     private static ToMinion(creep: Creep): Minion {
@@ -83,4 +99,4 @@ export default class MinionController {
     }
 }
 
-require("screeps-profiler").registerClass(MinionController, "MinionController");
+require("screeps-profiler").registerClass(EntityController, "EntityController");

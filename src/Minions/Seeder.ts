@@ -1,4 +1,4 @@
-import * as Constants from "../Constants"
+import Constants from "../Constants"
 import Minion from "./Minion";
 
 /**
@@ -37,15 +37,11 @@ export default class Seeder extends Minion {
             return;
         }
 
-        if (this.FindSource(-1)) {
+        if (this.FindSource()) {
             return;
         }
         
         if (this.FindConstructionSite()) {
-            return;
-        }
-
-        if (this.FindStructureToRepair()) {
             return;
         }
 
@@ -67,11 +63,12 @@ export default class Seeder extends Minion {
      */
     public static GetOptions(room: Room): any {
         let rcl = Math.ceil(room.controller.level / 3);
-        let flags = _.filter(Game.flags, flag => flag.color == COLOR_BLUE);
-        let roomsWithFlags = _.filter(flags, flag => flag.pos.roomName).map(flag => flag.pos.roomName);
+        let seeders = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
+        let rooms = _.filter(Game.flags, flag => flag.color == COLOR_BLUE).map(flag => flag.pos.roomName);
+        let count = rooms.indexOf(room.name) == -1 ? (rooms.length * 4) - seeders.length : 0;
         return { 
             Type: this.Type,
-            Count: roomsWithFlags.indexOf(room.name) != -1 ? 0 : flags.length * 2,
+            Count: count,
             Parts: Minion.GetParts(rcl)
         };
     }

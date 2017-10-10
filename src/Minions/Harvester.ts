@@ -1,5 +1,6 @@
-import * as Constants from "../Constants"
+import Constants from "../Constants"
 import Minion from "./Minion";
+import RoomController from "../Controllers/RoomController"
 
 /**
  * Harvester minion, used to mine and fill spawns, extensions, towers, and containers.
@@ -29,7 +30,7 @@ export default class Harvester extends Minion {
      */
     public Initialize() {
         this.minion.memory.initialized = true;
-        if (this.FindSource(-1)) {
+        if (this.FindSource()) {
             return;
         }
 
@@ -56,10 +57,13 @@ export default class Harvester extends Minion {
      */
     public static GetOptions(room: Room): any {
         let rcl = Math.ceil(room.controller.level / 3);
-        let count = room.find(FIND_SOURCES).length;
+        let count = room.find(FIND_SOURCES).length * 2;
+        if (RoomController.AreWeContainerMining(room) || RoomController.AreWeLinkMining(room)) {
+            count = 0;
+        }
         return { 
             Type: this.Type,
-            Count: room.controller.level >= 4 ? 0 : count * 2,
+            Count: count,
             Parts: Minion.GetParts(rcl)
         };
     }

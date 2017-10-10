@@ -1,4 +1,4 @@
-import * as Constants from "../Constants"
+import Constants from "../Constants"
 import Minion from "./Minion";
 
 /**
@@ -32,9 +32,11 @@ export default class Scout extends Minion {
         if (this.FindUnoccupiedRoom(COLOR_GREEN)) {
             return;
         }
+        
         if (this.FindUnclaimedController()) {
             return;
         }
+
         this.Rally();
     }
 
@@ -50,11 +52,10 @@ export default class Scout extends Minion {
         let scouts = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
         let rooms = _.filter(Game.flags, flag => flag.color == COLOR_GREEN).map(flag => flag.pos.roomName);
         let count = rooms.length - scouts.length;
-        //TODO: could have multiple spawners try and spawn a scout at the same time meaning we get too many
         let options = { 
             Type: this.Type,
             Count: count < 0 ? 0 : count,
-            Parts: [CLAIM, MOVE]
+            Parts: [CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE]
         };
         
         return options;

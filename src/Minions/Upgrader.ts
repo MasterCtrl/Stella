@@ -1,4 +1,4 @@
-import * as Constants from "../Constants"
+import Constants from "../Constants"
 import Minion from "./Minion";
 
 /**
@@ -31,12 +31,16 @@ export default class Upgrader extends Minion {
         if (this.FindDroppedEnergy()) {
             return;
         }
-        
+
         if (this.FindStorageSource()) {
             return;
         }
 
         if (this.FindContainerSource()) {
+            return;
+        }
+
+        if (this.FindSource()) {
             return;
         }
 
@@ -57,7 +61,7 @@ export default class Upgrader extends Minion {
      * @memberof Upgrader
      */
     public static GetOptions(room: Room): any {
-        let rcl = Math.ceil(room.controller.level / 3);
+        let rcl = Math.ceil(room.controller.level / 2);
         let count = room.find(FIND_SOURCES).length;
         return { 
             Type: this.Type,
