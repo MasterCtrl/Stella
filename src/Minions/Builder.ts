@@ -68,10 +68,10 @@ export default class Builder extends Minion {
      */
     public static GetOptions(room: Room): any {
         let rcl = Math.ceil(room.controller.level / 2);
-        let count = room.find(FIND_SOURCES).length;
+        let count = room.find(FIND_SOURCES).length + 1;
         return { 
             Type: this.Type,
-            Count: count + 1,
+            Count: count,
             Parts: Minion.GetParts(rcl)
         };
     }

@@ -52,7 +52,6 @@ export default class Scout extends Minion {
         let scouts = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
         let rooms = _.filter(Game.flags, flag => flag.color == COLOR_GREEN).map(flag => flag.pos.roomName);
         let count = rooms.length - scouts.length;
-        //TODO: could have multiple spawners try and spawn a scout at the same time meaning we get too many
         let options = { 
             Type: this.Type,
             Count: count < 0 ? 0 : count,

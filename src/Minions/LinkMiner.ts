@@ -1,5 +1,6 @@
 import Constants from "../Constants"
 import Minion from "./Minion";
+import RoomController from "../Controllers/RoomController";
 
 /**
  * LinkMiner minion, used to purely to mine a source as efficiently as possible and deposit into a link.
@@ -51,7 +52,7 @@ export default class LinkMiner extends Minion {
      */
     public static GetOptions(room: Room): any {
         let count = room.find(FIND_SOURCES).length;
-        if (!Minion.AreWeLinkMining(room)){
+        if (!RoomController.AreWeLinkMining(room)){
             count = 0;
         }
         return { 

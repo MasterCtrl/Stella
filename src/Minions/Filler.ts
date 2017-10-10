@@ -1,5 +1,6 @@
 import Constants from "../Constants"
 import Minion from "./Minion"
+import RoomController from "../Controllers/RoomController"
 
 /**
  * Filler minion, used to purely to move energy from links and fill storage.
@@ -52,7 +53,7 @@ export default class Filler extends Minion {
     public static GetOptions(room: Room): any {
         return { 
             Type: this.Type,
-            Count: Minion.AreWeLinkMining(room) ? 1 : 0,
+            Count: RoomController.AreWeLinkMining(room) ? 1 : 0,
             Parts: [CARRY, CARRY, CARRY, CARRY, MOVE]
         };
     }
