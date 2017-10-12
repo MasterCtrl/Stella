@@ -5,7 +5,7 @@
  * @class Configuration
  */
 export default class Configuration {
-    static Profiling: true;
+    static Profiling = true;
     static Defenses = {
         wall:       400000,
         rampart:    350000
