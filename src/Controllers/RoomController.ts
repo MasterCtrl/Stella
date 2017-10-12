@@ -1,4 +1,5 @@
 import Builder from "../Minions/Builder";
+import Configuration from "../Configuration"
 import Courier from "../Minions/Courier";
 import Drone from "../Minions/Drone";
 import Filler from "../Minions/Filler"
@@ -37,7 +38,8 @@ export default class RoomController {
      */
     public Run() {
         let creeps: Creep[] = this.room.find(FIND_MY_CREEPS);
-        if ((Game.time % 3) == 0) {
+        let roomHash = this.HashRoomName(this.room.name);
+        if ((Game.time % Configuration.HashFactor) == roomHash) {
             let spawnOptions = this.GetSpawnOptions();
             if (spawnOptions) {
                 SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
@@ -47,6 +49,19 @@ export default class RoomController {
         EntityController.RunCreeps(creeps);
         EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));
         EntityController.RunTerminal(this.room.terminal);
+    }
+
+    private HashRoomName(roomName: string): number {
+        var hash = 0, i, chr;
+        if (roomName.length === 0) {
+            return hash;
+        }
+        for (i = 0; i < roomName.length; i++) {
+            chr  = roomName.charCodeAt(i);
+            hash = ((hash << 5) - hash) + chr;
+            hash |= 0;
+        }
+        return hash % Configuration.HashFactor;
     }
 
     /**
@@ -172,7 +187,6 @@ export default class RoomController {
     private static roomsUnderAttack: { [roomName: string]: boolean; } = {};
 }
 
-import Configuration from "../Configuration"
 if (Configuration.Profiling) {
     require("screeps-profiler").registerClass(RoomController, "RoomController"); 
 }

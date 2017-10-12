@@ -17,9 +17,9 @@ export default class SpawnController {
      * @param {Options[]} [spawnOptions] 
      * @memberof SpawnController
      */
-    public static Spawn(spawners: Spawn[], creeps: Creep[], spawnOptions?: Options[]){
+    public static Spawn(spawners: Spawn[], creeps: Creep[], spawnOptions?: Options[]) {
         for (let i in spawners) {
-            SpawnController.SpawnMinions(spawners[i], creeps, spawnOptions);            
+            SpawnController.SpawnMinions(spawners[i], creeps, spawnOptions);
         }
     }
 
