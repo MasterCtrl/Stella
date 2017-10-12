@@ -58,4 +58,7 @@ export default class Miner extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(Miner, "Miner");
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(Miner, "Miner");
+}

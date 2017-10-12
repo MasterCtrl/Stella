@@ -165,7 +165,11 @@ export default abstract class Minion {
             this.Run();
             return;
         }
-        if (target.energy >= target.energyCapacity || _.sum(target.store) >= target.storeCapacity) {
+        let resources = 0;
+        for (let i in target.store) {
+            resources += target.store[i];
+        }
+        if (target.energy >= target.energyCapacity || resources >= target.storeCapacity) {
             this.minion.memory.state = transitionState;
             this.minion.memory.initialized = false;
             return;
@@ -257,7 +261,7 @@ export default abstract class Minion {
      * @type {string}
      * @memberof Minion
      */
-    protected get Name(): string{
+    protected get Name(): string {
         return this.minion.name;
     }
 
@@ -293,8 +297,14 @@ export default abstract class Minion {
      * @type {number}
      * @memberof Minion
      */
-    protected get TotalCarry(): number{
-        return this.totalCarry || (this.totalCarry = _.sum(this.minion.carry));
+    protected get TotalCarry(): number {
+        if (this.totalCarry == undefined) {
+            this.totalCarry = 0;
+            for (let resource in this.minion.carry) {
+                this.totalCarry += this.minion.carry[resource];
+            }
+        }
+        return this.totalCarry;
     }
     private totalCarry: number;
 
@@ -311,7 +321,7 @@ export default abstract class Minion {
     }
 
     /**
-     * Finds the lests populated source to mine and sets it as the destination.
+     * Finds the least populated source to mine and sets it as the destination.
      * 
      * @protected
      * @returns {boolean} 
@@ -325,7 +335,7 @@ export default abstract class Minion {
         if(!this.minion.memory.source_id){
             let assignedSources = _.countBy(this.minion.room.find(FIND_MY_CREEPS, { filter: creep => creep.memory.source_id }), (creep: Creep) => creep.memory.source_id);
             let sources: Source[] = this.minion.room.find(FIND_SOURCES);
-            let lowestCount: number = Object.keys(assignedSources).length < sources.length ? 0 :_.sortBy(assignedSources)[0];
+            let lowestCount: number = _.min(assignedSources);
             for (let i in sources) {
                 let currentSource = sources[i];
                 let count = assignedSources[currentSource.id];
@@ -455,11 +465,39 @@ export default abstract class Minion {
             return false;
         }
         let occupiedDestinations = _.filter(Game.creeps, creep => creep.memory.destination_id).map(creep => creep.memory.destination_id);
+        let targetQueue = [d => this.FindSpawnStorage(d), d => this.FindTurretStorage(d)];
+        if (RoomController.UnderAttack(this.minion.room.name)) {
+            targetQueue = targetQueue.reverse();
+        }
+        targetQueue.push(d => this.FindTerminalStorage());
+        for (let i in targetQueue) {
+            let target = targetQueue[i];
+            if (target(occupiedDestinations)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private FindTurretStorage(occupiedDestinations: any[]): boolean {
+        let turret: StructureTower = this.minion.pos.findClosestByPath(FIND_STRUCTURES, {
+            filter: turret => occupiedDestinations.indexOf(turret.id) == -1 &&
+                              turret.structureType == STRUCTURE_TOWER &&
+                              turret.energy < turret.energyCapacity 
+        });
+        if (turret) {
+            this.SetDestination(turret.pos.x, turret.pos.y, 1, turret.id, turret.room.name);
+            this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
+            return true;
+        }
+        return false;
+    }
+
+    private FindSpawnStorage(occupiedDestinations: any[]): boolean {
         let storage: Structure = this.minion.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: structure => occupiedDestinations.indexOf(structure.id) == -1 &&
                                  (structure.structureType == STRUCTURE_EXTENSION ||
-                                  structure.structureType == STRUCTURE_SPAWN ||
-                                  structure.structureType == STRUCTURE_TOWER) &&
+                                  structure.structureType == STRUCTURE_SPAWN) &&
                                   structure.energy < structure.energyCapacity 
         });
         if (storage) {
@@ -467,6 +505,10 @@ export default abstract class Minion {
             this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
             return true;
         }
+        return false;
+    }
+
+    private FindTerminalStorage() {
         let terminal: Terminal = this.minion.room.terminal;
         if (terminal && terminal.store[RESOURCE_ENERGY] < 5000) {
             this.SetDestination(terminal.pos.x, terminal.pos.y, 1, terminal.id, terminal.room.name);
@@ -851,13 +893,15 @@ export default abstract class Minion {
             partsToAdd = this.MinimumParts;
         }
         for (var index = 0; index < rcl; index++) {
-            partsToAdd.forEach(e => {
-                parts.push(e);
-            });
+            for (let e in partsToAdd) {
+                parts.push(partsToAdd[e]);
+            }
         }
         return parts
     }
     private static MinimumParts: string[] = [WORK, CARRY, MOVE];
 }
 
-require("screeps-profiler").registerClass(Minion, "Minion");
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(Minion, "Minion");
+}

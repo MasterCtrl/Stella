@@ -40,6 +40,10 @@ export default class Seeder extends Minion {
         if (this.FindSource()) {
             return;
         }
+
+        if (this.FindStorage()) {
+            return;
+        }
         
         if (this.FindConstructionSite()) {
             return;
@@ -54,7 +58,7 @@ export default class Seeder extends Minion {
 
     /**
      * Gets the options for the Seeder minion based on the room.
-     * Every room tries to spawn 2 Seeders to send to the requesting room
+     * Every other room tries to spawn Seeders to send to the requesting room
      * 
      * @static
      * @param {Room} room 
@@ -65,7 +69,7 @@ export default class Seeder extends Minion {
         let rcl = Math.ceil(room.controller.level / 3);
         let seeders = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
         let rooms = _.filter(Game.flags, flag => flag.color == COLOR_BLUE).map(flag => flag.pos.roomName);
-        let count = rooms.indexOf(room.name) == -1 ? (rooms.length * 4) - seeders.length : 0;
+        let count = rooms.indexOf(room.name) == -1 ? (rooms.length * 2) - seeders.length : 0;
         return { 
             Type: this.Type,
             Count: count,
@@ -74,4 +78,7 @@ export default class Seeder extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(Seeder, "Seeder");
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(Seeder, "Seeder");
+}

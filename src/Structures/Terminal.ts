@@ -57,11 +57,13 @@ export default class Terminal {
             }
             let result = Game.market.deal(order.id, amount, this.terminal.room.name);
             if (result == 0) {
-                console.log(this.terminal.room.name + ": Sold " + amount + " mineral(" + type + ") to " + order.roomName + "for " + (order.price * amount - cost));
+                console.log(this.terminal.room.name + ": Sold " + amount + " mineral(" + type + ") to " + order.roomName + " for " + (order.price * amount));
                 break;                
             }
         }
     }
 }
 
-require("screeps-profiler").registerClass(Terminal, "Terminal");
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(Terminal, "Terminal");
+}

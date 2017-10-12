@@ -36,12 +36,12 @@ export default class EntityController {
      * @memberof EntityController
      */
     public static RunCreeps(creeps: Creep[]) {
-        creeps.forEach(c => {
-            let minion = this.ToMinion(c);
+        for (let i in creeps) {
+            let minion = this.ToMinion(creeps[i]);
             if (minion) {
                 minion.Run();
             }           
-        });
+        }
     }
 
     /**
@@ -52,10 +52,10 @@ export default class EntityController {
      * @memberof EntityController
      */
     public static RunTowers(towers: Tower[]) {
-        towers.forEach(t => {
-            let turret = new Turret(t);
-            turret.Run();            
-        });
+        for (let i in towers) {
+            let turret = new Turret(towers[i]);
+            turret.Run();
+        }
     }
 
     /**
@@ -66,10 +66,10 @@ export default class EntityController {
      * @memberof EntityController
      */
     public static RunLinks(links: StructureLink[]) {
-        links.forEach(l => {
-            let link = new Link(l);
+        for (let i in links) {
+            let link = new Link(links[i]);
             link.Run();
-        });
+        }
     }
 
     /**
@@ -99,4 +99,7 @@ export default class EntityController {
     }
 }
 
-require("screeps-profiler").registerClass(EntityController, "EntityController");
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(EntityController, "EntityController");  
+}

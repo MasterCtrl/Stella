@@ -62,8 +62,8 @@ export default class Courier extends Minion {
      * @memberof Courier
      */
     public static GetOptions(room: Room): any {
-        let rcl = Math.floor(room.controller.level / 2);
-        let count = room.find(FIND_SOURCES).length + 1;
+        let rcl = Math.ceil(room.controller.level / 2);
+        let count = room.find(FIND_SOURCES).length;
         if (!RoomController.AreWeContainerMining(room) && !RoomController.AreWeLinkMining(room)) {
             count = 0;
         }
@@ -76,4 +76,7 @@ export default class Courier extends Minion {
     private static CourierParts: string[] = [CARRY, MOVE, CARRY, MOVE];   
 }
 
-require("screeps-profiler").registerClass(Courier, "Courier");
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(Courier, "Courier");
+}

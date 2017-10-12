@@ -69,4 +69,7 @@ export default class Harvester extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(Harvester, "Harvester");
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(Harvester, "Harvester");
+}

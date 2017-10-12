@@ -36,10 +36,12 @@ export default class RoomController {
      * @memberof RoomController
      */
     public Run() {
-        let spawnOptions = this.GetSpawnOptions();
         let creeps: Creep[] = this.room.find(FIND_MY_CREEPS);
-        if (spawnOptions) {
-            SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
+        if ((Game.time % 3) == 0) {
+            let spawnOptions = this.GetSpawnOptions();
+            if (spawnOptions) {
+                SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
+            }    
         }
         EntityController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));
         EntityController.RunCreeps(creeps);
@@ -55,9 +57,9 @@ export default class RoomController {
      */
     public GetSpawnOptions(): any[] {
         let options = [];
-        RoomController.OptionFuncs.forEach(f =>{
-            this.AddOptions(options, f);
-        });
+        for (let i in RoomController.OptionFuncs) {
+            this.AddOptions(options, RoomController.OptionFuncs[i]);
+        }
         return options;
     }
 
@@ -139,7 +141,7 @@ export default class RoomController {
         if (!this.areWeContainerMining.hasOwnProperty(room.name)) {
             let sources = room.find(FIND_SOURCES).length;
             let containers = room.find(FIND_STRUCTURES, {filter : container => container.structureType == STRUCTURE_CONTAINER}).length;
-            areWeContainerMining = containers == sources;
+            areWeContainerMining = containers >= sources;
             this.areWeContainerMining[room.name] = areWeContainerMining;
         } else {
             areWeContainerMining = this.areWeContainerMining[room.name];
@@ -170,4 +172,7 @@ export default class RoomController {
     private static roomsUnderAttack: { [roomName: string]: boolean; } = {};
 }
 
-require("screeps-profiler").registerClass(RoomController, "RoomController");
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(RoomController, "RoomController"); 
+}

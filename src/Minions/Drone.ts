@@ -63,3 +63,8 @@ export default class Drone extends Minion {
         };
     }
 }
+
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(Drone, "Drone");
+}

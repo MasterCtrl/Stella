@@ -18,9 +18,9 @@ export default class SpawnController {
      * @memberof SpawnController
      */
     public static Spawn(spawners: Spawn[], creeps: Creep[], spawnOptions?: Options[]){
-        spawners.forEach(s => {
-            SpawnController.SpawnMinions(s, creeps, spawnOptions);
-        });
+        for (let i in spawners) {
+            SpawnController.SpawnMinions(spawners[i], creeps, spawnOptions);            
+        }
     }
 
     /**
@@ -68,4 +68,7 @@ export default class SpawnController {
     }
 }
 
-require("screeps-profiler").registerClass(SpawnController, "SpawnController");
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(SpawnController, "SpawnController");
+}
