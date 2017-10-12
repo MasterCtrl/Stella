@@ -165,11 +165,7 @@ export default abstract class Minion {
             this.Run();
             return;
         }
-        let resources = 0;
-        for (let i in target.store) {
-            resources += target.store[i];
-        }
-        if (target.energy >= target.energyCapacity || resources >= target.storeCapacity) {
+        if (target.energy >= target.energyCapacity || this.TotalCarry >= target.storeCapacity) {
             this.minion.memory.state = transitionState;
             this.minion.memory.initialized = false;
             return;
