@@ -510,7 +510,7 @@ export default abstract class Minion {
 
     private FindTerminalStorage() {
         let terminal: Terminal = this.minion.room.terminal;
-        if (terminal && terminal.store[RESOURCE_ENERGY] < 5000) {
+        if (terminal && terminal.store[RESOURCE_ENERGY] < Configuration.Terminal.energy) {
             this.SetDestination(terminal.pos.x, terminal.pos.y, 1, terminal.id, terminal.room.name);
             this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
             return true;
@@ -673,7 +673,7 @@ export default abstract class Minion {
         } 
 
         let ramparts: StructureRampart[] = this.minion.room.find(FIND_STRUCTURES, { 
-            filter: rampart => rampart.structureType == STRUCTURE_RAMPART && rampart.hits < Configuration.Defenses[rampart.structureType]
+            filter: rampart => rampart.structureType == STRUCTURE_RAMPART && rampart.hits < Configuration.Defenses.rampart
         });
         if (ramparts.length > 0) {
             let rampart: StructureRampart = ramparts.length != 1 ? _.sortBy(ramparts, r => r.hits)[0] : ramparts[0];                
@@ -682,10 +682,11 @@ export default abstract class Minion {
             return true;                
         }
 
-        let wall: StructureWall = this.minion.pos.findClosestByPath(FIND_STRUCTURES, { 
-            filter: wall => wall.structureType == STRUCTURE_WALL && wall.hits < Configuration.Defenses[wall.structureType]
+        let walls: StructureWall[] = this.minion.room.find(FIND_STRUCTURES, { 
+            filter: wall => wall.structureType == STRUCTURE_WALL && wall.hits < Configuration.Defenses.wall
         });
-        if (wall) {
+        if (walls.length > 0) {
+            let wall: StructureWall = walls.length != 1 ? _.sortBy(walls, r => r.hits)[0] : walls[0];                
             this.SetDestination(wall.pos.x, wall.pos.y, 3, wall.id, wall.room.name);
             this.minion.memory.postMovingState = Constants.STATE_REPAIRING;
             return true;
