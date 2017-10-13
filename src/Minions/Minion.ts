@@ -806,10 +806,30 @@ export default abstract class Minion {
         if (!this.IsEmpty) {
             return false;
         }
-        let minerals = this.minion.pos.findClosestByPath<Mineral>(FIND_MINERALS);
+        let minerals = this.minion.pos.findClosestByPath<Mineral>(FIND_MINERALS, {filter : mineral => mineral.mineralAmount != 0});
         if (minerals) {
             this.SetDestination(minerals.pos.x, minerals.pos.y, 1, minerals.id);
             this.minion.memory.postMovingState = Constants.STATE_HARVESTING;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Finds the terminal to put energy into.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
+    protected FindTerminalTarget(): boolean {
+        if (this.IsEmpty || this.minion.room.memory.needRelief) {
+            return false;
+        }
+        let terminal: Terminal = this.minion.room.terminal;
+        if (terminal) {
+            this.SetDestination(terminal.pos.x, terminal.pos.y, 1, terminal.id);
+            this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
             return true;
         }
         return false;
@@ -822,14 +842,14 @@ export default abstract class Minion {
      * @returns {boolean} 
      * @memberof Minion
      */
-    protected FindTerminal(): boolean {
-        if (this.IsEmpty) {
+    protected FindTerminalSource(): boolean {
+        if (this.IsFull || !this.minion.room.memory.needRelief) {
             return false;
         }
         let terminal: Terminal = this.minion.room.terminal;
         if (terminal) {
             this.SetDestination(terminal.pos.x, terminal.pos.y, 1, terminal.id);
-            this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
+            this.minion.memory.postMovingState = Constants.STATE_WITHDRAWING;
             return true;
         }
         return false;

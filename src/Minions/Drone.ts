@@ -34,7 +34,7 @@ export default class Drone extends Minion {
             return;
         }
         
-        if (this.FindTerminal()) {
+        if (this.FindTerminalTarget()) {
             return;
         }
 

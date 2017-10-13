@@ -49,6 +49,7 @@ export default class RoomController {
         
         if (tick == 2) {
             EntityController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));            
+            this.NeedRelief();
         }
         
         EntityController.RunCreeps(creeps);
@@ -71,6 +72,10 @@ export default class RoomController {
             hash |= 0;
         }
         return hash % Configuration.HashFactor;
+    }
+
+    private NeedRelief() {
+        this.room.memory.needRelief = this.room.storage && this.room.storage.store.energy < 10000;
     }
 
     /**

@@ -34,6 +34,10 @@ export default class Filler extends Minion {
             return;
         }
 
+        if (this.FindTerminalSource()) {
+            return;
+        }
+
         if (this.FindStorageTarget()) {
             return;
         }

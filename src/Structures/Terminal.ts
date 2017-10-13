@@ -25,9 +25,16 @@ export default class Terminal {
      * @memberof Terminal
      */
     public Run() {
-        if ((this.terminal.store[RESOURCE_ENERGY] < Configuration.Terminal[RESOURCE_ENERGY]) || ((Game.time % 20) != 0) || this.terminal.cooldown != 0) {
+        if ((this.terminal.store[RESOURCE_ENERGY] < Configuration.Terminal.energy) || ((Game.time % 20) != 0) || this.terminal.cooldown != 0) {
             return;
         }
+        if (this.SellResources()) {
+            return;
+        }
+        this.SendRelief();
+    }
+
+    private SellResources(): boolean {
         for (let type in this.terminal.store) {
             if (type == RESOURCE_ENERGY) {
                 continue;
@@ -53,12 +60,37 @@ export default class Terminal {
             let cost = Game.market.calcTransactionCost(amount, this.terminal.room.name, order.roomName);
             if (cost > this.terminal.store[RESOURCE_ENERGY]) {
                 console.log(this.terminal.room.name + ": Not enough energy to transfer");
-                return;
+                return false;
             }
             let result = Game.market.deal(order.id, amount, this.terminal.room.name);
-            if (result == 0) {
+            if (result == OK) {
                 console.log(this.terminal.room.name + ": Sold " + amount + " mineral(" + type + ") to " + order.roomName + " for " + (order.price * amount));
-                break;                
+                return true;                
+            }
+        }
+        return false;
+    }
+
+    private SendRelief() {
+        if (!Memory.rooms || this.terminal.store.energy < 30000) {
+            return;
+        }
+        let rooms = _.filter(Memory.rooms, r => r.needRelief);
+        for (let name in rooms) {
+            let room = Game.rooms[name];
+            if (!room || !room.terminal) {
+                continue;
+            }
+            let amount = 10000;
+            let cost = Game.market.calcTransactionCost(amount, this.terminal.room.name, name);
+            if (this.terminal.store.energy < cost + amount) {
+                console.log(this.terminal.room.name + ": Not enough energy to send relief");
+                continue;
+            }           
+            let result = this.terminal.send(RESOURCE_ENERGY, amount, name);
+            if (result == OK) {
+                console.log(this.terminal.room.name + ": Sent " + amount + " relief to " + name);
+                return;
             }
         }
     }
