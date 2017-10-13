@@ -1,5 +1,5 @@
-import Constants from "../Constants"
 import Minion from "./Minion";
+import Constants from "../Constants"
 
 /**
  * Seeder minion, used to provide support to another room.
@@ -76,9 +76,4 @@ export default class Seeder extends Minion {
             Parts: Minion.GetParts(rcl)
         };
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Seeder, "Seeder");
 }

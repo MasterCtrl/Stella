@@ -1,6 +1,6 @@
-import Constants from "../Constants"
-import Minion from "./Minion";
 import RoomController from "../Controllers/RoomController";
+import Minion from "./Minion";
+import Constants from "../Constants"
 
 /**
  * LinkMiner minion, used to purely to mine a source as efficiently as possible and deposit into a link.
@@ -61,9 +61,4 @@ export default class LinkMiner extends Minion {
             Parts: [WORK, WORK, WORK, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE]
         };
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(LinkMiner, "LinkMiner");
 }

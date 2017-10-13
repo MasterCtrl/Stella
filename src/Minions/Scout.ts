@@ -1,5 +1,5 @@
-import Constants from "../Constants"
 import Minion from "./Minion";
+import Constants from "../Constants"
 
 /**
  * Scout minion, used to claim additional rooms.
@@ -60,9 +60,4 @@ export default class Scout extends Minion {
         
         return options;
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Scout, "Scout");
 }

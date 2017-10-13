@@ -11,11 +11,11 @@ export default class Configuration {
         rampart:    350000
     };
     static Terminal = {
-        Z:          {Threshold : 3000, Packet: 500},
+        Z:          {Threshold : 10100, Packet: 100},
         O:          {Threshold : 2500, Packet: 500},
         U:          {Threshold : 2000, Packet: 500},
         Fallback:   {Threshold : 2000, Packet: 500},
-        energy:     1000
+        energy:     100000
     };
     static HashFactor = 5;
 }

@@ -1,6 +1,6 @@
-import Constants from "../Constants"
-import Minion from "./Minion";
 import RoomController from "../Controllers/RoomController"
+import Minion from "./Minion";
+import Constants from "../Constants"
 
 /**
  * Harvester minion, used to mine and fill spawns, extensions, towers, and containers.
@@ -67,9 +67,4 @@ export default class Harvester extends Minion {
             Parts: Minion.GetParts(rcl)
         };
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Harvester, "Harvester");
 }

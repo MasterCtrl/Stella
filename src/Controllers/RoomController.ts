@@ -1,16 +1,16 @@
+import EntityController from "./EntityController";
+import SpawnController from "./SpawnController";
 import Builder from "../Minions/Builder";
-import Configuration from "../Configuration"
 import Courier from "../Minions/Courier";
 import Drone from "../Minions/Drone";
 import Filler from "../Minions/Filler"
 import Harvester from "../Minions/Harvester";
-import LinkMiner from "../Minions/LinkMiner"
+import LinkMiner from "../Minions/LinkMiner";
 import Miner from "../Minions/Miner";
-import EntityController from "./EntityController";
 import Scout from "../Minions/Scout";
 import Seeder from "../Minions/Seeder";
-import SpawnController from "./SpawnController";
 import Upgrader from "../Minions/Upgrader";
+import Configuration from "../Configuration"
 
 /**
  * RoomController, used to run all aspects of a room.
@@ -38,16 +38,25 @@ export default class RoomController {
      */
     public Run() {
         let creeps: Creep[] = this.room.find(FIND_MY_CREEPS);
-        let roomHash = this.HashRoomName(this.room.name);
-        if ((Game.time % Configuration.HashFactor) == roomHash) {
+        let tick = Game.time % Configuration.HashFactor;
+        
+        if (tick == this.HashRoomName(this.room.name)) {
             let spawnOptions = this.GetSpawnOptions();
             if (spawnOptions) {
                 SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
             }    
         }
-        EntityController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));
+        
+        if (tick == 2) {
+            EntityController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));            
+        }
+        
         EntityController.RunCreeps(creeps);
-        EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));
+        
+        if (tick == 3 || RoomController.UnderAttack(this.room.name)) {
+            EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));            
+        }
+        
         EntityController.RunTerminal(this.room.terminal);
     }
 
@@ -79,6 +88,9 @@ export default class RoomController {
     }
 
     private AddOptions(options: any[], getFunc: (room: Room) => any) {
+        if (!this.room.controller) {
+            return;
+        }
         let opt = getFunc(this.room);
         if (opt && opt.Count != 0) {
             options.push(opt);
@@ -185,8 +197,4 @@ export default class RoomController {
         return underAttack;
     }
     private static roomsUnderAttack: { [roomName: string]: boolean; } = {};
-}
-
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(RoomController, "RoomController"); 
 }

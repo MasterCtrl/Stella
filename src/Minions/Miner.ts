@@ -1,6 +1,6 @@
-import Constants from "../Constants"
-import Minion from "./Minion";
 import RoomController from "../Controllers/RoomController";
+import Minion from "./Minion";
+import Constants from "../Constants"
 
 /**
  * Miner minion, used to purely to mine a source as efficiently as possible.
@@ -56,9 +56,4 @@ export default class Miner extends Minion {
             Parts: [WORK, WORK, WORK, WORK, MOVE, WORK, MOVE]
         };
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Miner, "Miner");
 }

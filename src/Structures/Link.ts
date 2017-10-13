@@ -51,8 +51,8 @@ export default class Link {
             return;
         }
         
-        let target: StructureLink = this.link.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter : (link: StructureLink) => link.structureType == STRUCTURE_LINK && link.id != this.link.id
+        let target = this.link.pos.findClosestByRange<StructureLink>(FIND_STRUCTURES, {
+            filter : link => link.structureType == STRUCTURE_LINK && link.id != this.link.id
         });
         if (!target || target.energy == target.energyCapacity) {
             return;
@@ -61,12 +61,7 @@ export default class Link {
         this.TransferToTarget(target, target.energyCapacity - target.energy);
     }
 
-    private TransferToTarget(target: StructureLink | Creep, targetFreeSpace: number) {
+    private TransferToTarget(target: StructureLink, targetFreeSpace: number) {
         this.link.transferEnergy(target, targetFreeSpace > this.link.energy ? this.link.energy : targetFreeSpace);
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Link, "Link");
 }

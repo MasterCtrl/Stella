@@ -63,7 +63,3 @@ export default class Terminal {
         }
     }
 }
-
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Terminal, "Terminal");
-}

@@ -1,6 +1,6 @@
-import Constants from "../Constants"
-import Minion from "./Minion";
 import RoomController from "../Controllers/RoomController";
+import Minion from "./Minion";
+import Constants from "../Constants"
 
 /**
  * Courier minion, used to purely to move energy from sources to fill spawns, extensions, towers, and containers.
@@ -74,9 +74,4 @@ export default class Courier extends Minion {
         };
     }
     private static CourierParts: string[] = [CARRY, MOVE, CARRY, MOVE];   
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Courier, "Courier");
 }

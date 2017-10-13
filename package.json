@@ -10,17 +10,21 @@
     "type": "git",
     "url": "git+https://github.com/MasterCtrl/Stella.git"
   },
-  "author": "",
+  "author": "robrtgray@gmail.com",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/MasterCtrl/Stella/issues"
   },
   "homepage": "https://github.com/MasterCtrl/Stella#readme",
   "dependencies": {
+    "screeps-profiler": "^2.0.1",
+    "sodb": "^1.2.5"
+  },
+  "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-screeps": "^1.3.0",
-    "screeps-profiler": "^2.0.1",
-    "sodb": "^1.2.5",
+    "mocha": "^4.0.1",
+    "rewire": "^2.5.2",
     "webpack": "^3.6.0"
   }
 }

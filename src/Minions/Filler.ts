@@ -1,6 +1,6 @@
-import Constants from "../Constants"
-import Minion from "./Minion"
 import RoomController from "../Controllers/RoomController"
+import Minion from "./Minion"
+import Constants from "../Constants"
 
 /**
  * Filler minion, used to purely to move energy from links and fill storage.
@@ -57,9 +57,4 @@ export default class Filler extends Minion {
             Parts: [CARRY, CARRY, CARRY, CARRY, MOVE]
         };
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Filler, "Filler");
 }

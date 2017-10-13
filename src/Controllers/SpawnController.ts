@@ -67,8 +67,3 @@ export default class SpawnController {
         return false;
     }
 }
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(SpawnController, "SpawnController");
-}

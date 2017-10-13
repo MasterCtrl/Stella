@@ -76,8 +76,3 @@ export default class Builder extends Minion {
         };
     }
 }
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Builder, "Builder");
-}

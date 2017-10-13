@@ -1,12 +1,7 @@
-import Configuration from "./Configuration"
 import EntityController from "./Controllers/EntityController";
 import RoomController from "./Controllers/RoomController";
+import Profiler from "./Profiling"
 
-let Profiler = undefined;
-if (Configuration.Profiling) {
-    Profiler = require("screeps-profiler");
-    Profiler.enable();    
-}
 
 export const loop = function() {
     if (Profiler) {

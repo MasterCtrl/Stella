@@ -1,5 +1,5 @@
-import Constants from "../Constants"
 import Minion from "./Minion";
+import Constants from "../Constants"
 
 /**
  * Upgrader minion, used to constantly upgrade the controller in the room.
@@ -69,9 +69,4 @@ export default class Upgrader extends Minion {
             Parts: Minion.GetParts(rcl)
         };
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Upgrader, "Upgrader");
 }

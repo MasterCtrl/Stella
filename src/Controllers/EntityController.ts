@@ -1,7 +1,7 @@
-import Link from "../Structures/Link"
 import Minion from "../Minions/Minion";
-import Turret from "../Structures/Turret";
+import Link from "../Structures/Link"
 import Terminal from "../Structures/Terminal";
+import Turret from "../Structures/Turret";
 type CreepHash = {[creepName: string]: Creep;};
 
 /**
@@ -97,9 +97,4 @@ export default class EntityController {
             return null;
         }
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(EntityController, "EntityController");  
 }
