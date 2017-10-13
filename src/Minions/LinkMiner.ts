@@ -63,4 +63,7 @@ export default class LinkMiner extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(LinkMiner, "LinkMiner");
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(LinkMiner, "LinkMiner");
+}

@@ -1,4 +1,5 @@
 import Builder from "../Minions/Builder";
+import Configuration from "../Configuration"
 import Courier from "../Minions/Courier";
 import Drone from "../Minions/Drone";
 import Filler from "../Minions/Filler"
@@ -36,15 +37,31 @@ export default class RoomController {
      * @memberof RoomController
      */
     public Run() {
-        let spawnOptions = this.GetSpawnOptions();
         let creeps: Creep[] = this.room.find(FIND_MY_CREEPS);
-        if (spawnOptions) {
-            SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
+        let roomHash = this.HashRoomName(this.room.name);
+        if ((Game.time % Configuration.HashFactor) == roomHash) {
+            let spawnOptions = this.GetSpawnOptions();
+            if (spawnOptions) {
+                SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
+            }    
         }
         EntityController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));
         EntityController.RunCreeps(creeps);
         EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));
         EntityController.RunTerminal(this.room.terminal);
+    }
+
+    private HashRoomName(roomName: string): number {
+        var hash = 0, i, chr;
+        if (roomName.length === 0) {
+            return hash;
+        }
+        for (i = 0; i < roomName.length; i++) {
+            chr  = roomName.charCodeAt(i);
+            hash = ((hash << 5) - hash) + chr;
+            hash |= 0;
+        }
+        return hash % Configuration.HashFactor;
     }
 
     /**
@@ -55,9 +72,9 @@ export default class RoomController {
      */
     public GetSpawnOptions(): any[] {
         let options = [];
-        RoomController.OptionFuncs.forEach(f =>{
-            this.AddOptions(options, f);
-        });
+        for (let i in RoomController.OptionFuncs) {
+            this.AddOptions(options, RoomController.OptionFuncs[i]);
+        }
         return options;
     }
 
@@ -139,7 +156,7 @@ export default class RoomController {
         if (!this.areWeContainerMining.hasOwnProperty(room.name)) {
             let sources = room.find(FIND_SOURCES).length;
             let containers = room.find(FIND_STRUCTURES, {filter : container => container.structureType == STRUCTURE_CONTAINER}).length;
-            areWeContainerMining = containers == sources;
+            areWeContainerMining = containers >= sources;
             this.areWeContainerMining[room.name] = areWeContainerMining;
         } else {
             areWeContainerMining = this.areWeContainerMining[room.name];
@@ -170,4 +187,6 @@ export default class RoomController {
     private static roomsUnderAttack: { [roomName: string]: boolean; } = {};
 }
 
-require("screeps-profiler").registerClass(RoomController, "RoomController");
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(RoomController, "RoomController"); 
+}

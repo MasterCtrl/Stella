@@ -66,4 +66,7 @@ export default class Link {
     }
 }
 
-require("screeps-profiler").registerClass(Link, "Link");
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(Link, "Link");
+}

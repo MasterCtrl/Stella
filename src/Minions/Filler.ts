@@ -59,4 +59,7 @@ export default class Filler extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(Filler, "Filler");
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(Filler, "Filler");
+}

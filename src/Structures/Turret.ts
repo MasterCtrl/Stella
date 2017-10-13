@@ -40,4 +40,7 @@ export default class Turret {
     }
 }
 
-require("screeps-profiler").registerClass(Turret, "Turret");
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(Turret, "Turret");
+}

@@ -42,18 +42,18 @@ export default class Drone extends Minion {
     }
 
     /**
-     * Gets the options for the Builder minion based on the room.
+     * Gets the options for the Drone minion based on the room.
      * 
      * @static
      * @param {Room} room 
      * @returns {*} 
-     * @memberof Builder
+     * @memberof Drone
      */
     public static GetOptions(room: Room): any {
         let rcl = Math.ceil(room.controller.level / 2);
         let count = 0;
         let minerals: Mineral[] = room.find(FIND_MINERALS);
-        if (minerals.length > 0 && minerals[0].mineralAmount > 100) {
+        if (minerals.length > 0 && minerals[0].mineralAmount > 1000) {
             count = room.find(FIND_STRUCTURES, {filter: (extractor: Structure) => extractor.structureType == STRUCTURE_EXTRACTOR}).length
         }
         return { 
@@ -62,4 +62,9 @@ export default class Drone extends Minion {
             Parts: [WORK, WORK, MOVE, WORK, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE]
         };
     }
+}
+
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(Drone, "Drone");
 }

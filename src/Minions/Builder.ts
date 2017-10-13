@@ -67,8 +67,8 @@ export default class Builder extends Minion {
      * @memberof Builder
      */
     public static GetOptions(room: Room): any {
-        let rcl = Math.ceil(room.controller.level / 2);
-        let count = room.find(FIND_SOURCES).length + 1;
+        let rcl = Math.ceil(room.controller.level / 1.5);
+        let count = room.find(FIND_SOURCES).length;
         return { 
             Type: this.Type,
             Count: count,
@@ -77,4 +77,7 @@ export default class Builder extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(Builder, "Builder");
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(Builder, "Builder");
+}

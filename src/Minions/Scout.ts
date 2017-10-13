@@ -62,4 +62,7 @@ export default class Scout extends Minion {
     }
 }
 
-require("screeps-profiler").registerClass(Scout, "Scout");
+import Configuration from "../Configuration"
+if (Configuration.Profiling) {
+    require("screeps-profiler").registerClass(Scout, "Scout");
+}
