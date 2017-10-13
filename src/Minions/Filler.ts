@@ -42,8 +42,8 @@ export default class Filler extends Minion {
             return;
         }
         
-        this.minion.memory.initialized = false;
         this.minion.memory.state = Constants.STATE_IDLE;
+        this.minion.memory.idle = 5;
     }
 
     /**
