@@ -62,8 +62,10 @@ export default class Upgrader extends Minion {
      */
     public static GetOptions(room: Room): any {
         let count = room.find(FIND_SOURCES).length;
-        let cap = room.energyCapacityAvailable / 2;
-        let size = Math.floor((room.energyAvailable > cap ? cap : room.energyAvailable) / 200);  
+        let size = 1;
+        if (!room.memory.needRelief) {
+            size = Math.min(room.energyCapacityAvailable / 3, room.energyAvailable) / 200;
+        }
         return { 
             Type: this.Type,
             Count: count,

@@ -75,7 +75,7 @@ export default class RoomController {
     }
 
     private NeedRelief() {
-        this.room.memory.needRelief = this.room.storage && this.room.storage.store.energy < 10000;
+        this.room.memory.needRelief = !this.room.storage || this.room.storage.store.energy < 50000;
     }
 
     /**
@@ -117,6 +117,7 @@ export default class RoomController {
             let controller = new RoomController(rooms[key]);
             controller.Run();
         }
+        //TODO: room memory collection
     }
 
     /**

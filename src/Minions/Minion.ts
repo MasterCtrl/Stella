@@ -506,6 +506,9 @@ export default abstract class Minion {
     }
 
     private FindTerminalStorage() {
+        if (this.minion.room.memory.needRelief) {
+            return false;
+        }
         let terminal = this.minion.room.terminal;
         if (terminal && terminal.store[RESOURCE_ENERGY] < Configuration.Terminal.energy) {
             this.SetDestination(terminal.pos.x, terminal.pos.y, 1, terminal.id, terminal.room.name);
@@ -543,7 +546,7 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected FindStorageSource(): boolean {
-        if (!this.IsEmpty) {// || !RoomController.AreWeLinkMining(this.minion.room)) {
+        if (!this.IsEmpty) {
             return false;
         }
         let storage = this.minion.room.storage;
