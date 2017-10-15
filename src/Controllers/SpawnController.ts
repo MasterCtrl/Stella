@@ -33,12 +33,13 @@ export default class SpawnController {
      * @memberof SpawnController
      */
     public static SpawnMinions(spawner: Spawn, creeps: Creep[], spawnOptions: Options[]) {
+        if (!spawner.isActive() || spawner.spawning) {
+            return;
+        }
         for (var index in spawnOptions) {
-            if (!spawner.isActive() || spawner.spawning) {
-                return;
-            }
             var options = spawnOptions[index];
             if (options.Count != 0 && this.SpawnMinion(spawner, creeps, options.Type, options.Count, options.Parts)) {
+                options.Count = 0;
                 break;
             }
         }
