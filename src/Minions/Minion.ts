@@ -411,7 +411,7 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected FindDroppedEnergy(): boolean {
-        if (!this.IsEmpty || RoomController.UnderAttack(this.minion.room.name)) {
+        if (!this.IsEmpty || RoomController.UnderAttack(this.minion.room)) {
             return false;
         }
         let occupiedSources = _.filter(Game.creeps, creep => creep.memory.destination_id).map(creep => creep.memory.destination_id);
@@ -434,7 +434,7 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected FindDroppedResource(): boolean {
-        if (!this.IsEmpty || RoomController.UnderAttack(this.minion.room.name)) {
+        if (!this.IsEmpty || RoomController.UnderAttack(this.minion.room)) {
             return false;
         }
         let occupiedSources = _.filter(Game.creeps, creep => creep.memory.destination_id).map(creep => creep.memory.destination_id);
@@ -463,7 +463,7 @@ export default abstract class Minion {
         }
         let occupiedDestinations = _.filter(Game.creeps, creep => creep.memory.destination_id).map<string>(creep => creep.memory.destination_id);
         let targetQueue: TargetQueue = [d => this.FindSpawnStorage(d), d => this.FindTurretStorage(d)];
-        if (RoomController.UnderAttack(this.minion.room.name)) {
+        if (RoomController.UnderAttack(this.minion.room)) {
             targetQueue = targetQueue.reverse();
         }
         targetQueue.push(d => this.FindTerminalStorage());

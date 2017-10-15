@@ -71,12 +71,15 @@ export default class RoomController {
         
         if (tick == Configuration.TickRate - 1) {
             EntityController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));            
-            this.NeedRelief();
+        }
+
+        if (tick == Configuration.TickRate - 2) {
+            this.RefreshRoomMemory();
         }
         
         EntityController.RunCreeps(creeps);
-        
-        if (tick == Configuration.TickRate - 2 || RoomController.UnderAttack(this.room.name)) {
+      
+        if (tick == Configuration.TickRate - 3 || RoomController.UnderAttack(this.room)) {
             EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));            
         }
         
@@ -92,8 +95,9 @@ export default class RoomController {
         }
     }
 
-    private NeedRelief() {
+    private RefreshRoomMemory() {
         this.room.memory.needRelief = !this.room.storage || this.room.storage.store.energy < 50000;
+        this.room.memory.underAttack = undefined;
     }
 
     /**
@@ -182,7 +186,6 @@ export default class RoomController {
      * @memberof RoomController
      */
     public static AreWeContainerMining(room: Room): boolean {
-        let areWeContainerMining: boolean; 
         if (room.memory.containerMining == undefined) {
             let sources = room.find(FIND_SOURCES).length;
             let containers = room.find(FIND_STRUCTURES, {filter : container => container.structureType == STRUCTURE_CONTAINER}).length;
@@ -195,20 +198,19 @@ export default class RoomController {
      * Gets if we are under attack in this room
      * 
      * @static
-     * @param {string} room 
+     * @param {Room} room 
      * @returns {boolean} 
      * @memberof RoomController
      */
-    public static UnderAttack(room: string): boolean {
-        let underAttack: boolean; 
-        if (!this.roomsUnderAttack.hasOwnProperty(room)) {
-            let hostiles = Game.rooms[room].find(FIND_HOSTILE_CREEPS);
-            underAttack = hostiles.length != 0;
-            this.roomsUnderAttack[room] = underAttack;
-        } else {
-            underAttack = this.roomsUnderAttack[room];
+    public static UnderAttack(room: Room): boolean {
+        if (room.memory.underAttack == undefined) {
+            let hostiles = room.find(FIND_HOSTILE_CREEPS);
+            let underAttack = room.memory.underAttack = hostiles.length != 0;
+            if (underAttack) {
+                console.log(room.name + ": under attack!");
+            }
+            return underAttack;
         }
-        return underAttack;
+        return room.memory.underAttack;
     }
-    private static roomsUnderAttack: { [roomName: string]: boolean; } = {};
 }
