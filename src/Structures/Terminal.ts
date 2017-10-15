@@ -72,11 +72,13 @@ export default class Terminal {
     }
 
     private SendRelief() {
-        if (!Memory.rooms || this.terminal.store.energy < 30000) {
+        if (!Memory.rooms) {
             return;
         }
-        let rooms = _.filter(Memory.rooms, r => r.needRelief);
-        for (let name in rooms) {
+        for (let name in Memory.rooms) {
+            if (!Memory.rooms[name].needRelief) {
+                continue;
+            }
             let room = Game.rooms[name];
             if (!room || !room.terminal) {
                 continue;
