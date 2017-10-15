@@ -11,6 +11,7 @@ import Scout from "../Minions/Scout";
 import Seeder from "../Minions/Seeder";
 import Upgrader from "../Minions/Upgrader";
 import Configuration from "../Configuration"
+type RoomHash = {[roomName: string]: Room};
 
 /**
  * RoomController, used to run all aspects of a room.
@@ -29,6 +30,25 @@ export default class RoomController {
      */
     constructor(room: Room) {
         this.room = room;
+        if (!this.Index) {
+            let index = 0;
+            let max = _.max(Game.rooms, r => r.memory.index);
+            if (max && max.memory) {
+                index = max.memory.index + 1;
+            }
+            this.room.memory.index = index;
+        }
+    }
+
+    /**
+     * Gets the index of this room
+     * 
+     * @readonly
+     * @type {number}
+     * @memberof RoomController
+     */
+    public get Index(): number {
+        return this.room.memory.index;
     }
 
     /**
@@ -37,41 +57,39 @@ export default class RoomController {
      * @memberof RoomController
      */
     public Run() {
+        this.LogStats();
+
         let creeps: Creep[] = this.room.find(FIND_MY_CREEPS);
-        let tick = Game.time % Configuration.HashFactor;
+        let tick = Game.time % Configuration.TickRate;
         
-        if (tick == this.HashRoomName(this.room.name)) {
+        if (tick == this.Index) {
             let spawnOptions = this.GetSpawnOptions();
             if (spawnOptions) {
                 SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
             }    
         }
         
-        if (tick == 2) {
+        if (tick == Configuration.TickRate - 1) {
             EntityController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));            
             this.NeedRelief();
         }
         
         EntityController.RunCreeps(creeps);
         
-        if (tick == 3 || RoomController.UnderAttack(this.room.name)) {
+        if (tick == Configuration.TickRate - 2 || RoomController.UnderAttack(this.room.name)) {
             EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));            
         }
         
         EntityController.RunTerminal(this.room.terminal);
     }
 
-    private HashRoomName(roomName: string): number {
-        var hash = 0, i, chr;
-        if (roomName.length === 0) {
-            return hash;
+    private LogStats() {
+        if (Game.time % 1200 == 0 && this.room.storage) {
+            if (!this.room.memory.income) {
+                this.room.memory.income = [];
+            }
+            this.room.memory.income.push({time: Game.time, bank: this.room.storage.store.energy})            
         }
-        for (i = 0; i < roomName.length; i++) {
-            chr  = roomName.charCodeAt(i);
-            hash = ((hash << 5) - hash) + chr;
-            hash |= 0;
-        }
-        return hash % Configuration.HashFactor;
     }
 
     private NeedRelief() {
@@ -117,7 +135,6 @@ export default class RoomController {
             let controller = new RoomController(rooms[key]);
             controller.Run();
         }
-        //TODO: room memory collection
     }
 
     /**
@@ -148,18 +165,13 @@ export default class RoomController {
      * @memberof RoomController
      */
     public static AreWeLinkMining(room: Room): boolean {
-        let areWeLinkMining: boolean; 
-        if (!this.areWeLinkMining.hasOwnProperty(room.name)) {
+        if (room.memory.linkMining == undefined) {
             let sources = room.find(FIND_SOURCES).length;
             let links = room.find(FIND_MY_STRUCTURES, {filter : link => link.structureType == STRUCTURE_LINK}).length;
-            areWeLinkMining = links > sources;
-            this.areWeLinkMining[room.name] = areWeLinkMining;
-        } else {
-            areWeLinkMining = this.areWeLinkMining[room.name];
+            return (room.memory.linkMining = links > sources);
         }
-        return areWeLinkMining;
+        return room.memory.linkMining;
     }
-    private static areWeLinkMining: { [roomName: string]: boolean; } = {};
 
     /**
      * Gets if we are container mining in this room
@@ -171,17 +183,13 @@ export default class RoomController {
      */
     public static AreWeContainerMining(room: Room): boolean {
         let areWeContainerMining: boolean; 
-        if (!this.areWeContainerMining.hasOwnProperty(room.name)) {
+        if (room.memory.containerMining == undefined) {
             let sources = room.find(FIND_SOURCES).length;
             let containers = room.find(FIND_STRUCTURES, {filter : container => container.structureType == STRUCTURE_CONTAINER}).length;
-            areWeContainerMining = containers >= sources;
-            this.areWeContainerMining[room.name] = areWeContainerMining;
-        } else {
-            areWeContainerMining = this.areWeContainerMining[room.name];
+            return (room.memory.containerMining = containers >= sources);
         }
-        return areWeContainerMining;
+        return room.memory.containerMining;
     }
-    private static areWeContainerMining: { [roomName: string]: boolean; } = {};
 
     /**
      * Gets if we are under attack in this room

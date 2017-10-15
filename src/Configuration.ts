@@ -17,5 +17,5 @@ export default class Configuration {
         Fallback:   {Threshold : 2000, Packet: 500},
         energy:     100000
     };
-    static HashFactor = 5;
+    static TickRate = 7;
 }

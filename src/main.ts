@@ -1,5 +1,6 @@
 import EntityController from "./Controllers/EntityController";
 import RoomController from "./Controllers/RoomController";
+import GC from "./GC"
 import Profiler from "./Profiling"
 
 
@@ -12,6 +13,6 @@ export const loop = function() {
 }
 
 let mainLoop = function() {
-    EntityController.Sync(Memory.creeps, Game.creeps);
     RoomController.RunRooms(Game.rooms);
+    GC.SyncAll();
 }
