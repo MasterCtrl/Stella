@@ -46,22 +46,23 @@ export default class Link {
      * 
      * @memberof Link
      */
-    public Run() {
+    public Run(): boolean {
         if (this.IsOnCooldown || this.IsTarget || this.link.energy / this.link.energyCapacity < 0.5) {
-            return;
+            return false;;
         }
         
         let target = this.link.pos.findClosestByRange<StructureLink>(FIND_STRUCTURES, {
             filter : link => link.structureType == STRUCTURE_LINK && link.id != this.link.id
         });
         if (!target || target.energy == target.energyCapacity) {
-            return;
+            return false;
         }
 
-        this.TransferToTarget(target, target.energyCapacity - target.energy);
+        return this.TransferToTarget(target, target.energyCapacity - target.energy);
     }
 
     private TransferToTarget(target: StructureLink, targetFreeSpace: number) {
-        this.link.transferEnergy(target, targetFreeSpace > this.link.energy ? this.link.energy : targetFreeSpace);
+        var result = this.link.transferEnergy(target, targetFreeSpace > this.link.energy ? this.link.energy : targetFreeSpace);
+        return result == OK;
     }
 }

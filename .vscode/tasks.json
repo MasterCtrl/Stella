@@ -11,6 +11,21 @@
             ]
         },
         {
+            "taskName": "Test",
+            "type": "shell",
+            "command": "./node_modules/.bin/mocha",
+            "windows": {
+                "command": ".\\node_modules\\.bin\\mocha.cmd"
+            },
+            "group": "build",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "dependsOn": [
+                "Build"
+            ]
+        },
+        {
             "taskName": "Package",
             "type": "shell",
             "command": "./node_modules/.bin/webpack",
@@ -23,7 +38,7 @@
             },
             "problemMatcher": [],
             "dependsOn": [
-                "Build"
+                "Test"
             ]
         },
         {
