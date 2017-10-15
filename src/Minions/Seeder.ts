@@ -71,7 +71,7 @@ export default class Seeder extends Minion {
         let count = rooms.indexOf(room.name) == -1 ? (rooms.length * 2) - seeders.length : 0;
         let size = 1;
         if (!room.memory.needRelief) {
-            size = Math.ceil(Math.min(room.energyCapacityAvailable / 3, room.energyAvailable) / 200);
+            size = Math.ceil(Math.min(room.energyCapacityAvailable / 3, room.energyAvailable, 1200) / 200);
         } 
         return { 
             Type: this.Type,

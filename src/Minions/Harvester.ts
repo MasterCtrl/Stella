@@ -61,7 +61,7 @@ export default class Harvester extends Minion {
         if (RoomController.AreWeContainerMining(room) || RoomController.AreWeLinkMining(room)) {
             count = 0;
         } else if (!room.memory.needRelief) {
-            size = Math.ceil(Math.min(room.energyCapacityAvailable / 3, room.energyAvailable) / 200);
+            size = Math.ceil(Math.min(room.energyCapacityAvailable / 3, room.energyAvailable, 1200) / 200);
         }
         return { 
             Type: this.Type,

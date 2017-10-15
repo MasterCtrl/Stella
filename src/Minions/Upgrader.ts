@@ -64,7 +64,7 @@ export default class Upgrader extends Minion {
         let count = room.find(FIND_SOURCES).length;
         let size = 1;
         if (!room.memory.needRelief) {
-            size = Math.ceil(Math.min(room.energyCapacityAvailable / 3, room.energyAvailable) / 200);
+            size = Math.ceil(Math.min(room.energyCapacityAvailable / 3, room.energyAvailable, 1200) / 200);
         }
         return { 
             Type: this.Type,
