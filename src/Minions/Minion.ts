@@ -91,6 +91,10 @@ export default abstract class Minion {
             case Constants.STATE_RESET:
                 this.RunReset(Constants.STATE_MOVING);
                 break;
+
+            case Constants.STATE_RANGED_ATTACK:
+                this.RunRangedAttack();
+                break;
             
             case Constants.STATE_SUICIDE:
                 this.RunSuicide();
@@ -225,9 +229,15 @@ export default abstract class Minion {
 
     private RunClaiming(transitionState: number) {
         if (this.minion.claimController(this.minion.room.controller) == OK) {
+            console.log(this.minion.room.name + ": Controller claimed!");
             this.minion.memory.initialized = false;
         }
-        this.minion.reserveController(this.minion.room.controller);
+        if (this.minion.reserveController(this.minion.room.controller) == OK) {
+            this.minion.memory.initialized = false;
+        }
+        if (this.minion.room.controller.upgradeBlocked > 0) {
+            this.minion.attackController(this.minion.room.controller);            
+        }
     }
 
     private RunIdle(transitionState: number) {
@@ -236,7 +246,7 @@ export default abstract class Minion {
             this.minion.memory.idle--;
             return;
         }
-        this.minion.memory.initialized = false;        
+        this.minion.memory.initialized = false;
         this.minion.memory.state = transitionState;
     }
 
@@ -244,6 +254,35 @@ export default abstract class Minion {
         this.minion.memory.state = transitionState;
         this.minion.memory.initialized = false;
         this.Run();
+    }
+
+    private RunRangedAttack() {
+        if (!this.minion.memory.attackTarget) {
+            this.minion.memory.initialized = false;
+        }
+
+        let target: Creep|Structure;
+        switch(this.minion.memory.attackTarget.type) {
+            case "structure":
+                target = Game.getObjectById(this.minion.memory.attackTarget.id);
+                break;
+            case "minion":
+                target = this.minion.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
+                break;
+        }
+        if (!target) {
+            this.minion.memory.attackTarget = undefined;
+            this.minion.memory.initialized = false;
+        }
+        let range = this.minion.pos.getRangeTo(target);
+        if (range > 3) {
+            if (this.minion.fatigue > 0) {
+                return;
+            }
+            this.minion.moveTo(target);
+            return;
+        }
+        this.minion.rangedAttack(target);
     }
 
     private RunSuicide() {
@@ -859,6 +898,59 @@ export default abstract class Minion {
     }
 
     /**
+     * Finds a hostile spawn to attack.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
+    protected FindHostileSpawn(): boolean {
+        let hostile = this.minion.pos.findClosestByPath<Structure>(FIND_HOSTILE_SPAWNS);
+        if (!hostile) {
+            return false;            
+        }
+        this.minion.memory.attackTarget = {type: "structure", id: hostile.id};
+        this.minion.memory.postMovingState = Constants.STATE_RANGED_ATTACK;
+        return true;
+    }
+
+
+    /**
+     * Finds a hostile minion to attack.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
+    protected FindHostileMinion(): boolean {
+        let hostiles = this.minion.room.find<Creep>(FIND_HOSTILE_CREEPS);
+        if (hostiles.length <= 0) {
+            return false;            
+        }
+        console.log(JSON.stringify(hostiles) + ":" + hostiles.length)
+        this.minion.memory.attackTarget = {type: "minion"};
+        this.minion.memory.postMovingState = Constants.STATE_RANGED_ATTACK;
+        return true;
+    }
+
+    /**
+     * Finds a hostile structure to attack.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
+    protected FindHostileStructure(): boolean {
+        let hostile = this.minion.pos.findClosestByPath<Structure>(FIND_HOSTILE_STRUCTURES);
+        if (!hostile) {
+            return false;            
+        }
+        this.minion.memory.attackTarget = {type: "structure", id: hostile.id};
+        this.minion.memory.postMovingState = Constants.STATE_RANGED_ATTACK;
+        return true;
+    }
+
+    /**
      * Rallies the minion to the closest rally flag
      * 
      * @protected
@@ -893,6 +985,24 @@ export default abstract class Minion {
         this.minion.memory.destination_id = id;
         this.minion.memory.destination_room = room;
         this.minion.memory.range = range;
+    }
+
+    /**
+     * Removes the flag of the specified color from the room then suicides the minion.
+     * 
+     * @protected
+     * @param {number} flagColor 
+     * @memberof Minion
+     */
+    protected RemoveFlagAndSuicide(flagColor: number) {
+        for (let f in Game.flags) {
+            let flag = Game.flags[f];
+            if (flag.color == flagColor && flag.pos.roomName == this.minion.room.name) {
+                flag.remove();
+                break;
+            }
+        }
+        this.minion.suicide();
     }
    
     /**

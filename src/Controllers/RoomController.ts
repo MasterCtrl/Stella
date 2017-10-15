@@ -7,6 +7,7 @@ import Filler from "../Minions/Filler"
 import Harvester from "../Minions/Harvester";
 import LinkMiner from "../Minions/LinkMiner";
 import Miner from "../Minions/Miner";
+import Raider from "../Minions/Raider";
 import Scout from "../Minions/Scout";
 import Seeder from "../Minions/Seeder";
 import Upgrader from "../Minions/Upgrader";
@@ -157,7 +158,8 @@ export default class RoomController {
         (room: Room): any => Upgrader.GetOptions(room),
         (room: Room): any => Scout.GetOptions(room),
         (room: Room): any => Seeder.GetOptions(room),
-        (room: Room): any => Drone.GetOptions(room)
+        (room: Room): any => Drone.GetOptions(room),
+        (room: Room): any => Raider.GetOptions(room)
     ];
 
     /**
@@ -205,7 +207,7 @@ export default class RoomController {
     public static UnderAttack(room: Room): boolean {
         if (room.memory.underAttack == undefined) {
             let hostiles = room.find(FIND_HOSTILE_CREEPS);
-            let underAttack = room.memory.underAttack = hostiles.length != 0;
+            let underAttack = room.memory.underAttack = hostiles.length != 0 && room.controller.my;
             if (underAttack) {
                 console.log(room.name + ": under attack!");
             }

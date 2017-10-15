@@ -55,10 +55,13 @@ export default class Filler extends Minion {
      * @memberof Filler
      */
     public static GetOptions(room: Room): any {
+        if (!RoomController.AreWeLinkMining(room)) {
+            return undefined;
+        }
         return { 
             Type: this.Type,
-            Count: RoomController.AreWeLinkMining(room) ? 1 : 0,
-            Parts: [CARRY, CARRY, CARRY, CARRY, MOVE]
+            Count: 1,
+            Parts: [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE]
         };
     }
 }

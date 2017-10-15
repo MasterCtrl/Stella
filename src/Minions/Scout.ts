@@ -37,7 +37,7 @@ export default class Scout extends Minion {
             return;
         }
 
-        this.Rally();
+        this.RemoveFlagAndSuicide(COLOR_GREEN);
     }
 
     /**
@@ -49,12 +49,18 @@ export default class Scout extends Minion {
      * @memberof Scout
      */
     public static GetOptions(room: Room): any {
+        if (room.memory.needRelief) {
+            return undefined;
+        }
         let scouts = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
         let rooms = _.filter(Game.flags, flag => flag.color == COLOR_GREEN).map(flag => flag.pos.roomName);
         let count = rooms.length - scouts.length;
+        if (count <= 0) {
+            return undefined;
+        }
         let options = { 
             Type: this.Type,
-            Count: count < 0 ? 0 : count,
+            Count: count,
             Parts: [CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE]
         };
         

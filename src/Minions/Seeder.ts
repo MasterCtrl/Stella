@@ -3,7 +3,7 @@ import Constants from "../Constants"
 
 /**
  * Seeder minion, used to provide support to another room.
- * Each room sends 2 minions that it can afford to help any requesting room with a COLOR_BLUE flag.
+ * Sends 2 minions to help any requesting room with a COLOR_BLUE flag.
  * 
  * @export
  * @class Seeder
@@ -66,13 +66,13 @@ export default class Seeder extends Minion {
      * @memberof Seeder
      */
     public static GetOptions(room: Room): any {
-        let seeders = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
         let rooms = _.filter(Game.flags, flag => flag.color == COLOR_BLUE).map(flag => flag.pos.roomName);
-        let count = rooms.indexOf(room.name) == -1 ? (rooms.length * 2) - seeders.length : 0;
-        let size = 1;
-        if (!room.memory.needRelief) {
-            size = Math.ceil(Math.min(room.energyCapacityAvailable / 2, room.energyAvailable, 1200) / 200);
-        } 
+        if (rooms.indexOf(room.name) != -1 || room.memory.needRelief) {
+            return undefined;
+        }
+        let seeders = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
+        let count = (rooms.length * 2) - seeders.length;
+        let size = Math.ceil(Math.min(room.energyCapacityAvailable / 2, room.energyAvailable, 1200) / 200);
         return { 
             Type: this.Type,
             Count: count,
