@@ -1,7 +1,7 @@
-class PositionStub {
+module.exports = class RoomPositionStub {
     constructor() {
         this.findInRangeResults = [];
-        this.findClosestByRangeResult = {};
+        this.findClosestByRangeResult = {energy: 0, energyCapacity: 1};
     }
     
     findInRange() {
@@ -12,5 +12,3 @@ class PositionStub {
         return this.findClosestByRangeResult;
     }
 };
-
-exports.default = PositionStub;

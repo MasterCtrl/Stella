@@ -2,68 +2,63 @@ var assert = require("assert");
 var Link = require("../../lib/Structures/Link");
 var LinkStub = require("../Stubs/LinkStub");
 
-describe("link tests", () => {
+describe("Link Tests", () => {
     before(() => {
-        Object.assign(global, require("../global").default)
+        require("../global").Register();
+    });
+
+    var linkStub;
+
+    beforeEach(() =>{
+        linkStub = new LinkStub();
     });
     
     describe("#Run", () => {
-        it("Returns false if link is a target", () => {
-            var stubLink = new LinkStub.default();
-            stubLink.pos.findInRangeResults = [{}];
+        it("Returns false if link is on cooldown", () => {
+            linkStub.cooldown = 1;
     
-            var link = new Link.default(stubLink);
+            var link = new Link.default(linkStub);
             assert.equal(link.Run(), false, "Link run did not exit");
         });
+
+        it("Returns false if link is a target", () => {
+            linkStub.pos.findInRangeResults = [{}];
     
-        it("Returns false if link is on cooldown", () => {
-            var stubLink = new LinkStub.default();
-            stubLink.cooldown = 1;
-    
-            var link = new Link.default(stubLink);
+            var link = new Link.default(linkStub);
             assert.equal(link.Run(), false, "Link run did not exit");
         });
     
         it("Returns false if energy < 50%", () => {
-            var stubLink = new LinkStub.default();
-            stubLink.energy = 1;
-            stubLink.energyCapacity = 3;
+            linkStub.energy = 0.4;
             
-            var link = new Link.default(stubLink);
+            var link = new Link.default(linkStub);
             assert.equal(link.Run(), false, "Link run did not exit");
         });
     
-        it("Returns false if it doent find a target", () => {
-            var stubLink = new LinkStub.default();
-            stubLink.pos.findClosestByRangeResult = undefined;
+        it("Returns false if it does not find a target", () => {
+            linkStub.pos.findClosestByRangeResult = undefined;
             
-            var link = new Link.default(stubLink);
+            var link = new Link.default(linkStub);
             assert.equal(link.Run(), false, "Link found a target?");
         });
     
         it("Returns false if the target is full", () => {
-            var stubLink = new LinkStub.default();
-            stubLink.pos.findClosestByRangeResult = {energy: 1, energyCapacity: 1};
+            linkStub.pos.findClosestByRangeResult = {energy: 1, energyCapacity: 1};
             
-            var link = new Link.default(stubLink);
+            var link = new Link.default(linkStub);
             assert.equal(link.Run(), false, "Link target wasn't full?");
         });
     
         it("Returns false if the transfer fails", () => {
-            var stubLink = new LinkStub.default();
-            stubLink.pos.findClosestByRangeResult = {energy: 1, energyCapacity: 1};
+            linkStub.transferEnergyResults = -1;
             
-            var link = new Link.default(stubLink);
-            assert.equal(link.Run(), false, "Link transfer unsuccessful");
+            var link = new Link.default(linkStub);
+            assert.equal(link.Run(), false, "Link transfer successful?");
         });
     
         it("Completes successfully", () => {
-            var stubLink = new LinkStub.default();
-            stubLink.pos.findClosestByRangeResult = {energy: 0, energyCapacity: 1};
-            stubLink.transferEnergyResults = OK;
-            
-            var link = new Link.default(stubLink);
-            assert.equal(link.Run(), true, "Link run complete");
+            var link = new Link.default(linkStub);
+            assert.equal(link.Run(), true, "Link run did not complete successfully");
         });
     });
 });

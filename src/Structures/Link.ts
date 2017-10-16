@@ -44,11 +44,12 @@ export default class Link {
     /**
      * Runs the Link
      * 
+     * @returns {boolean} 
      * @memberof Link
      */
     public Run(): boolean {
         if (this.IsOnCooldown || this.IsTarget || this.link.energy / this.link.energyCapacity < 0.5) {
-            return false;;
+            return false;
         }
         
         let target = this.link.pos.findClosestByRange<StructureLink>(FIND_STRUCTURES, {

@@ -1,14 +1,15 @@
-var PositionStub = require("./PositionStub");
+var RoomPositionStub = require("./RoomPositionStub");
 
-class LinkStub {
+module.exports = class LinkStub {
     constructor(pos) {
-        this.pos = pos || new PositionStub.default();
-        this.transferEnergyResults = 0;
+        this.pos = pos || new RoomPositionStub();
+        this.transferEnergyResults = OK;
+        this.cooldown = 0;
+        this.energy = 1;
+        this.energyCapacity = 1;
     }
 
     transferEnergy() {
         return this.transferEnergyResults;
     }
 };
-
-exports.default = LinkStub;

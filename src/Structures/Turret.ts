@@ -21,13 +21,23 @@ export default class Turret {
      * 
      * @memberof Turret
      */
-    public Run() {
-        let hostile = this.turret.pos.findClosestByRange<Creep>(FIND_HOSTILE_CREEPS);
-        if (hostile) {
-            this.turret.attack(hostile);
-            return;
+    public Run(): boolean {
+        if(this.AttackHostile()){
+            return true;
         }
 
+        return this.RepairStructure();
+    }
+
+    private AttackHostile(): boolean {
+        let hostile = this.turret.pos.findClosestByRange<Creep>(FIND_HOSTILE_CREEPS);
+        if (hostile) {
+            return this.turret.attack(hostile) == OK;
+        }
+        return false;
+    }
+
+    private RepairStructure(): boolean {
         let structure = this.turret.pos.findClosestByRange<Structure>(FIND_STRUCTURES, {
             filter: (structure) => structure.structureType != STRUCTURE_WALL && 
                                    structure.structureType != STRUCTURE_RAMPART && 
@@ -35,7 +45,8 @@ export default class Turret {
             }
         );
         if (structure) {
-            this.turret.repair(structure);
+            return this.turret.repair(structure) == OK;
         }
+        return false;
     }
 }

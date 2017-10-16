@@ -21,17 +21,17 @@ export default class Terminal {
     /**
      * Runs the Terminal
      * 
-     * @returns 
+     * @returns {boolean} 
      * @memberof Terminal
      */
-    public Run() {
+    public Run(): boolean {
         if ((this.terminal.store[RESOURCE_ENERGY] < Configuration.Terminal.energy) || ((Game.time % 20) != 0) || this.terminal.cooldown != 0) {
-            return;
+            return false;
         }
         if (this.SellResources()) {
-            return;
+            return true;
         }
-        this.SendRelief();
+        return this.SendRelief();
     }
 
     private SellResources(): boolean {
@@ -71,9 +71,9 @@ export default class Terminal {
         return false;
     }
 
-    private SendRelief() {
+    private SendRelief(): boolean {
         if (!Memory.rooms) {
-            return;
+            return false;
         }
         for (let name in Memory.rooms) {
             if (!Memory.rooms[name].needRelief) {
@@ -88,12 +88,13 @@ export default class Terminal {
             if (this.terminal.store.energy < cost + amount) {
                 console.log(this.terminal.room.name + ": Not enough energy to send relief");
                 continue;
-            }           
+            }
             let result = this.terminal.send(RESOURCE_ENERGY, amount, name);
             if (result == OK) {
                 console.log(this.terminal.room.name + ": Sent " + amount + " relief to " + name);
-                return;
+                return true;
             }
         }
+        return false;
     }
 }
