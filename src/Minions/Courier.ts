@@ -67,7 +67,7 @@ export default class Courier extends Minion {
         if (!RoomController.AreWeContainerMining(room) && !RoomController.AreWeLinkMining(room)) {
             return undefined;
         } else if (!room.memory.needRelief) {
-            size = Math.ceil(Math.min(room.energyCapacityAvailable / 2, room.energyAvailable, 600) / 200);
+            size = Math.ceil(Math.min(room.energyCapacityAvailable / 2, room.energyAvailable, 400) / 200);
         }
         return { 
             Type: this.Type,
