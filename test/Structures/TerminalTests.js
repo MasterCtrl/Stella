@@ -1,4 +1,6 @@
 var assert = require("assert");
+require("../global").Register();
+
 var Terminal = require("../../lib/Structures/Terminal");
 var Configuration = require("../../lib/Configuration");
 var GameStub = require("../Stubs/GameStub");
@@ -8,10 +10,6 @@ var TerminalStub = require("../Stubs/TerminalStub");
 var Suppressor = require("../Suppressor");
 
 describe("Terminal Tests", () => {
-    before(() => {
-        require("../global").Register();
-    });
-    
     var terminalStub, gameStub, memoryStub, lodashStub;
     
     beforeEach(() => {

@@ -1,16 +1,14 @@
 var assert = require("assert");
+require("../global").Register();
+
 var Link = require("../../lib/Structures/Link");
 var LinkStub = require("../Stubs/LinkStub");
 
 describe("Link Tests", () => {
-    before(() => {
-        require("../global").Register();
-    });
-
     var linkStub;
 
     beforeEach(() =>{
-        linkStub = new LinkStub();
+        linkStub = new LinkStub();        
     });
     
     describe("#Run", () => {
@@ -22,8 +20,8 @@ describe("Link Tests", () => {
         });
 
         it("Returns false if link is a target", () => {
-            linkStub.pos.findInRangeResults = [{}];
-    
+            linkStub.room.memory.linkTarget = "A";
+
             var link = new Link.default(linkStub);
             assert.equal(link.Run(), false, "Link run did not exit");
         });
@@ -56,7 +54,7 @@ describe("Link Tests", () => {
             assert.equal(link.Run(), false, "Link transfer successful?");
         });
     
-        it("Completes successfully", () => {
+        it("Completes if transfer is successful", () => {
             var link = new Link.default(linkStub);
             assert.equal(link.Run(), true, "Link run did not complete successfully");
         });

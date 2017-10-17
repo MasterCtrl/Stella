@@ -1,12 +1,10 @@
 var assert = require("assert");
+require("../global").Register();
+
 var Turret = require("../../lib/Structures/Turret");
 var TowerStub = require("../Stubs/TowerStub");
 
 describe("Turret Tests", () => {
-    before(() => {
-        require("../global").Register();
-    });
-
     var towerStub;
 
     beforeEach(() =>{
