@@ -62,17 +62,13 @@ export default class Courier extends Minion {
      * @memberof Courier
      */
     public static GetOptions(room: Room): any {
-        let count = room.find(FIND_SOURCES).length;
-        let size = 1;
         if (!RoomController.AreWeContainerMining(room) && !RoomController.AreWeLinkMining(room)) {
             return undefined;
-        } else if (!room.memory.needRelief) {
-            size = Math.ceil(Math.min(room.energyCapacityAvailable / 2, room.energyAvailable, 400) / 200);
         }
         return { 
             Type: this.Type,
-            Count: count,
-            Parts: Minion.GetParts(size, this.CourierParts)
+            Count: room.find(FIND_SOURCES).length,
+            Parts: Minion.GetPartsFromRoom(room, 600, 200, this.CourierParts)
         };
     }
     private static CourierParts: string[] = [CARRY, MOVE, CARRY, MOVE];   

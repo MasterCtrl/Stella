@@ -99,6 +99,10 @@ export default class RoomController {
     private RefreshRoomMemory() {
         this.room.memory.needRelief = !this.room.storage || this.room.storage.store.energy < 50000;
         this.room.memory.underAttack = undefined;
+        if (!this.room.memory.linkTarget && this.room.storage && this.room.controller.level >= 5) {
+            let targetLink = this.room.storage.pos.findClosestByRange<StructureLink>(FIND_MY_STRUCTURES, { filter: link => link.structureType == STRUCTURE_LINK });
+            this.room.memory.linkTarget = targetLink.id;
+        }
     }
 
     /**

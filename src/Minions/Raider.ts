@@ -62,7 +62,8 @@ export default class Raider extends Minion {
      * @memberof Raider
      */
     public static GetOptions(room: Room): any {
-        if (room.memory.needRelief) {
+        let percentage = room.storage ? room.storage.store.energy / room.storage.storeCapacity : 0;
+        if (room.memory.needRelief || percentage <= 0.4) {
             return undefined;
         }
         let raiders = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
@@ -71,11 +72,10 @@ export default class Raider extends Minion {
         if (count <= 0 ) {
             return undefined;            
         }
-        let size = Math.ceil(Math.min(room.energyCapacityAvailable / 2, room.energyAvailable, 1000) / 260);
         return { 
             Type: this.Type,
             Count: count,
-            Parts: Minion.GetParts(size, this.RaiderParts)
+            Parts: Minion.GetPartsFromRoom(room, 1040, 260, this.RaiderParts)
         };
     }
     private static RaiderParts: string[] = [TOUGH, RANGED_ATTACK, MOVE, MOVE];   

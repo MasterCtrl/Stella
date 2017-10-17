@@ -201,7 +201,10 @@ export default abstract class Minion {
             this.minion.memory.initialized = false;
             return;
         }
-        this.minion.build(constructionSite);
+        let result = this.minion.build(constructionSite);
+        if (result == ERR_INVALID_TARGET) {
+            this.minion.move(BOTTOM);
+        }
     }
 
     private RunRepairing(transitionState: number) {
@@ -635,7 +638,7 @@ export default abstract class Minion {
             filter: structure => structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] != 0
         });
         let container = _.max(containers, container =>  container.store[RESOURCE_ENERGY]);
-        if (container) {
+        if (container && container.pos) {
             this.SetDestination(container.pos.x, container.pos.y, 1, container.id);
             this.minion.memory.postMovingState = Constants.STATE_WITHDRAWING;
             return true;
@@ -927,7 +930,6 @@ export default abstract class Minion {
         if (hostiles.length <= 0) {
             return false;            
         }
-        console.log(JSON.stringify(hostiles) + ":" + hostiles.length)
         this.minion.memory.attackTarget = {type: "minion"};
         this.minion.memory.postMovingState = Constants.STATE_RANGED_ATTACK;
         return true;
@@ -1006,20 +1008,46 @@ export default abstract class Minion {
     }
    
     /**
-     * Builds a list of parts based on the rcl of the room
+     * Builds a list of parts based on the room
      * 
      * @static
-     * @param {number} rcl 
+     * @param {Room} room 
+     * @param {number} max 
+     * @param {number} cost 
      * @param {string[]} [partsToAdd] 
      * @returns {string[]} 
      * @memberof Minion
      */
-    public static GetParts(rcl: number, partsToAdd?: string[]): string[] {
+    public static GetPartsFromRoom(room: Room, max: number, cost: number, partsToAdd?: string[]): string[] {
+        if (!partsToAdd) {
+            partsToAdd = this.MinimumParts;
+        }
+        let size = 1;
+        if (!room.memory.needRelief) {
+            let shiftingSize = max;
+            if (room.storage) {
+                shiftingSize = ((room.storage.store.energy + 1) / room.storage.storeCapacity) * shiftingSize;
+            }
+            size = Math.ceil(Math.min(shiftingSize, room.energyAvailable) / cost);
+        }
+        return this.GetParts(size, partsToAdd);
+    }
+
+    /**
+     * Builds a list of parts of the specified size
+     * 
+     * @static
+     * @param {number} size 
+     * @param {string[]} [partsToAdd] 
+     * @returns {string[]} 
+     * @memberof Minion
+     */
+    public static GetParts(size: number, partsToAdd?: string[]): string[] {
         let parts = [];
         if (!partsToAdd) {
             partsToAdd = this.MinimumParts;
         }
-        for (var index = 0; index < rcl; index++) {
+        for (var index = 0; index < size; index++) {
             for (let e in partsToAdd) {
                 parts.push(partsToAdd[e]);
             }

@@ -72,11 +72,10 @@ export default class Seeder extends Minion {
         }
         let seeders = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
         let count = (rooms.length * 2) - seeders.length;
-        let size = Math.ceil(Math.min(room.energyCapacityAvailable / 2, room.energyAvailable, 1200) / 200);
         return { 
             Type: this.Type,
             Count: count,
-            Parts: Minion.GetParts(size)
+            Parts: Minion.GetPartsFromRoom(room, 1000, 200)
         };
     }
 }

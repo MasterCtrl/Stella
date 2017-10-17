@@ -51,13 +51,12 @@ export default class LinkMiner extends Minion {
      * @memberof LinkMiner
      */
     public static GetOptions(room: Room): any {
-        let count = room.find(FIND_SOURCES).length;
         if (!RoomController.AreWeLinkMining(room)){
             return undefined;
         }
         return { 
             Type: this.Type,
-            Count: count,
+            Count: room.find(FIND_SOURCES).length,
             Parts: [WORK, WORK, WORK, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE]
         };
     }

@@ -38,7 +38,7 @@ export default class Link {
      * @memberof Link
      */
     public get IsTarget(): boolean {
-        return this.link.pos.findInRange(FIND_MY_STRUCTURES, 3, { filter: storage => storage.structureType == STRUCTURE_STORAGE }).length > 0;
+        return this.link.room.memory.linkTarget == this.link.id;
     }
 
     /**
@@ -53,7 +53,7 @@ export default class Link {
         }
         
         let target = this.link.pos.findClosestByRange<StructureLink>(FIND_STRUCTURES, {
-            filter : link => link.structureType == STRUCTURE_LINK && link.id != this.link.id
+            filter : link => link.structureType == STRUCTURE_LINK && link.id == this.link.room.memory.linkTarget
         });
         if (!target || target.energy == target.energyCapacity) {
             return false;

@@ -61,15 +61,10 @@ export default class Upgrader extends Minion {
      * @memberof Upgrader
      */
     public static GetOptions(room: Room): any {
-        let count = room.find(FIND_SOURCES).length;
-        let size = 1;
-        if (!room.memory.needRelief) {
-            size = Math.ceil(Math.min(room.energyCapacityAvailable / 2, room.energyAvailable, 1000) / 200);
-        }
         return { 
             Type: this.Type,
-            Count: count,
-            Parts: Minion.GetParts(size)
+            Count: room.find(FIND_SOURCES).length,
+            Parts: Minion.GetPartsFromRoom(room, 1000, 200)
         };
     }
 }
