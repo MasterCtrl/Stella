@@ -425,7 +425,7 @@ export default abstract class Minion {
             });
             if (!closestSource) {
                 return false;
-            }
+            }    
         } else {
             closestSource = Game.getObjectById(this.minion.memory.source_id);
         }
@@ -435,23 +435,9 @@ export default abstract class Minion {
         }
 
         if (RoomController.AreWeLinkMining(this.minion.room)) {
-            let ramparts = closestSource.pos.findInRange<StructureRampart>(FIND_STRUCTURES, 1, {
-                filter: rampart => rampart.structureType == STRUCTURE_RAMPART
-            });
-            if (ramparts.length > 0) {
-                let rampart: StructureRampart;
-                for (let r in ramparts) {
-                    let ramp = ramparts[r];
-                    let structures = ramp.pos.lookFor<Structure>(LOOK_STRUCTURES);
-                    if (_.all(structures, s => s.structureType != STRUCTURE_LINK)) {
-                        rampart = ramp;
-                        break;
-                    }
-                }
-                //todo: save this into room memory
-                if (rampart) {
-                    this.SetDestination(rampart.pos.x, rampart.pos.y, 0, closestSource.id, closestSource.room.name);                
-                }
+            if (this.minion.room.memory.sources) {
+                let source = this.minion.room.memory.sources[closestSource.id];
+                this.SetDestination(source.x, source.y, 0, closestSource.id, closestSource.room.name);
             } else {
                 this.SetDestination(closestSource.pos.x, closestSource.pos.y, 1, closestSource.id, closestSource.room.name);
             }
@@ -460,7 +446,7 @@ export default abstract class Minion {
             return true;    
         }
 
-        if(RoomController.AreWeContainerMining(this.minion.room)){
+        if (RoomController.AreWeContainerMining(this.minion.room)) {
             let container = closestSource.pos.findClosestByPath<StructureContainer>(FIND_STRUCTURES, {
                 filter: container => container.structureType == STRUCTURE_CONTAINER
             });

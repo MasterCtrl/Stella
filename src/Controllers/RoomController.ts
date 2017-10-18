@@ -98,10 +98,45 @@ export default class RoomController {
 
     private RefreshRoomMemory() {
         this.room.memory.needRelief = !this.room.storage || this.room.storage.store.energy < 50000;
+        
         this.room.memory.underAttack = undefined;
+        
         if (!this.room.memory.linkTarget && this.room.storage && this.room.controller.level >= 5) {
             let targetLink = this.room.storage.pos.findClosestByRange<StructureLink>(FIND_MY_STRUCTURES, { filter: link => link.structureType == STRUCTURE_LINK });
             this.room.memory.linkTarget = targetLink.id;
+        }
+
+        if (RoomController.AreWeLinkMining(this.room) && !this.room.memory.sources) {
+            let sourceList = {};
+            let sources = this.room.find<Source>(FIND_SOURCES);
+            for (let s in sources) {
+                let source = sources[s];
+                let ramparts = source.pos.findInRange<StructureRampart>(FIND_STRUCTURES, 1, {
+                    filter: rampart => rampart.structureType == STRUCTURE_RAMPART
+                });
+                if (ramparts.length == 0) {
+                    break;
+                }
+                let rampart: StructureRampart;
+                for (let r in ramparts) {
+                    let ramp = ramparts[r];
+                    let structures = ramp.pos.lookFor<Structure>(LOOK_STRUCTURES);
+                    if (_.all(structures, s => s.structureType != STRUCTURE_LINK)) {
+                        rampart = ramp;
+                        break;
+                    }
+                }
+                if (!rampart) {
+                    break;
+                }
+                sourceList[source.id] = {
+                    x: rampart.pos.x,
+                    y: rampart.pos.y
+                };
+            }
+            if (Object.keys(sourceList).length == sources.length) {
+                this.room.memory.sources = sourceList;
+            }
         }
     }
 
