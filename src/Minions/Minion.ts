@@ -280,10 +280,19 @@ export default abstract class Minion {
         let range = this.minion.pos.getRangeTo(target);
         if (range > 3) {
             if (this.minion.fatigue > 0) {
+                //we are out of range and cant move... take a turn off
                 return;
             }
             this.minion.moveTo(target);
-            return;
+        } else if (range < 3 && this.minion.fatigue == 0) {
+            //kite only if we are too close and have 0 fatigue
+            var targetDirection = this.minion.pos.getDirectionTo(target);
+            var kiteDirection = (targetDirection + 4) % 8;
+            if (kiteDirection == 0) {
+                kiteDirection = 8;
+            }
+            //this should be directly away from the target?
+            this.minion.move(kiteDirection);
         }
         this.minion.rangedAttack(target);
     }
@@ -426,20 +435,41 @@ export default abstract class Minion {
         }
 
         if (RoomController.AreWeLinkMining(this.minion.room)) {
-            this.SetDestination(closestSource.pos.x, closestSource.pos.y, 1, closestSource.id, closestSource.room.name);
+            let ramparts = closestSource.pos.findInRange<StructureRampart>(FIND_STRUCTURES, 1, {
+                filter: rampart => rampart.structureType == STRUCTURE_RAMPART
+            });
+            if (ramparts.length > 0) {
+                let rampart: StructureRampart;
+                for (let r in ramparts) {
+                    let ramp = ramparts[r];
+                    let structures = ramp.pos.lookFor<Structure>(LOOK_STRUCTURES);
+                    if (_.all(structures, s => s.structureType != STRUCTURE_LINK)) {
+                        rampart = ramp;
+                        break;
+                    }
+                }
+                //todo: save this into room memory
+                if (rampart) {
+                    this.SetDestination(rampart.pos.x, rampart.pos.y, 0, closestSource.id, closestSource.room.name);                
+                }
+            } else {
+                this.SetDestination(closestSource.pos.x, closestSource.pos.y, 1, closestSource.id, closestSource.room.name);
+            }
             this.minion.memory.source_id = closestSource.id;
-            this.minion.memory.postMovingState = Constants.STATE_HARVESTING;
+            this.minion.memory.postMovingState = Constants.STATE_HARVESTING;    
             return true;    
         }
 
-        let container = closestSource.pos.findClosestByPath<StructureContainer>(FIND_STRUCTURES, {
-            filter: container => container.structureType == STRUCTURE_CONTAINER ||container.structureType == STRUCTURE_STORAGE
-        });
-        if (container && closestSource.pos.inRangeTo(container.pos, 1)) {
-            this.SetDestination(container.pos.x, container.pos.y, 0, container.id, container.room.name);
-            this.minion.memory.source_id = closestSource.id;
-            this.minion.memory.postMovingState = Constants.STATE_HARVESTING;
-            return true;    
+        if(RoomController.AreWeContainerMining(this.minion.room)){
+            let container = closestSource.pos.findClosestByPath<StructureContainer>(FIND_STRUCTURES, {
+                filter: container => container.structureType == STRUCTURE_CONTAINER
+            });
+            if (container && closestSource.pos.inRangeTo(container.pos, 1)) {
+                this.SetDestination(container.pos.x, container.pos.y, 0, container.id, container.room.name);
+                this.minion.memory.source_id = closestSource.id;
+                this.minion.memory.postMovingState = Constants.STATE_HARVESTING;
+                return true;    
+            }    
         }
 
         return false;
@@ -572,7 +602,7 @@ export default abstract class Minion {
             return false;
         }
         let storage = this.minion.room.storage;
-        if (storage && storage.store[RESOURCE_ENERGY] < storage.storeCapacity ) {
+        if (storage && _.sum(storage.store) < storage.storeCapacity) {
             this.SetDestination(storage.pos.x, storage.pos.y, 1, storage.id, storage.room.name);
             this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
             return true;
@@ -832,6 +862,7 @@ export default abstract class Minion {
             return false;
         }
         let link = this.minion.pos.findClosestByPath<StructureLink>(FIND_MY_STRUCTURES, {filter : link => link.structureType == STRUCTURE_LINK});
+        //todo: change this to find the link near the storage/terminal and save its id into room memory, then stand in the closest unoccupied rampart
         if (link && link.energy != 0) {
             this.minion.memory.postMovingState = Constants.STATE_WITHDRAWING;
             this.SetDestination(link.pos.x, link.pos.y, 1, link.id, link.room.name);
@@ -871,8 +902,8 @@ export default abstract class Minion {
         if (this.IsEmpty || this.minion.room.memory.needRelief) {
             return false;
         }
-        let terminal: Terminal = this.minion.room.terminal;
-        if (terminal) {
+        let terminal = this.minion.room.terminal;
+        if (terminal && _.sum(terminal.store) < terminal.storeCapacity) {
             this.SetDestination(terminal.pos.x, terminal.pos.y, 1, terminal.id);
             this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
             return true;
