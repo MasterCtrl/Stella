@@ -55,7 +55,7 @@ export default class Drone extends Minion {
         if (minerals.length > 0 && minerals[0].mineralAmount > 1000) {
             count = room.find(FIND_STRUCTURES, {filter: (extractor: Structure) => extractor.structureType == STRUCTURE_EXTRACTOR}).length
         }
-        if (count <=0 ) {
+        if (count <=0 || !room.terminal) {
             return undefined;
         }
         return { 
