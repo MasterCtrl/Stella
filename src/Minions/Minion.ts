@@ -175,7 +175,7 @@ export default abstract class Minion {
             this.minion.memory.initialized = false;
             return;
         }
-        for (let resource in this.minion.carry) {
+        for (var resource in this.minion.carry) {
             this.minion.transfer(target, resource);
         }
     }
@@ -348,7 +348,7 @@ export default abstract class Minion {
     protected get TotalCarry(): number {
         if (this.totalCarry == undefined) {
             this.totalCarry = 0;
-            for (let resource in this.minion.carry) {
+            for (var resource in this.minion.carry) {
                 this.totalCarry += this.minion.carry[resource];
             }
         }
@@ -384,7 +384,7 @@ export default abstract class Minion {
             let assignedSources = _.countBy(this.minion.room.find<Creep>(FIND_MY_CREEPS, { filter: creep => creep.memory.source_id }), creep => creep.memory.source_id);
             let sources = this.minion.room.find<Source>(FIND_SOURCES);
             let lowestCount = _.min(assignedSources);
-            for (let i in sources) {
+            for (var i in sources) {
                 let currentSource = sources[i];
                 let count = assignedSources[currentSource.id];
                 if (!count || count == lowestCount) {
@@ -469,7 +469,7 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected FindDroppedEnergy(): boolean {
-        if (!this.IsEmpty || RoomController.UnderAttack(this.minion.room)) {
+        if (!this.IsEmpty || RoomController.GetDefcon(this.minion.room).level > 0) {
             return false;
         }
         let occupiedSources = _.filter(Game.creeps, creep => creep.memory.destination_id).map(creep => creep.memory.destination_id);
@@ -492,7 +492,7 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected FindDroppedResource(): boolean {
-        if (!this.IsEmpty || RoomController.UnderAttack(this.minion.room)) {
+        if (!this.IsEmpty || RoomController.GetDefcon(this.minion.room).level > 0) {
             return false;
         }
         let occupiedSources = _.filter(Game.creeps, creep => creep.memory.destination_id).map(creep => creep.memory.destination_id);
@@ -521,11 +521,11 @@ export default abstract class Minion {
         }
         let occupiedDestinations = _.filter(Game.creeps, creep => creep.memory.destination_id).map<string>(creep => creep.memory.destination_id);
         let targetQueue: TargetQueue = [d => this.FindSpawnStorage(d), d => this.FindTurretStorage(d)];
-        if (RoomController.UnderAttack(this.minion.room)) {
+        if (RoomController.GetDefcon(this.minion.room).level > 0) {
             targetQueue = targetQueue.reverse();
         }
         targetQueue.push(d => this.FindTerminalStorage());
-        for (let i in targetQueue) {
+        for (var i in targetQueue) {
             let target = targetQueue[i];
             if (target(occupiedDestinations)) {
                 return true;
@@ -1014,7 +1014,7 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected RemoveFlagAndSuicide(flagColor: number) {
-        for (let f in Game.flags) {
+        for (var f in Game.flags) {
             let flag = Game.flags[f];
             if (flag.color == flagColor && flag.pos.roomName == this.minion.room.name) {
                 flag.remove();
@@ -1065,7 +1065,7 @@ export default abstract class Minion {
             partsToAdd = this.MinimumParts;
         }
         for (var index = 0; index < size; index++) {
-            for (let e in partsToAdd) {
+            for (var e in partsToAdd) {
                 parts.push(partsToAdd[e]);
             }
         }

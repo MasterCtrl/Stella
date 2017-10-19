@@ -4,6 +4,7 @@ import Builder from "../Minions/Builder";
 import Courier from "../Minions/Courier";
 import Drone from "../Minions/Drone";
 import Filler from "../Minions/Filler"
+import Guardian from "../Minions/Guardian"
 import Harvester from "../Minions/Harvester";
 import LinkMiner from "../Minions/LinkMiner";
 import Miner from "../Minions/Miner";
@@ -13,6 +14,7 @@ import Seeder from "../Minions/Seeder";
 import Upgrader from "../Minions/Upgrader";
 import Configuration from "../Configuration"
 type RoomHash = {[roomName: string]: Room};
+type DefconType = {level, tick};
 
 /**
  * RoomController, used to run all aspects of a room.
@@ -80,7 +82,7 @@ export default class RoomController {
         
         EntityController.RunCreeps(creeps);
       
-        if (tick == Configuration.TickRate - 3 || RoomController.UnderAttack(this.room)) {
+        if (tick == Configuration.TickRate - 3 || RoomController.GetDefcon(this.room).level > 0) {
             EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));            
         }
         
@@ -109,7 +111,7 @@ export default class RoomController {
         if (RoomController.AreWeLinkMining(this.room) && !this.room.memory.sources) {
             let sourceList = {};
             let sources = this.room.find<Source>(FIND_SOURCES);
-            for (let s in sources) {
+            for (var s in sources) {
                 let source = sources[s];
                 let ramparts = source.pos.findInRange<StructureRampart>(FIND_STRUCTURES, 1, {
                     filter: rampart => rampart.structureType == STRUCTURE_RAMPART
@@ -118,7 +120,7 @@ export default class RoomController {
                     break;
                 }
                 let rampart: StructureRampart;
-                for (let r in ramparts) {
+                for (var r in ramparts) {
                     let ramp = ramparts[r];
                     let structures = ramp.pos.lookFor<Structure>(LOOK_STRUCTURES);
                     if (_.all(structures, s => s.structureType != STRUCTURE_LINK)) {
@@ -148,7 +150,7 @@ export default class RoomController {
      */
     public GetSpawnOptions(): any[] {
         let options = [];
-        for (let i in RoomController.OptionFuncs) {
+        for (var i in RoomController.OptionFuncs) {
             this.AddOptions(options, RoomController.OptionFuncs[i]);
         }
         return options;
@@ -172,7 +174,7 @@ export default class RoomController {
      * @memberof RoomController
      */
     public static RunRooms(rooms: {[roomName: string]: Room;}) {
-        for (let key in rooms) {
+        for (var key in rooms) {
             if (!rooms.hasOwnProperty(key)) {
                 continue;
             }
@@ -193,6 +195,7 @@ export default class RoomController {
         (room: Room): any => Miner.GetOptions(room),
         (room: Room): any => LinkMiner.GetOptions(room),
         (room: Room): any => Filler.GetOptions(room),
+        (room: Room): any => Guardian.GetOptions(room),
         (room: Room): any => Builder.GetOptions(room),
         (room: Room): any => Upgrader.GetOptions(room),
         (room: Room): any => Scout.GetOptions(room),
@@ -236,22 +239,26 @@ export default class RoomController {
     }
 
     /**
-     * Gets if we are under attack in this room
+     * Gets the threat level in this room
+     * 
+     * Defcon 0  => no threat.
+     *        1  => hostiles in room, turrets fire every tick.
+     *        2  => 60 ticks under siege, rooms spawns 2 guardians to defend.
+     *        3  => 120 ticks under siege, same as defcon 2. 
+     *        4+ => 180 ticks under siege, rooms spawns 2 additional guardians to defend
      * 
      * @static
      * @param {Room} room 
-     * @returns {boolean} 
+     * @returns {DefconType} 
      * @memberof RoomController
      */
-    public static UnderAttack(room: Room): boolean {
-        if (room.memory.underAttack == undefined) {
-            let hostiles = room.find(FIND_HOSTILE_CREEPS);
-            let underAttack = room.memory.underAttack = hostiles.length != 0 && room.controller.my;
-            if (underAttack) {
-                console.log(room.name + ": under attack!");
-            }
-            return underAttack;
+    public static GetDefcon(room: Room): DefconType {
+        let hostiles = room.find<Creep>(FIND_HOSTILE_CREEPS);
+        let current: DefconType = room.memory.defcon || { level: 0, tick: Game.time };
+        if (hostiles.length > 0 && (Game.time - current.tick) % 60 == 0) {
+            current.level++;
+            current.tick = Game.time;
         }
-        return room.memory.underAttack;
+        return room.memory.defcon = current;
     }
 }
