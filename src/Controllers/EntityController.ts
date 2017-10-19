@@ -21,7 +21,7 @@ export default class EntityController {
      * @memberof EntityController
      */
     public static Sync(inMemory: CreepHash, inGame: CreepHash) {
-        for(let name in inMemory) {
+        for (var name in inMemory) {
             if(!inGame[name]) {
                 delete inMemory[name];
             }
@@ -36,7 +36,7 @@ export default class EntityController {
      * @memberof EntityController
      */
     public static RunCreeps(creeps: Creep[]) {
-        for (let i in creeps) {
+        for (var i in creeps) {
             let minion = this.ToMinion(creeps[i]);
             if (minion) {
                 minion.Run();
@@ -52,7 +52,7 @@ export default class EntityController {
      * @memberof EntityController
      */
     public static RunTowers(towers: Tower[]) {
-        for (let i in towers) {
+        for (var i in towers) {
             let turret = new Turret(towers[i]);
             turret.Run();
         }
@@ -66,7 +66,7 @@ export default class EntityController {
      * @memberof EntityController
      */
     public static RunLinks(links: StructureLink[]) {
-        for (let i in links) {
+        for (var i in links) {
             let link = new Link(links[i]);
             link.Run();
         }

@@ -35,7 +35,7 @@ export default class Terminal {
     }
 
     private SellResources(): boolean {
-        for (let type in this.terminal.store) {
+        for (var type in this.terminal.store) {
             if (type == RESOURCE_ENERGY) {
                 continue;
             }
@@ -75,7 +75,7 @@ export default class Terminal {
         if (!Memory.rooms) {
             return false;
         }
-        for (let name in Memory.rooms) {
+        for (var name in Memory.rooms) {
             if (!Memory.rooms[name].needRelief) {
                 continue;
             }

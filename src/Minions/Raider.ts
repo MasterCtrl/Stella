@@ -26,7 +26,7 @@ export default class Raider extends Minion {
 
 
     /**
-     *  Initializes the Seeder, sets state and target.
+     *  Initializes the Raider, sets state and target.
      * 
      * @returns 
      * @memberof Raider

@@ -27,7 +27,7 @@ export default class GC {
      * @memberof RoomController
      */
     public static Sync(inMemory: any, inGame: any) {
-        for(let name in inMemory) {
+        for (var name in inMemory) {
             if(!inGame[name]) {
                 delete inMemory[name];
             }
