@@ -1,16 +1,20 @@
+import EntityController from "./EntityController";
+import SpawnController from "./SpawnController";
 import Builder from "../Minions/Builder";
-import Configuration from "../Configuration"
 import Courier from "../Minions/Courier";
 import Drone from "../Minions/Drone";
 import Filler from "../Minions/Filler"
+import Guardian from "../Minions/Guardian"
 import Harvester from "../Minions/Harvester";
-import LinkMiner from "../Minions/LinkMiner"
+import LinkMiner from "../Minions/LinkMiner";
 import Miner from "../Minions/Miner";
-import EntityController from "./EntityController";
+import Raider from "../Minions/Raider";
 import Scout from "../Minions/Scout";
 import Seeder from "../Minions/Seeder";
-import SpawnController from "./SpawnController";
 import Upgrader from "../Minions/Upgrader";
+import Configuration from "../Configuration"
+type RoomHash = {[roomName: string]: Room};
+type DefconType = {level, tick};
 
 /**
  * RoomController, used to run all aspects of a room.
@@ -29,6 +33,25 @@ export default class RoomController {
      */
     constructor(room: Room) {
         this.room = room;
+        if (!this.Index) {
+            let index = 0;
+            let max = _.max(Game.rooms, r => r.memory.index);
+            if (max && max.memory) {
+                index = max.memory.index + 1;
+            }
+            this.room.memory.index = index;
+        }
+    }
+
+    /**
+     * Gets the index of this room
+     * 
+     * @readonly
+     * @type {number}
+     * @memberof RoomController
+     */
+    public get Index(): number {
+        return this.room.memory.index;
     }
 
     /**
@@ -37,31 +60,85 @@ export default class RoomController {
      * @memberof RoomController
      */
     public Run() {
-        let creeps: Creep[] = this.room.find(FIND_MY_CREEPS);
-        let roomHash = this.HashRoomName(this.room.name);
-        if ((Game.time % Configuration.HashFactor) == roomHash) {
-            let spawnOptions = this.GetSpawnOptions();
-            if (spawnOptions) {
-                SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
-            }    
+        this.LogStats();
+
+        let tick = Game.time % Configuration.TickRate;
+        
+        if (tick == this.Index) {
+            let spawnQueue = this.GetSpawnQueue();
+            if (spawnQueue) {
+                SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), spawnQueue);            
+            }
         }
-        EntityController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));
-        EntityController.RunCreeps(creeps);
-        EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));
+        
+        if (tick == Configuration.TickRate - 1) {
+            EntityController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));            
+        }
+
+        if (tick == Configuration.TickRate - 2) {
+            this.RefreshRoomMemory();
+        }
+        
+        EntityController.RunCreeps(this.room.find(FIND_MY_CREEPS));
+      
+        if (tick == Configuration.TickRate - 3 || RoomController.GetDefcon(this.room).level > 0) {
+            EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));            
+        }
+        
         EntityController.RunTerminal(this.room.terminal);
     }
 
-    private HashRoomName(roomName: string): number {
-        var hash = 0, i, chr;
-        if (roomName.length === 0) {
-            return hash;
+    private LogStats() {
+        if (Game.time % 1200 == 0 && this.room.storage) {
+            if (!this.room.memory.income) {
+                this.room.memory.income = [];
+            }
+            this.room.memory.income.push({time: Game.time, bank: this.room.storage.store.energy})            
         }
-        for (i = 0; i < roomName.length; i++) {
-            chr  = roomName.charCodeAt(i);
-            hash = ((hash << 5) - hash) + chr;
-            hash |= 0;
+    }
+
+    private RefreshRoomMemory() {
+        this.room.memory.needRelief = !this.room.storage || this.room.storage.store.energy < 50000;
+        
+        this.room.memory.underAttack = undefined;
+        
+        if (!this.room.memory.linkTarget && this.room.storage && this.room.controller.level >= 5) {
+            let targetLink = this.room.storage.pos.findClosestByRange<StructureLink>(FIND_MY_STRUCTURES, { filter: link => link.structureType == STRUCTURE_LINK });
+            this.room.memory.linkTarget = targetLink.id;
         }
-        return hash % Configuration.HashFactor;
+
+        if (RoomController.AreWeLinkMining(this.room) && !this.room.memory.sources) {
+            let sourceList = {};
+            let sources = this.room.find<Source>(FIND_SOURCES);
+            for (var s in sources) {
+                let source = sources[s];
+                let ramparts = source.pos.findInRange<StructureRampart>(FIND_STRUCTURES, 1, {
+                    filter: rampart => rampart.structureType == STRUCTURE_RAMPART
+                });
+                if (ramparts.length == 0) {
+                    break;
+                }
+                let rampart: StructureRampart;
+                for (var r in ramparts) {
+                    let ramp = ramparts[r];
+                    let structures = ramp.pos.lookFor<Structure>(LOOK_STRUCTURES);
+                    if (_.all(structures, s => s.structureType != STRUCTURE_LINK)) {
+                        rampart = ramp;
+                        break;
+                    }
+                }
+                if (!rampart) {
+                    break;
+                }
+                sourceList[source.id] = {
+                    x: rampart.pos.x,
+                    y: rampart.pos.y
+                };
+            }
+            if (Object.keys(sourceList).length == sources.length) {
+                this.room.memory.sources = sourceList;
+            }
+        }
     }
 
     /**
@@ -70,15 +147,18 @@ export default class RoomController {
      * @returns {any[]} 
      * @memberof RoomController
      */
-    public GetSpawnOptions(): any[] {
-        let options = [];
-        for (let i in RoomController.OptionFuncs) {
-            this.AddOptions(options, RoomController.OptionFuncs[i]);
+    public GetSpawnQueue(): any[] {
+        let spawnQueue = [];
+        for (var i in RoomController.Options) {
+            this.AddOptions(spawnQueue, RoomController.Options[i]);
         }
-        return options;
+        return spawnQueue;
     }
 
     private AddOptions(options: any[], getFunc: (room: Room) => any) {
+        if (!this.room.controller) {
+            return;
+        }
         let opt = getFunc(this.room);
         if (opt && opt.Count != 0) {
             options.push(opt);
@@ -93,7 +173,7 @@ export default class RoomController {
      * @memberof RoomController
      */
     public static RunRooms(rooms: {[roomName: string]: Room;}) {
-        for (let key in rooms) {
+        for (var key in rooms) {
             if (!rooms.hasOwnProperty(key)) {
                 continue;
             }
@@ -108,17 +188,19 @@ export default class RoomController {
      * @static
      * @memberof RoomController
      */
-    public static OptionFuncs = [
+    public static Options = [
         (room: Room): any => Harvester.GetOptions(room),
         (room: Room): any => Courier.GetOptions(room),
         (room: Room): any => Miner.GetOptions(room),
         (room: Room): any => LinkMiner.GetOptions(room),
         (room: Room): any => Filler.GetOptions(room),
+        (room: Room): any => Guardian.GetOptions(room),
         (room: Room): any => Builder.GetOptions(room),
         (room: Room): any => Upgrader.GetOptions(room),
         (room: Room): any => Scout.GetOptions(room),
         (room: Room): any => Seeder.GetOptions(room),
-        (room: Room): any => Drone.GetOptions(room)
+        (room: Room): any => Drone.GetOptions(room),
+        (room: Room): any => Raider.GetOptions(room)
     ];
 
     /**
@@ -130,18 +212,13 @@ export default class RoomController {
      * @memberof RoomController
      */
     public static AreWeLinkMining(room: Room): boolean {
-        let areWeLinkMining: boolean; 
-        if (!this.areWeLinkMining.hasOwnProperty(room.name)) {
+        if (room.memory.linkMining == undefined) {
             let sources = room.find(FIND_SOURCES).length;
             let links = room.find(FIND_MY_STRUCTURES, {filter : link => link.structureType == STRUCTURE_LINK}).length;
-            areWeLinkMining = links > sources;
-            this.areWeLinkMining[room.name] = areWeLinkMining;
-        } else {
-            areWeLinkMining = this.areWeLinkMining[room.name];
+            return (room.memory.linkMining = links > sources);
         }
-        return areWeLinkMining;
+        return room.memory.linkMining;
     }
-    private static areWeLinkMining: { [roomName: string]: boolean; } = {};
 
     /**
      * Gets if we are container mining in this room
@@ -152,41 +229,42 @@ export default class RoomController {
      * @memberof RoomController
      */
     public static AreWeContainerMining(room: Room): boolean {
-        let areWeContainerMining: boolean; 
-        if (!this.areWeContainerMining.hasOwnProperty(room.name)) {
+        if (room.memory.containerMining == undefined) {
             let sources = room.find(FIND_SOURCES).length;
             let containers = room.find(FIND_STRUCTURES, {filter : container => container.structureType == STRUCTURE_CONTAINER}).length;
-            areWeContainerMining = containers >= sources;
-            this.areWeContainerMining[room.name] = areWeContainerMining;
-        } else {
-            areWeContainerMining = this.areWeContainerMining[room.name];
+            return (room.memory.containerMining = containers >= sources);
         }
-        return areWeContainerMining;
+        return room.memory.containerMining;
     }
-    private static areWeContainerMining: { [roomName: string]: boolean; } = {};
 
     /**
-     * Gets if we are under attack in this room
+     * Gets the threat level in this room
+     * 
+     * Defcon 0  => no threat.
+     *        1  => hostiles in room, turrets fire every tick.
+     *        2  => 60 ticks under siege, rooms spawns 2 guardians to defend.
+     *        3  => 120 ticks under siege, same as defcon 2. 
+     *        4+ => 180 ticks under siege, rooms spawns 2 additional guardians to defend
      * 
      * @static
-     * @param {string} room 
-     * @returns {boolean} 
+     * @param {Room} room 
+     * @returns {DefconType} 
      * @memberof RoomController
      */
-    public static UnderAttack(room: string): boolean {
-        let underAttack: boolean; 
-        if (!this.roomsUnderAttack.hasOwnProperty(room)) {
-            let hostiles = Game.rooms[room].find(FIND_HOSTILE_CREEPS);
-            underAttack = hostiles.length != 0;
-            this.roomsUnderAttack[room] = underAttack;
-        } else {
-            underAttack = this.roomsUnderAttack[room];
+    public static GetDefcon(room: Room): DefconType {
+        let hostiles = room.find<Creep>(FIND_HOSTILE_CREEPS);
+        let current: DefconType = room.memory.defcon || { level: 0, tick: Game.time };
+        let tick = Game.time - current.tick;
+        if (tick != 0 && tick % 50 == 0) {
+            if (hostiles.length > 0) {
+                current.level = Math.min(8, current.level + 1);
+                console.log(room.name + ": Upgrading defcon to " + current.level);
+            } else if (current.level != 0) {
+                current.level = 0;
+                console.log(room.name + ": Downgrading defcon to " + current.level);
+            }
+            current.tick = Game.time;
         }
-        return underAttack;
+        return room.memory.defcon = current;
     }
-    private static roomsUnderAttack: { [roomName: string]: boolean; } = {};
-}
-
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(RoomController, "RoomController"); 
 }

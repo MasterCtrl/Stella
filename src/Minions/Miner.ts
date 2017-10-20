@@ -1,6 +1,6 @@
-import Constants from "../Constants"
-import Minion from "./Minion";
 import RoomController from "../Controllers/RoomController";
+import Minion from "./Minion";
+import Constants from "../Constants"
 
 /**
  * Miner minion, used to purely to mine a source as efficiently as possible.
@@ -46,19 +46,13 @@ export default class Miner extends Minion {
      * @memberof Miner
      */
     public static GetOptions(room: Room): any {
-        let count = room.find(FIND_SOURCES).length;
         if (RoomController.AreWeLinkMining(room) || !RoomController.AreWeContainerMining(room)) {
-            count = 0;
+            return undefined;
         }        
         return { 
             Type: this.Type,
-            Count: count,
+            Count: room.find(FIND_SOURCES).length,
             Parts: [WORK, WORK, WORK, WORK, MOVE, WORK, MOVE]
         };
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Miner, "Miner");
 }

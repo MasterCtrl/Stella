@@ -1,5 +1,5 @@
-import Constants from "../Constants"
 import Minion from "./Minion";
+import Constants from "../Constants"
 
 /**
  * Upgrader minion, used to constantly upgrade the controller in the room.
@@ -61,17 +61,10 @@ export default class Upgrader extends Minion {
      * @memberof Upgrader
      */
     public static GetOptions(room: Room): any {
-        let rcl = Math.ceil(room.controller.level / 1.5);
-        let count = room.find(FIND_SOURCES).length;
         return { 
             Type: this.Type,
-            Count: count,
-            Parts: Minion.GetParts(rcl)
+            Count: room.find(FIND_SOURCES).length,
+            Parts: Minion.GetPartsFromRoom(room, 5)
         };
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Upgrader, "Upgrader");
 }

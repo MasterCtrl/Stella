@@ -21,14 +21,21 @@ export default class Terminal {
     /**
      * Runs the Terminal
      * 
-     * @returns 
+     * @returns {boolean} 
      * @memberof Terminal
      */
-    public Run() {
-        if ((this.terminal.store[RESOURCE_ENERGY] < Configuration.Terminal[RESOURCE_ENERGY]) || ((Game.time % 20) != 0) || this.terminal.cooldown != 0) {
-            return;
+    public Run(): boolean {
+        if ((this.terminal.store[RESOURCE_ENERGY] < Configuration.Terminal.energy) || ((Game.time % 20) != 0) || this.terminal.cooldown != 0) {
+            return false;
         }
-        for (let type in this.terminal.store) {
+        if (this.SellResources()) {
+            return true;
+        }
+        return this.SendRelief();
+    }
+
+    private SellResources(): boolean {
+        for (var type in this.terminal.store) {
             if (type == RESOURCE_ENERGY) {
                 continue;
             }
@@ -53,17 +60,41 @@ export default class Terminal {
             let cost = Game.market.calcTransactionCost(amount, this.terminal.room.name, order.roomName);
             if (cost > this.terminal.store[RESOURCE_ENERGY]) {
                 console.log(this.terminal.room.name + ": Not enough energy to transfer");
-                return;
+                return false;
             }
             let result = Game.market.deal(order.id, amount, this.terminal.room.name);
-            if (result == 0) {
+            if (result == OK) {
                 console.log(this.terminal.room.name + ": Sold " + amount + " mineral(" + type + ") to " + order.roomName + " for " + (order.price * amount));
-                break;                
+                return true;                
             }
         }
+        return false;
     }
-}
 
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Terminal, "Terminal");
+    private SendRelief(): boolean {
+        if (!Memory.rooms) {
+            return false;
+        }
+        for (var name in Memory.rooms) {
+            if (!Memory.rooms[name].needRelief) {
+                continue;
+            }
+            let room = Game.rooms[name];
+            if (!room || !room.terminal) {
+                continue;
+            }
+            let amount = 10000;
+            let cost = Game.market.calcTransactionCost(amount, this.terminal.room.name, name);
+            if (this.terminal.store.energy < cost + amount) {
+                console.log(this.terminal.room.name + ": Not enough energy to send relief");
+                continue;
+            }
+            let result = this.terminal.send(RESOURCE_ENERGY, amount, name);
+            if (result == OK) {
+                console.log(this.terminal.room.name + ": Sent " + amount + " relief to " + name);
+                return true;
+            }
+        }
+        return false;
+    }
 }

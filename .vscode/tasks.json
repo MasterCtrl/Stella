@@ -11,19 +11,34 @@
             ]
         },
         {
+            "taskName": "Test",
+            "type": "shell",
+            "command": "./node_modules/.bin/mocha",
+            "windows": {
+                "command": ".\\node_modules\\.bin\\mocha.cmd"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "dependsOn": [
+                "Build"
+            ]
+        },
+        {
             "taskName": "Package",
             "type": "shell",
             "command": "./node_modules/.bin/webpack",
             "windows": {
                 "command": ".\\node_modules\\.bin\\webpack.cmd"
             },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            "group": "build",
             "problemMatcher": [],
             "dependsOn": [
-                "Build"
+                "Test"
             ]
         },
         {

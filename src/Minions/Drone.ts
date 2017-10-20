@@ -34,7 +34,7 @@ export default class Drone extends Minion {
             return;
         }
         
-        if (this.FindTerminal()) {
+        if (this.FindTerminalTarget()) {
             return;
         }
 
@@ -50,11 +50,13 @@ export default class Drone extends Minion {
      * @memberof Drone
      */
     public static GetOptions(room: Room): any {
-        let rcl = Math.ceil(room.controller.level / 2);
         let count = 0;
         let minerals: Mineral[] = room.find(FIND_MINERALS);
-        if (minerals.length > 0 && minerals[0].mineralAmount > 1000) {
+        if (minerals.length > 0 && minerals[0].mineralAmount > 0) {
             count = room.find(FIND_STRUCTURES, {filter: (extractor: Structure) => extractor.structureType == STRUCTURE_EXTRACTOR}).length
+        }
+        if (count <=0 || !room.terminal) {
+            return undefined;
         }
         return { 
             Type: this.Type,
@@ -62,9 +64,4 @@ export default class Drone extends Minion {
             Parts: [WORK, WORK, MOVE, WORK, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE]
         };
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Drone, "Drone");
 }

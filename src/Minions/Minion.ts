@@ -1,6 +1,7 @@
-﻿import Configuration from "../Configuration"
+﻿import RoomController from "../Controllers/RoomController"
+import Configuration from "../Configuration"
 import Constants from "../Constants"
-import RoomController from "../Controllers/RoomController"
+type TargetQueue = ((d: string[]) => boolean)[];
 
 /**
  * Minion base class, holds all the common logic for all the minion types.
@@ -90,6 +91,10 @@ export default abstract class Minion {
             case Constants.STATE_RESET:
                 this.RunReset(Constants.STATE_MOVING);
                 break;
+
+            case Constants.STATE_RANGED_ATTACK:
+                this.RunRangedAttack();
+                break;
             
             case Constants.STATE_SUICIDE:
                 this.RunSuicide();
@@ -111,7 +116,7 @@ export default abstract class Minion {
             this.minion.memory.destination_y, 
             this.minion.memory.destination_room || this.minion.room.name
         );
-        if (this.minion.pos.getRangeTo(roomPosition) <= this.minion.memory.range) {
+        if (this.minion.pos.inRangeTo(roomPosition, this.minion.memory.range)) {
             this.minion.memory.state = transitionState;
             this.Run();
             return;
@@ -143,7 +148,7 @@ export default abstract class Minion {
     }
 
     private RunPickup(transitionState: number) {
-        let source: Resource = Game.getObjectById(this.minion.memory.destination_id);
+        let source = Game.getObjectById<Resource>(this.minion.memory.destination_id);
         if (source) {
             this.minion.pickup(source);            
         }
@@ -158,7 +163,7 @@ export default abstract class Minion {
             this.Run();
             return;
         }
-        let target: any = Game.getObjectById(this.minion.memory.destination_id);
+        let target = Game.getObjectById<any>(this.minion.memory.destination_id);
         if (!target) {
             this.minion.memory.state = transitionState;
             this.minion.memory.initialized = false;
@@ -170,7 +175,7 @@ export default abstract class Minion {
             this.minion.memory.initialized = false;
             return;
         }
-        for (let resource in this.minion.carry) {
+        for (var resource in this.minion.carry) {
             this.minion.transfer(target, resource);
         }
     }
@@ -190,13 +195,16 @@ export default abstract class Minion {
             this.minion.memory.initialized = false;
             return;
         }
-        let constructionSite: ConstructionSite = Game.getObjectById(this.minion.memory.destination_id);
+        let constructionSite = Game.getObjectById<ConstructionSite>(this.minion.memory.destination_id);
         if (!constructionSite) {
             this.minion.memory.state = transitionState;
             this.minion.memory.initialized = false;
             return;
         }
-        this.minion.build(constructionSite);
+        let result = this.minion.build(constructionSite);
+        if (result == ERR_INVALID_TARGET) {
+            this.minion.move(BOTTOM);
+        }
     }
 
     private RunRepairing(transitionState: number) {
@@ -205,7 +213,7 @@ export default abstract class Minion {
             this.minion.memory.initialized = false;
             return;
         }
-        let structure: Structure = Game.getObjectById(this.minion.memory.destination_id);
+        let structure = Game.getObjectById<Structure>(this.minion.memory.destination_id);
         this.minion.repair(structure);
     }
 
@@ -215,7 +223,7 @@ export default abstract class Minion {
             this.minion.memory.initialized = false;
             return;
         }
-        let structure: Container = Game.getObjectById(this.minion.memory.destination_id);
+        let structure = Game.getObjectById<any>(this.minion.memory.destination_id);
         if (!structure || this.minion.withdraw(structure, RESOURCE_ENERGY) != OK) {
             this.minion.memory.state = transitionState;
             this.minion.memory.initialized = false;
@@ -224,9 +232,15 @@ export default abstract class Minion {
 
     private RunClaiming(transitionState: number) {
         if (this.minion.claimController(this.minion.room.controller) == OK) {
+            console.log(this.minion.room.name + ": Controller claimed!");
             this.minion.memory.initialized = false;
         }
-        this.minion.reserveController(this.minion.room.controller);
+        if (this.minion.reserveController(this.minion.room.controller) == OK) {
+            this.minion.memory.initialized = false;
+        }
+        if (this.minion.room.controller.upgradeBlocked > 0) {
+            this.minion.attackController(this.minion.room.controller);            
+        }
     }
 
     private RunIdle(transitionState: number) {
@@ -235,7 +249,7 @@ export default abstract class Minion {
             this.minion.memory.idle--;
             return;
         }
-        this.minion.memory.initialized = false;        
+        this.minion.memory.initialized = false;
         this.minion.memory.state = transitionState;
     }
 
@@ -243,6 +257,46 @@ export default abstract class Minion {
         this.minion.memory.state = transitionState;
         this.minion.memory.initialized = false;
         this.Run();
+    }
+
+    private RunRangedAttack() {
+        if (!this.minion.memory.attackTarget) {
+            this.minion.memory.initialized = false;
+            return;
+        }
+
+        let target: Creep|Structure;
+        switch(this.minion.memory.attackTarget.type) {
+            case "structure":
+                target = Game.getObjectById(this.minion.memory.attackTarget.id);
+                break;
+            case "minion":
+                target = this.minion.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
+                break;
+        }
+        if (!target) {
+            this.minion.memory.attackTarget = undefined;
+            this.minion.memory.initialized = false;
+            return;
+        }
+        let range = this.minion.pos.getRangeTo(target);
+        if (range > 3) {
+            if (this.minion.fatigue > 0) {
+                //we are out of range and cant move... take a turn off
+                return;
+            }
+            this.minion.moveTo(target);
+        } else if (range < 3 && this.minion.fatigue == 0) {
+            //kite only if we are too close and have 0 fatigue
+            var targetDirection = this.minion.pos.getDirectionTo(target);
+            var kiteDirection = (targetDirection + 4) % 8;
+            if (kiteDirection == 0) {
+                kiteDirection = 8;
+            }
+            //this should be directly away from the target?
+            this.minion.move(kiteDirection);
+        }
+        this.minion.rangedAttack(target);
     }
 
     private RunSuicide() {
@@ -296,7 +350,7 @@ export default abstract class Minion {
     protected get TotalCarry(): number {
         if (this.totalCarry == undefined) {
             this.totalCarry = 0;
-            for (let resource in this.minion.carry) {
+            for (var resource in this.minion.carry) {
                 this.totalCarry += this.minion.carry[resource];
             }
         }
@@ -327,12 +381,12 @@ export default abstract class Minion {
         if (!this.IsEmpty) {
             return false;
         }
-        let source: Source = null;
+        let source: Source;
         if(!this.minion.memory.source_id){
-            let assignedSources = _.countBy(this.minion.room.find(FIND_MY_CREEPS, { filter: creep => creep.memory.source_id }), (creep: Creep) => creep.memory.source_id);
-            let sources: Source[] = this.minion.room.find(FIND_SOURCES);
-            let lowestCount: number = _.min(assignedSources);
-            for (let i in sources) {
+            let assignedSources = _.countBy(this.minion.room.find<Creep>(FIND_MY_CREEPS, { filter: creep => creep.memory.source_id }), creep => creep.memory.source_id);
+            let sources = this.minion.room.find<Source>(FIND_SOURCES);
+            let lowestCount = _.min(assignedSources);
+            for (var i in sources) {
                 let currentSource = sources[i];
                 let count = assignedSources[currentSource.id];
                 if (!count || count == lowestCount) {
@@ -373,7 +427,7 @@ export default abstract class Minion {
             });
             if (!closestSource) {
                 return false;
-            }
+            }    
         } else {
             closestSource = Game.getObjectById(this.minion.memory.source_id);
         }
@@ -383,20 +437,27 @@ export default abstract class Minion {
         }
 
         if (RoomController.AreWeLinkMining(this.minion.room)) {
-            this.SetDestination(closestSource.pos.x, closestSource.pos.y, 1, closestSource.id, closestSource.room.name);
+            if (this.minion.room.memory.sources) {
+                let source = this.minion.room.memory.sources[closestSource.id];
+                this.SetDestination(source.x, source.y, 0, closestSource.id, closestSource.room.name);
+            } else {
+                this.SetDestination(closestSource.pos.x, closestSource.pos.y, 1, closestSource.id, closestSource.room.name);
+            }
             this.minion.memory.source_id = closestSource.id;
-            this.minion.memory.postMovingState = Constants.STATE_HARVESTING;
+            this.minion.memory.postMovingState = Constants.STATE_HARVESTING;    
             return true;    
         }
 
-        let container: Container = closestSource.pos.findClosestByPath(FIND_STRUCTURES, {
-            filter: container => container.structureType == STRUCTURE_CONTAINER ||container.structureType == STRUCTURE_STORAGE
-        });
-        if (container && closestSource.pos.getRangeTo(container.pos) == 1) {
-            this.SetDestination(container.pos.x, container.pos.y, 0, container.id, container.room.name);
-            this.minion.memory.source_id = closestSource.id;
-            this.minion.memory.postMovingState = Constants.STATE_HARVESTING;
-            return true;    
+        if (RoomController.AreWeContainerMining(this.minion.room)) {
+            let container = closestSource.pos.findClosestByPath<StructureContainer>(FIND_STRUCTURES, {
+                filter: container => container.structureType == STRUCTURE_CONTAINER
+            });
+            if (container && closestSource.pos.inRangeTo(container.pos, 1)) {
+                this.SetDestination(container.pos.x, container.pos.y, 0, container.id, container.room.name);
+                this.minion.memory.source_id = closestSource.id;
+                this.minion.memory.postMovingState = Constants.STATE_HARVESTING;
+                return true;    
+            }    
         }
 
         return false;
@@ -410,11 +471,11 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected FindDroppedEnergy(): boolean {
-        if (!this.IsEmpty || RoomController.UnderAttack(this.minion.room.name)) {
+        if (!this.IsEmpty || RoomController.GetDefcon(this.minion.room).level > 0) {
             return false;
         }
         let occupiedSources = _.filter(Game.creeps, creep => creep.memory.destination_id).map(creep => creep.memory.destination_id);
-        let energy: Resource = this.minion.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
+        let energy = this.minion.pos.findClosestByPath<Resource>(FIND_DROPPED_RESOURCES, {
             filter: energy => energy.resourceType == RESOURCE_ENERGY && (occupiedSources.indexOf(energy.id) == -1 || energy.amount > 500) && this.minion.room.name == energy.room.name
         });
         if (energy && energy.amount > 20) {
@@ -433,11 +494,11 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected FindDroppedResource(): boolean {
-        if (!this.IsEmpty || RoomController.UnderAttack(this.minion.room.name)) {
+        if (!this.IsEmpty || RoomController.GetDefcon(this.minion.room).level > 0) {
             return false;
         }
         let occupiedSources = _.filter(Game.creeps, creep => creep.memory.destination_id).map(creep => creep.memory.destination_id);
-        let resource: Resource= this.minion.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
+        let resource = this.minion.pos.findClosestByPath<Resource>(FIND_DROPPED_RESOURCES, {
             filter: resource =>  resource.resourceType != RESOURCE_ENERGY && (occupiedSources.indexOf(resource.id) == -1 || resource.energy > 500) && this.minion.room.name == resource.room.name
         });
         if (resource) {
@@ -460,13 +521,14 @@ export default abstract class Minion {
         if (this.IsEmpty) {
             return false;
         }
-        let occupiedDestinations = _.filter(Game.creeps, creep => creep.memory.destination_id).map(creep => creep.memory.destination_id);
-        let targetQueue = [d => this.FindSpawnStorage(d), d => this.FindTurretStorage(d)];
-        if (RoomController.UnderAttack(this.minion.room.name)) {
+        let occupiedDestinations = _.filter(Game.creeps, creep => creep.memory.destination_id).map<string>(creep => creep.memory.destination_id);
+        let targetQueue: TargetQueue = [d => this.FindSpawnStorage(d), d => this.FindTurretStorage(d)];
+        let defcon = RoomController.GetDefcon(this.minion.room);
+        if (defcon.level > 2 && (this.minion.room.energyAvailable / this.minion.room.energyCapacityAvailable) > 0.5) {
             targetQueue = targetQueue.reverse();
         }
         targetQueue.push(d => this.FindTerminalStorage());
-        for (let i in targetQueue) {
+        for (var i in targetQueue) {
             let target = targetQueue[i];
             if (target(occupiedDestinations)) {
                 return true;
@@ -475,8 +537,8 @@ export default abstract class Minion {
         return false;
     }
 
-    private FindTurretStorage(occupiedDestinations: any[]): boolean {
-        let turret: StructureTower = this.minion.pos.findClosestByPath(FIND_STRUCTURES, {
+    private FindTurretStorage(occupiedDestinations: string[]): boolean {
+        let turret = this.minion.pos.findClosestByPath<StructureTower>(FIND_STRUCTURES, {
             filter: turret => occupiedDestinations.indexOf(turret.id) == -1 &&
                               turret.structureType == STRUCTURE_TOWER &&
                               turret.energy < turret.energyCapacity 
@@ -489,8 +551,8 @@ export default abstract class Minion {
         return false;
     }
 
-    private FindSpawnStorage(occupiedDestinations: any[]): boolean {
-        let storage: Structure = this.minion.pos.findClosestByPath(FIND_STRUCTURES, {
+    private FindSpawnStorage(occupiedDestinations: string[]): boolean {
+        let storage = this.minion.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
             filter: structure => occupiedDestinations.indexOf(structure.id) == -1 &&
                                  (structure.structureType == STRUCTURE_EXTENSION ||
                                   structure.structureType == STRUCTURE_SPAWN) &&
@@ -505,7 +567,10 @@ export default abstract class Minion {
     }
 
     private FindTerminalStorage() {
-        let terminal: Terminal = this.minion.room.terminal;
+        if (this.minion.room.memory.needRelief) {
+            return false;
+        }
+        let terminal = this.minion.room.terminal;
         if (terminal && terminal.store[RESOURCE_ENERGY] < Configuration.Terminal.energy) {
             this.SetDestination(terminal.pos.x, terminal.pos.y, 1, terminal.id, terminal.room.name);
             this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
@@ -525,10 +590,8 @@ export default abstract class Minion {
         if (this.IsEmpty || (RoomController.AreWeLinkMining(this.minion.room) && this.Type != "Filler")) {
             return false;
         }
-        let storage: Storage = this.minion.pos.findClosestByPath(FIND_STRUCTURES, {
-            filter: structure => structure.structureType == STRUCTURE_STORAGE && structure.store[RESOURCE_ENERGY] < structure.storeCapacity 
-        });
-        if (storage) {
+        let storage = this.minion.room.storage;
+        if (storage && _.sum(storage.store) < storage.storeCapacity) {
             this.SetDestination(storage.pos.x, storage.pos.y, 1, storage.id, storage.room.name);
             this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
             return true;
@@ -544,13 +607,11 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected FindStorageSource(): boolean {
-        if (!this.IsEmpty || !RoomController.AreWeLinkMining(this.minion.room)) {
+        if (!this.IsEmpty) {
             return false;
         }
-        let storage: Storage = this.minion.pos.findClosestByPath(FIND_STRUCTURES, {
-            filter: structure => structure.structureType == STRUCTURE_STORAGE && structure.store[RESOURCE_ENERGY] != 0 
-        });
-        if (storage) {
+        let storage = this.minion.room.storage;
+        if (storage && storage.store[RESOURCE_ENERGY] != 0 ) {
             this.SetDestination(storage.pos.x, storage.pos.y, 1, storage.id, storage.room.name);
             this.minion.memory.postMovingState = Constants.STATE_WITHDRAWING;
             return true;
@@ -569,7 +630,7 @@ export default abstract class Minion {
         if (this.IsEmpty) {
             return false;
         }
-        let container: Container = this.minion.pos.findClosestByPath(FIND_STRUCTURES, {
+        let container = this.minion.pos.findClosestByPath<StructureContainer>(FIND_STRUCTURES, {
             filter: structure => structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] < structure.storeCapacity
         });
         if (container) {
@@ -592,12 +653,11 @@ export default abstract class Minion {
             return false;
         }
 
-        let containers: Container[] = this.minion.room.find(FIND_STRUCTURES, { 
+        let containers = this.minion.room.find<StructureContainer>(FIND_STRUCTURES, { 
             filter: structure => structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] != 0
         });
-        containers = _.sortBy(containers, structure => structure.store[RESOURCE_ENERGY]).reverse();
-        if (containers.length) {
-            let container = containers[0];
+        let container = _.max(containers, container =>  container.store[RESOURCE_ENERGY]);
+        if (container && container.pos) {
             this.SetDestination(container.pos.x, container.pos.y, 1, container.id);
             this.minion.memory.postMovingState = Constants.STATE_WITHDRAWING;
             return true;
@@ -616,7 +676,7 @@ export default abstract class Minion {
         if (this.IsEmpty) {
             return false;
         }
-        let controller: Controller = this.minion.room.controller;
+        let controller = this.minion.room.controller;
         if (controller) {
             this.SetDestination(controller.pos.x, controller.pos.y, 3, controller.id);
             this.minion.memory.postMovingState = Constants.STATE_UPGRADING;
@@ -636,7 +696,7 @@ export default abstract class Minion {
         if (this.IsEmpty) {
             return false;
         }
-        let constructionSite: ConstructionSite = this.minion.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
+        let constructionSite = this.minion.pos.findClosestByPath<ConstructionSite>(FIND_CONSTRUCTION_SITES);
         if (constructionSite) {
             this.SetDestination(constructionSite.pos.x, constructionSite.pos.y, 3, constructionSite.id);
             this.minion.memory.postMovingState = Constants.STATE_BUILDING;
@@ -656,33 +716,34 @@ export default abstract class Minion {
         if (this.IsEmpty) {
             return false;
         }
-        let structure: Structure = this.minion.pos.findClosestByPath(FIND_STRUCTURES, { 
-            filter: (structure) => (structure.structureType != STRUCTURE_WALL && 
-                                    structure.structureType != STRUCTURE_RAMPART) && 
-                                   (structure.hits / structure.hitsMax) < 0.5
+        let structures = this.minion.room.find<Structure>(FIND_STRUCTURES, { 
+            filter: structure => (structure.structureType != STRUCTURE_WALL && 
+                                  structure.structureType != STRUCTURE_RAMPART) && 
+                                 (structure.hits / structure.hitsMax) < 0.5
             }
         );
-        if (structure) {
+        let structure = _.min(structures, s => s.hits);
+        if (structure && structure.pos) {
             this.SetDestination(structure.pos.x, structure.pos.y, 3, structure.id, structure.room.name);
             this.minion.memory.postMovingState = Constants.STATE_REPAIRING;
             return true;                
         } 
 
-        let ramparts: StructureRampart[] = this.minion.room.find(FIND_STRUCTURES, { 
+        let ramparts = this.minion.room.find<StructureRampart>(FIND_STRUCTURES, { 
             filter: rampart => rampart.structureType == STRUCTURE_RAMPART && rampart.hits < Configuration.Defenses.rampart
         });
-        if (ramparts.length > 0) {
-            let rampart: StructureRampart = ramparts.length != 1 ? _.sortBy(ramparts, r => r.hits)[0] : ramparts[0];                
+        let rampart = _.min(ramparts, r => r.hits);
+        if (rampart && rampart.pos) {
             this.SetDestination(rampart.pos.x, rampart.pos.y, 3, rampart.id, rampart.room.name);
             this.minion.memory.postMovingState = Constants.STATE_REPAIRING;
             return true;                
         }
 
-        let walls: StructureWall[] = this.minion.room.find(FIND_STRUCTURES, { 
+        let walls = this.minion.room.find<StructureWall>(FIND_STRUCTURES, { 
             filter: wall => wall.structureType == STRUCTURE_WALL && wall.hits < Configuration.Defenses.wall
         });
-        if (walls.length > 0) {
-            let wall: StructureWall = walls.length != 1 ? _.sortBy(walls, r => r.hits)[0] : walls[0];                
+        let wall = _.min(walls, w => w.hits);
+        if (wall && wall.pos) {
             this.SetDestination(wall.pos.x, wall.pos.y, 3, wall.id, wall.room.name);
             this.minion.memory.postMovingState = Constants.STATE_REPAIRING;
             return true;
@@ -769,7 +830,7 @@ export default abstract class Minion {
         if (this.IsEmpty) {
             return false;
         }
-        let link: Link = this.minion.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter : link => link.structureType == STRUCTURE_LINK});
+        let link = this.minion.pos.findClosestByPath<StructureLink>(FIND_MY_STRUCTURES, {filter : link => link.structureType == STRUCTURE_LINK});
         if (link && link.energy < link.energyCapacity) {
             this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
             this.SetDestination(link.pos.x, link.pos.y, 1, link.id, link.room.name);
@@ -789,7 +850,8 @@ export default abstract class Minion {
         if (this.IsFull) {
             return false;
         }
-        let link: Link = this.minion.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter : link => link.structureType == STRUCTURE_LINK});
+        let link = this.minion.pos.findClosestByPath<StructureLink>(FIND_MY_STRUCTURES, {filter : link => link.structureType == STRUCTURE_LINK});
+        //todo: change this to find the link near the storage/terminal and save its id into room memory, then stand in the closest unoccupied rampart
         if (link && link.energy != 0) {
             this.minion.memory.postMovingState = Constants.STATE_WITHDRAWING;
             this.SetDestination(link.pos.x, link.pos.y, 1, link.id, link.room.name);
@@ -809,10 +871,30 @@ export default abstract class Minion {
         if (!this.IsEmpty) {
             return false;
         }
-        let minerals: Mineral = this.minion.pos.findClosestByPath(FIND_MINERALS);
+        let minerals = this.minion.pos.findClosestByPath<Mineral>(FIND_MINERALS, {filter : mineral => mineral.mineralAmount != 0});
         if (minerals) {
             this.SetDestination(minerals.pos.x, minerals.pos.y, 1, minerals.id);
             this.minion.memory.postMovingState = Constants.STATE_HARVESTING;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Finds the terminal to put energy into.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
+    protected FindTerminalTarget(): boolean {
+        if (this.IsEmpty || this.minion.room.memory.needRelief) {
+            return false;
+        }
+        let terminal = this.minion.room.terminal;
+        if (terminal && _.sum(terminal.store) < terminal.storeCapacity) {
+            this.SetDestination(terminal.pos.x, terminal.pos.y, 1, terminal.id);
+            this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
             return true;
         }
         return false;
@@ -825,17 +907,65 @@ export default abstract class Minion {
      * @returns {boolean} 
      * @memberof Minion
      */
-    protected FindTerminal(): boolean {
-        if (this.IsEmpty) {
+    protected FindTerminalSource(): boolean {
+        if (this.IsFull || !this.minion.room.terminal || (!this.minion.room.memory.needRelief && this.minion.room.terminal.store.energy < (Configuration.Terminal.energy * 1.1))) {
             return false;
         }
-        let terminal: Terminal = this.minion.room.terminal;
-        if (terminal) {
-            this.SetDestination(terminal.pos.x, terminal.pos.y, 1, terminal.id);
-            this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
-            return true;
+        this.SetDestination(this.minion.room.terminal.pos.x, this.minion.room.terminal.pos.y, 1, this.minion.room.terminal.id);
+        this.minion.memory.postMovingState = Constants.STATE_WITHDRAWING;
+        return true;
+    }
+
+    /**
+     * Finds a hostile spawn to attack.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
+    protected FindHostileSpawn(): boolean {
+        let hostile = this.minion.pos.findClosestByPath<Structure>(FIND_HOSTILE_SPAWNS);
+        if (!hostile) {
+            return false;            
         }
-        return false;
+        this.minion.memory.attackTarget = {type: "structure", id: hostile.id};
+        this.minion.memory.state = Constants.STATE_RANGED_ATTACK;
+        return true;
+    }
+
+
+    /**
+     * Finds a hostile minion to attack.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
+    protected FindHostileMinion(): boolean {
+        let hostiles = this.minion.room.find<Creep>(FIND_HOSTILE_CREEPS);
+        if (hostiles.length <= 0) {
+            return false;            
+        }
+        this.minion.memory.attackTarget = {type: "minion"};
+        this.minion.memory.state = Constants.STATE_RANGED_ATTACK;
+        return true;
+    }
+
+    /**
+     * Finds a hostile structure to attack.
+     * 
+     * @protected
+     * @returns {boolean} 
+     * @memberof Minion
+     */
+    protected FindHostileStructure(): boolean {
+        let hostile = this.minion.pos.findClosestByPath<Structure>(FIND_HOSTILE_STRUCTURES);
+        if (!hostile) {
+            return false;            
+        }
+        this.minion.memory.attackTarget = {type: "structure", id: hostile.id};
+        this.minion.memory.postMovingState = Constants.STATE_RANGED_ATTACK;
+        return true;
     }
 
     /**
@@ -874,31 +1004,79 @@ export default abstract class Minion {
         this.minion.memory.destination_room = room;
         this.minion.memory.range = range;
     }
+
+    /**
+     * Removes the flag of the specified color from the room then suicides the minion.
+     * 
+     * @protected
+     * @param {number} flagColor 
+     * @memberof Minion
+     */
+    protected RemoveFlagAndSuicide(flagColor: number) {
+        for (var f in Game.flags) {
+            let flag = Game.flags[f];
+            if (flag.color == flagColor && flag.pos.roomName == this.minion.room.name) {
+                flag.remove();
+                break;
+            }
+        }
+        this.minion.suicide();
+    }
    
     /**
-     * Builds a list of parts based on the rcl of the room
+     * Builds a list of parts based on the room
      * 
      * @static
-     * @param {number} rcl 
+     * @param {Room} room 
+     * @param {number} max
+     * @param {string[]} [parts] 
+     * @returns {string[]} 
+     * @memberof Minion
+     */
+    public static GetPartsFromRoom(room: Room, max: number, parts?: string[]): string[] {
+        if (!parts) {
+            parts = this.MinimumParts;
+        }
+        let cost = this.GetPartsCost(parts);
+        let size = 1;
+        if (!room.memory.needRelief) {
+            let shiftingSize = max * cost;
+            if (room.storage) {
+                shiftingSize = ((room.storage.store.energy + 1) / room.storage.storeCapacity) * shiftingSize;
+            }
+            size = Math.ceil(Math.min(shiftingSize, room.energyAvailable) / cost);
+        }
+        return this.GetParts(size, parts);
+    }
+
+    /**
+     * Builds a list of parts of the specified size
+     * 
+     * @static
+     * @param {number} size 
      * @param {string[]} [partsToAdd] 
      * @returns {string[]} 
      * @memberof Minion
      */
-    public static GetParts(rcl: number, partsToAdd?: string[]): string[] {
+    public static GetParts(size: number, partsToAdd?: string[]): string[] {
         let parts = [];
         if (!partsToAdd) {
             partsToAdd = this.MinimumParts;
         }
-        for (var index = 0; index < rcl; index++) {
-            for (let e in partsToAdd) {
+        for (var index = 0; index < size; index++) {
+            for (var e in partsToAdd) {
                 parts.push(partsToAdd[e]);
             }
         }
         return parts
     }
-    private static MinimumParts: string[] = [WORK, CARRY, MOVE];
-}
 
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Minion, "Minion");
+    private static GetPartsCost(parts: string[]): number {
+        let cost = 0;
+        for (var i in parts) {
+            cost += BODYPART_COST[parts[i]];
+        }
+        return cost;
+    }
+    private static MinimumParts: string[] = [WORK, CARRY, MOVE];
 }

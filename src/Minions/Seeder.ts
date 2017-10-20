@@ -1,9 +1,9 @@
-import Constants from "../Constants"
 import Minion from "./Minion";
+import Constants from "../Constants"
 
 /**
  * Seeder minion, used to provide support to another room.
- * Each room sends 2 minions that it can afford to help any requesting room with a COLOR_BLUE flag.
+ * Sends 2 minions to help any requesting room with a COLOR_BLUE flag.
  * 
  * @export
  * @class Seeder
@@ -66,19 +66,16 @@ export default class Seeder extends Minion {
      * @memberof Seeder
      */
     public static GetOptions(room: Room): any {
-        let rcl = Math.ceil(room.controller.level / 3);
-        let seeders = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
         let rooms = _.filter(Game.flags, flag => flag.color == COLOR_BLUE).map(flag => flag.pos.roomName);
-        let count = rooms.indexOf(room.name) == -1 ? (rooms.length * 2) - seeders.length : 0;
+        if (rooms.indexOf(room.name) != -1 || room.memory.needRelief) {
+            return undefined;
+        }
+        let seeders = _.filter(Memory.creeps, creep => creep.type == this.Type);
+        let count = (rooms.length * 2) - seeders.length;
         return { 
             Type: this.Type,
             Count: count,
-            Parts: Minion.GetParts(rcl)
+            Parts: Minion.GetPartsFromRoom(room, 5)
         };
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Seeder, "Seeder");
 }

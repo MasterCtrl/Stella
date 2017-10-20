@@ -1,6 +1,6 @@
-import Constants from "../Constants"
-import Minion from "./Minion";
 import RoomController from "../Controllers/RoomController"
+import Minion from "./Minion";
+import Constants from "../Constants"
 
 /**
  * Harvester minion, used to mine and fill spawns, extensions, towers, and containers.
@@ -56,20 +56,13 @@ export default class Harvester extends Minion {
      * @memberof Harvester
      */
     public static GetOptions(room: Room): any {
-        let rcl = Math.ceil(room.controller.level / 3);
-        let count = room.find(FIND_SOURCES).length * 2;
         if (RoomController.AreWeContainerMining(room) || RoomController.AreWeLinkMining(room)) {
-            count = 0;
+            return undefined;
         }
         return { 
             Type: this.Type,
-            Count: count,
-            Parts: Minion.GetParts(rcl)
+            Count: room.find(FIND_SOURCES).length,
+            Parts: Minion.GetPartsFromRoom(room, 3)
         };
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Harvester, "Harvester");
 }

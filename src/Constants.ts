@@ -18,4 +18,6 @@ export default class Constants {
     static STATE_IDLE: number = 9;
     static STATE_CLAIM: number = 10;
     static STATE_RESET: number = 11;
+    static STATE_ATTACK: number = 12;
+    static STATE_RANGED_ATTACK: number = 13;
 }

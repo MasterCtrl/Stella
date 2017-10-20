@@ -66,18 +66,11 @@ export default class Builder extends Minion {
      * @returns {*} 
      * @memberof Builder
      */
-    public static GetOptions(room: Room): any {
-        let rcl = Math.ceil(room.controller.level / 1.5);
-        let count = room.find(FIND_SOURCES).length;
+    public static GetOptions(room: Room): any { 
         return { 
             Type: this.Type,
-            Count: count,
-            Parts: Minion.GetParts(rcl)
+            Count: room.find(FIND_SOURCES).length,
+            Parts: Minion.GetPartsFromRoom(room, 5)
         };
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Builder, "Builder");
 }

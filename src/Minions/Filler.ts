@@ -1,6 +1,6 @@
-import Constants from "../Constants"
-import Minion from "./Minion"
 import RoomController from "../Controllers/RoomController"
+import Minion from "./Minion"
+import Constants from "../Constants"
 
 /**
  * Filler minion, used to purely to move energy from links and fill storage.
@@ -34,12 +34,16 @@ export default class Filler extends Minion {
             return;
         }
 
+        if (this.FindTerminalSource()) {
+            return;
+        }
+
         if (this.FindStorageTarget()) {
             return;
         }
         
-        this.minion.memory.initialized = false;
         this.minion.memory.state = Constants.STATE_IDLE;
+        this.minion.memory.idle = 5;
     }
 
     /**
@@ -51,15 +55,13 @@ export default class Filler extends Minion {
      * @memberof Filler
      */
     public static GetOptions(room: Room): any {
+        if (!RoomController.AreWeLinkMining(room)) {
+            return undefined;
+        }
         return { 
             Type: this.Type,
-            Count: RoomController.AreWeLinkMining(room) ? 1 : 0,
-            Parts: [CARRY, CARRY, CARRY, CARRY, MOVE]
+            Count: 1,
+            Parts: [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE]
         };
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Filler, "Filler");
 }

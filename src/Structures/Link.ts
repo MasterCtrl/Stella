@@ -38,35 +38,32 @@ export default class Link {
      * @memberof Link
      */
     public get IsTarget(): boolean {
-        return this.link.pos.findInRange(FIND_MY_STRUCTURES, 3, { filter: storage => storage.structureType == STRUCTURE_STORAGE }).length > 0;
+        return this.link.room.memory.linkTarget == this.link.id;
     }
 
     /**
      * Runs the Link
      * 
+     * @returns {boolean} 
      * @memberof Link
      */
-    public Run() {
+    public Run(): boolean {
         if (this.IsOnCooldown || this.IsTarget || this.link.energy / this.link.energyCapacity < 0.5) {
-            return;
+            return false;
         }
         
-        let target: StructureLink = this.link.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter : (link: StructureLink) => link.structureType == STRUCTURE_LINK && link.id != this.link.id
+        let target = this.link.pos.findClosestByRange<StructureLink>(FIND_STRUCTURES, {
+            filter : link => link.structureType == STRUCTURE_LINK && link.id == this.link.room.memory.linkTarget
         });
         if (!target || target.energy == target.energyCapacity) {
-            return;
+            return false;
         }
 
-        this.TransferToTarget(target, target.energyCapacity - target.energy);
+        return this.TransferToTarget(target, target.energyCapacity - target.energy);
     }
 
-    private TransferToTarget(target: StructureLink | Creep, targetFreeSpace: number) {
-        this.link.transferEnergy(target, targetFreeSpace > this.link.energy ? this.link.energy : targetFreeSpace);
+    private TransferToTarget(target: StructureLink, targetFreeSpace: number) {
+        var result = this.link.transferEnergy(target, targetFreeSpace > this.link.energy ? this.link.energy : targetFreeSpace);
+        return result == OK;
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Link, "Link");
 }

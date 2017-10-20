@@ -21,26 +21,33 @@ export default class Turret {
      * 
      * @memberof Turret
      */
-    public Run() {
-        let hostile: Creep = this.turret.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        if (hostile) {
-            this.turret.attack(hostile);
-            return;
+    public Run(): boolean {
+        if(this.AttackHostile()){
+            return true;
         }
 
-        let structure: Structure = this.turret.pos.findClosestByRange(FIND_STRUCTURES, {
+        return this.RepairStructure();
+    }
+
+    private AttackHostile(): boolean {
+        let hostiles = this.turret.room.find<Creep>(FIND_HOSTILE_CREEPS);
+        if (hostiles.length > 0) {
+            let hostile = hostiles[Math.floor(Math.random() * hostiles.length)];
+            return this.turret.attack(hostile) == OK;
+        }
+        return false;
+    }
+
+    private RepairStructure(): boolean {
+        let structure = this.turret.pos.findClosestByRange<Structure>(FIND_STRUCTURES, {
             filter: (structure) => structure.structureType != STRUCTURE_WALL && 
                                    structure.structureType != STRUCTURE_RAMPART && 
                                    structure.hits < structure.hitsMax
             }
         );
         if (structure) {
-            this.turret.repair(structure);
+            return this.turret.repair(structure) == OK;
         }
+        return false;
     }
-}
-
-import Configuration from "../Configuration"
-if (Configuration.Profiling) {
-    require("screeps-profiler").registerClass(Turret, "Turret");
 }

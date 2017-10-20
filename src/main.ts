@@ -1,12 +1,8 @@
-import Configuration from "./Configuration"
 import EntityController from "./Controllers/EntityController";
 import RoomController from "./Controllers/RoomController";
+import GC from "./GC"
+import Profiler from "./Profiling"
 
-let Profiler = undefined;
-if (Configuration.Profiling) {
-    Profiler = require("screeps-profiler");
-    Profiler.enable();    
-}
 
 export const loop = function() {
     if (Profiler) {
@@ -17,6 +13,6 @@ export const loop = function() {
 }
 
 let mainLoop = function() {
-    EntityController.Sync(Memory.creeps, Game.creeps);
     RoomController.RunRooms(Game.rooms);
+    GC.SyncAll();
 }
