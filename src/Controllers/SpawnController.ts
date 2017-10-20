@@ -57,9 +57,10 @@ export default class SpawnController {
      */
     private static SpawnMinion(spawner: Spawn, type: string, count: number, parts: string[]): boolean {
         let creepsOfType = _.filter(Memory.creeps, c => c.type == type && c.room == spawner.room.name);
-        if (creepsOfType.length < count && spawner.canCreateCreep(parts, undefined) == OK) {
-            let name = spawner.createCreep(parts, undefined, {type: type, room: spawner.room.name});
-            console.log(spawner.room.name + ": Spawning new " + type + ": " + name);
+        let name: string = type + "_" + spawner.room.name + "_" + parts.length + "_" + Game.time % 5000;
+        if (creepsOfType.length < count && spawner.canCreateCreep(parts, name) == OK) {
+            spawner.createCreep(parts, name, {type: type, room: spawner.room.name});
+            console.log(spawner.room.name + ": Spawning new minion: " + name);
             return true;
         }
         return false;
