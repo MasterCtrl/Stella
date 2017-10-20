@@ -89,7 +89,7 @@ export default class RoomController {
     }
 
     private LogStats() {
-        if (Game.time % 1200 == 0 && this.room.storage) {
+        if (Configuration.Statistics && Game.time % 1200 == 0 && this.room.storage) {
             if (!this.room.memory.income) {
                 this.room.memory.income = [];
             }
