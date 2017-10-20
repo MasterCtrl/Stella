@@ -12,14 +12,13 @@ export default class SpawnController {
      * Spawns minions from each of the specified Spawners.
      * 
      * @static
-     * @param {Spawn[]} spawners 
-     * @param {Creep[]} creeps 
-     * @param {Options[]} [spawnOptions] 
+     * @param {Spawn[]} spawners
+     * @param {Options[]} [spawnQueue] 
      * @memberof SpawnController
      */
-    public static Spawn(spawners: Spawn[], creeps: Creep[], spawnOptions?: Options[]) {
+    public static Spawn(spawners: Spawn[], spawnQueue: Options[]) {
         for (let i in spawners) {
-            SpawnController.SpawnMinions(spawners[i], creeps, spawnOptions);
+            this.SpawnMinions(spawners[i], spawnQueue);
         }
     }
 
@@ -27,21 +26,20 @@ export default class SpawnController {
      * Spawns minions from the specified Spawner.
      * 
      * @static
-     * @param {Spawn} spawner 
-     * @param {Creep[]} creeps 
-     * @param {Options[]} spawnOptions 
+     * @param {Spawn} spawner
+     * @param {Options[]} spawnQueue 
      * @memberof SpawnController
      */
-    public static SpawnMinions(spawner: Spawn, creeps: Creep[], spawnOptions: Options[]) {
+    public static SpawnMinions(spawner: Spawn, spawnQueue: Options[]) {
         if (!spawner.isActive() || spawner.spawning) {
             return;
         }
-        for (var index in spawnOptions) {
-            var options = spawnOptions[index];
-            if (options.Count != 0 && this.SpawnMinion(spawner, creeps, options.Type, options.Count, options.Parts)) {
-                options.Count = 0;
+        for (var i = 0; i < spawnQueue.length; i++) {
+            var options = spawnQueue.shift();
+            if (options.Count != 0 && this.SpawnMinion(spawner, options.Type, options.Count, options.Parts)) {
                 break;
             }
+            spawnQueue.push(options);
         }
     }
 
@@ -50,18 +48,17 @@ export default class SpawnController {
      * 
      * @private
      * @static
-     * @param {Spawn} spawner 
-     * @param {Creep[]} creeps 
+     * @param {Spawn} spawner
      * @param {string} type 
      * @param {number} count 
      * @param {string[]} parts 
-     * @returns {boolean} 
+     * @returns {boolean}
      * @memberof SpawnController
      */
-    private static SpawnMinion(spawner: Spawn, creeps: Creep[], type: string, count: number, parts: string[]): boolean {
-        let creepsOfType = _.filter(creeps, c => c.memory.type == type);
+    private static SpawnMinion(spawner: Spawn, type: string, count: number, parts: string[]): boolean {
+        let creepsOfType = _.filter(Memory.creeps, c => c.type == type && c.room == spawner.room.name);
         if (creepsOfType.length < count && spawner.canCreateCreep(parts, undefined) == OK) {
-            let name = spawner.createCreep(parts, undefined, {type: type});
+            let name = spawner.createCreep(parts, undefined, {type: type, room: spawner.room.name});
             console.log(spawner.room.name + ": Spawning new " + type + ": " + name);
             return true;
         }

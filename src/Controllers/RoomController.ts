@@ -62,14 +62,13 @@ export default class RoomController {
     public Run() {
         this.LogStats();
 
-        let creeps: Creep[] = this.room.find(FIND_MY_CREEPS);
         let tick = Game.time % Configuration.TickRate;
         
         if (tick == this.Index) {
-            let spawnOptions = this.GetSpawnOptions();
-            if (spawnOptions) {
-                SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), creeps, spawnOptions);            
-            }    
+            let spawnQueue = this.GetSpawnQueue();
+            if (spawnQueue) {
+                SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), spawnQueue);            
+            }
         }
         
         if (tick == Configuration.TickRate - 1) {
@@ -80,7 +79,7 @@ export default class RoomController {
             this.RefreshRoomMemory();
         }
         
-        EntityController.RunCreeps(creeps);
+        EntityController.RunCreeps(this.room.find(FIND_MY_CREEPS));
       
         if (tick == Configuration.TickRate - 3 || RoomController.GetDefcon(this.room).level > 0) {
             EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));            
@@ -148,12 +147,12 @@ export default class RoomController {
      * @returns {any[]} 
      * @memberof RoomController
      */
-    public GetSpawnOptions(): any[] {
-        let options = [];
-        for (var i in RoomController.OptionFuncs) {
-            this.AddOptions(options, RoomController.OptionFuncs[i]);
+    public GetSpawnQueue(): any[] {
+        let spawnQueue = [];
+        for (var i in RoomController.Options) {
+            this.AddOptions(spawnQueue, RoomController.Options[i]);
         }
-        return options;
+        return spawnQueue;
     }
 
     private AddOptions(options: any[], getFunc: (room: Room) => any) {
@@ -189,7 +188,7 @@ export default class RoomController {
      * @static
      * @memberof RoomController
      */
-    public static OptionFuncs = [
+    public static Options = [
         (room: Room): any => Harvester.GetOptions(room),
         (room: Room): any => Courier.GetOptions(room),
         (room: Room): any => Miner.GetOptions(room),
@@ -255,8 +254,15 @@ export default class RoomController {
     public static GetDefcon(room: Room): DefconType {
         let hostiles = room.find<Creep>(FIND_HOSTILE_CREEPS);
         let current: DefconType = room.memory.defcon || { level: 0, tick: Game.time };
-        if (hostiles.length > 0 && (Game.time - current.tick) % 60 == 0) {
-            current.level++;
+        let tick = Game.time - current.tick;
+        if (tick != 0 && tick % 50 == 0) {
+            if (hostiles.length > 0) {
+                current.level = Math.min(8, current.level + 1);
+                console.log(room.name + ": Upgrading defcon to " + current.level);
+            } else if (current.level != 0) {
+                current.level = 0;
+                console.log(room.name + ": Downgrading defcon to " + current.level);
+            }
             current.tick = Game.time;
         }
         return room.memory.defcon = current;

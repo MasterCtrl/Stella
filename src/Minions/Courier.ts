@@ -68,7 +68,7 @@ export default class Courier extends Minion {
         return { 
             Type: this.Type,
             Count: room.find(FIND_SOURCES).length,
-            Parts: Minion.GetPartsFromRoom(room, 600, 200, this.CourierParts)
+            Parts: Minion.GetPartsFromRoom(room, 4, this.CourierParts)
         };
     }
     private static CourierParts: string[] = [CARRY, MOVE, CARRY, MOVE];   

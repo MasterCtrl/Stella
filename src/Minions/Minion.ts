@@ -262,6 +262,7 @@ export default abstract class Minion {
     private RunRangedAttack() {
         if (!this.minion.memory.attackTarget) {
             this.minion.memory.initialized = false;
+            return;
         }
 
         let target: Creep|Structure;
@@ -276,6 +277,7 @@ export default abstract class Minion {
         if (!target) {
             this.minion.memory.attackTarget = undefined;
             this.minion.memory.initialized = false;
+            return;
         }
         let range = this.minion.pos.getRangeTo(target);
         if (range > 3) {
@@ -521,7 +523,8 @@ export default abstract class Minion {
         }
         let occupiedDestinations = _.filter(Game.creeps, creep => creep.memory.destination_id).map<string>(creep => creep.memory.destination_id);
         let targetQueue: TargetQueue = [d => this.FindSpawnStorage(d), d => this.FindTurretStorage(d)];
-        if (RoomController.GetDefcon(this.minion.room).level > 0) {
+        let defcon = RoomController.GetDefcon(this.minion.room);
+        if (defcon.level > 2 && (this.minion.room.energyAvailable / this.minion.room.energyCapacityAvailable) > 0.5) {
             targetQueue = targetQueue.reverse();
         }
         targetQueue.push(d => this.FindTerminalStorage());
@@ -905,16 +908,12 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected FindTerminalSource(): boolean {
-        if (this.IsFull || !this.minion.room.memory.needRelief) {
+        if (this.IsFull || !this.minion.room.terminal || (!this.minion.room.memory.needRelief && this.minion.room.terminal.store.energy < (Configuration.Terminal.energy * 1.1))) {
             return false;
         }
-        let terminal: Terminal = this.minion.room.terminal;
-        if (terminal) {
-            this.SetDestination(terminal.pos.x, terminal.pos.y, 1, terminal.id);
-            this.minion.memory.postMovingState = Constants.STATE_WITHDRAWING;
-            return true;
-        }
-        return false;
+        this.SetDestination(this.minion.room.terminal.pos.x, this.minion.room.terminal.pos.y, 1, this.minion.room.terminal.id);
+        this.minion.memory.postMovingState = Constants.STATE_WITHDRAWING;
+        return true;
     }
 
     /**
@@ -930,7 +929,7 @@ export default abstract class Minion {
             return false;            
         }
         this.minion.memory.attackTarget = {type: "structure", id: hostile.id};
-        this.minion.memory.postMovingState = Constants.STATE_RANGED_ATTACK;
+        this.minion.memory.state = Constants.STATE_RANGED_ATTACK;
         return true;
     }
 
@@ -948,7 +947,7 @@ export default abstract class Minion {
             return false;            
         }
         this.minion.memory.attackTarget = {type: "minion"};
-        this.minion.memory.postMovingState = Constants.STATE_RANGED_ATTACK;
+        this.minion.memory.state = Constants.STATE_RANGED_ATTACK;
         return true;
     }
 
@@ -1029,25 +1028,25 @@ export default abstract class Minion {
      * 
      * @static
      * @param {Room} room 
-     * @param {number} max 
-     * @param {number} cost 
-     * @param {string[]} [partsToAdd] 
+     * @param {number} max
+     * @param {string[]} [parts] 
      * @returns {string[]} 
      * @memberof Minion
      */
-    public static GetPartsFromRoom(room: Room, max: number, cost: number, partsToAdd?: string[]): string[] {
-        if (!partsToAdd) {
-            partsToAdd = this.MinimumParts;
+    public static GetPartsFromRoom(room: Room, max: number, parts?: string[]): string[] {
+        if (!parts) {
+            parts = this.MinimumParts;
         }
+        let cost = this.GetPartsCost(parts);
         let size = 1;
         if (!room.memory.needRelief) {
-            let shiftingSize = max;
+            let shiftingSize = max * cost;
             if (room.storage) {
                 shiftingSize = ((room.storage.store.energy + 1) / room.storage.storeCapacity) * shiftingSize;
             }
             size = Math.ceil(Math.min(shiftingSize, room.energyAvailable) / cost);
         }
-        return this.GetParts(size, partsToAdd);
+        return this.GetParts(size, parts);
     }
 
     /**
@@ -1070,6 +1069,14 @@ export default abstract class Minion {
             }
         }
         return parts
+    }
+
+    private static GetPartsCost(parts: string[]): number {
+        let cost = 0;
+        for (var i in parts) {
+            cost += BODYPART_COST[parts[i]];
+        }
+        return cost;
     }
     private static MinimumParts: string[] = [WORK, CARRY, MOVE];
 }

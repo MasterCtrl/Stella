@@ -13,7 +13,7 @@ describe("Turret Tests", () => {
     
     describe("#AttackHostile", () => {
         it("Returns false there are no hostiles", () => {
-            towerStub.pos.findClosestByRangeResult = undefined;
+            towerStub.room.findResult = [];
 
             var turret = new Turret.default(towerStub);
             assert.equal(turret.AttackHostile(), false, "Turret AttackHostile found a hostile?");

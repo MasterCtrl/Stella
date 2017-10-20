@@ -14,7 +14,6 @@ import Constants from "../Constants"
 export default class Guardian extends Minion {
     public static Type: string = "Guardian";
 
-
     /**
      * Creates an instance of Guardian.
      * @param {Creep} minion 
@@ -23,7 +22,6 @@ export default class Guardian extends Minion {
     constructor(minion: Creep) {
         super(minion);
     }
-
 
     /**
      *  Initializes the Guardian, sets state and target.
@@ -40,7 +38,6 @@ export default class Guardian extends Minion {
         this.Rally();
     }
 
-
     /**
      * Gets the options for the Guardian minion based on the room.
      * 
@@ -51,13 +48,14 @@ export default class Guardian extends Minion {
      */
     public static GetOptions(room: Room): any {
         let defcon = room.memory.defcon;
-        if (!defcon || defcon.level < 2) {
+        let count: number;
+        if (!defcon || !(count = Math.min(Math.floor(defcon.level / 2), 4) * 2)) {
             return undefined;
         }
         return { 
             Type: this.Type,
-            Count: defcon.level > 3 ? 4 : 2,
-            Parts: Minion.GetPartsFromRoom(room, 1040, 260, this.GuardianParts)
+            Count: count,
+            Parts: Minion.GetPartsFromRoom(room, 4, this.GuardianParts)
         };
     }
     private static GuardianParts: string[] = [TOUGH, RANGED_ATTACK, MOVE, MOVE];   

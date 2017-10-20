@@ -62,7 +62,7 @@ export default class Harvester extends Minion {
         return { 
             Type: this.Type,
             Count: room.find(FIND_SOURCES).length,
-            Parts: Minion.GetPartsFromRoom(room, 600, 200)
+            Parts: Minion.GetPartsFromRoom(room, 3)
         };
     }
 }

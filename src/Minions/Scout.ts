@@ -52,7 +52,7 @@ export default class Scout extends Minion {
         if (room.memory.needRelief) {
             return undefined;
         }
-        let scouts = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
+        let scouts = _.filter(Memory.creeps, creep => creep.type == this.Type);
         let rooms = _.filter(Game.flags, flag => flag.color == COLOR_GREEN).map(flag => flag.pos.roomName);
         let count = rooms.length - scouts.length;
         if (count <= 0) {

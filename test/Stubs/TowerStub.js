@@ -1,8 +1,10 @@
 var RoomPositionStub = require("./RoomPositionStub");
+var RoomStub = require("./RoomStub");
 
 module.exports = class TowerStub {
-    constructor(pos) {
+    constructor(pos, room) {
         this.pos = pos || new RoomPositionStub();
+        this.room = room || new RoomStub();
         this.attackResult = OK;
         this.repairResult = OK;
     }

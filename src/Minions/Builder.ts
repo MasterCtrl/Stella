@@ -70,7 +70,7 @@ export default class Builder extends Minion {
         return { 
             Type: this.Type,
             Count: room.find(FIND_SOURCES).length,
-            Parts: Minion.GetPartsFromRoom(room, 1000, 200)
+            Parts: Minion.GetPartsFromRoom(room, 5)
         };
     }
 }

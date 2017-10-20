@@ -66,16 +66,16 @@ export default class Raider extends Minion {
         if (room.memory.needRelief || percentage <= 0.4) {
             return undefined;
         }
-        let raiders = _.filter(Game.creeps, creep => creep.memory.type == this.Type);
+        let raiders = _.filter(Memory.creeps, creep => creep.type == this.Type);
         let rooms = _.filter(Game.flags, flag => flag.color == COLOR_RED).map(flag => flag.pos.roomName);
         let count = (rooms.length * 3) - raiders.length;
         if (count <= 0 ) {
             return undefined;            
         }
-        return { 
+        return {
             Type: this.Type,
             Count: count,
-            Parts: Minion.GetPartsFromRoom(room, 1040, 260, this.RaiderParts)
+            Parts: Minion.GetPartsFromRoom(room, 4, this.RaiderParts)
         };
     }
     private static RaiderParts: string[] = [TOUGH, RANGED_ATTACK, MOVE, MOVE];   

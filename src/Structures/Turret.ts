@@ -30,8 +30,9 @@ export default class Turret {
     }
 
     private AttackHostile(): boolean {
-        let hostile = this.turret.pos.findClosestByRange<Creep>(FIND_HOSTILE_CREEPS);
-        if (hostile) {
+        let hostiles = this.turret.room.find<Creep>(FIND_HOSTILE_CREEPS);
+        if (hostiles.length > 0) {
+            let hostile = hostiles[Math.floor(Math.random() * hostiles.length)];
             return this.turret.attack(hostile) == OK;
         }
         return false;
