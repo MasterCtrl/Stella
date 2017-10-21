@@ -124,7 +124,7 @@ export default abstract class Minion {
         if (this.minion.fatigue > 0) {
             return;
         }
-        this.minion.moveTo(roomPosition);
+        this.minion.moveTo(roomPosition, {visualizePathStyle: {stroke: '#ffffff'}});
     }
 
     private RunHarvesting(transitionState: number) {
@@ -214,6 +214,11 @@ export default abstract class Minion {
             return;
         }
         let structure = Game.getObjectById<Structure>(this.minion.memory.destination_id);
+        if (!structure || structure.hits == structure.hitsMax) {
+            this.minion.memory.state = transitionState;
+            this.minion.memory.initialized = false;
+            return;
+        }
         this.minion.repair(structure);
     }
 
@@ -718,7 +723,8 @@ export default abstract class Minion {
         }
         let structures = this.minion.room.find<Structure>(FIND_STRUCTURES, { 
             filter: structure => (structure.structureType != STRUCTURE_WALL && 
-                                  structure.structureType != STRUCTURE_RAMPART) && 
+                                  structure.structureType != STRUCTURE_RAMPART &&
+                                  structure.structureType != STRUCTURE_ROAD) && 
                                  (structure.hits / structure.hitsMax) < 0.5
             }
         );
@@ -729,24 +735,15 @@ export default abstract class Minion {
             return true;                
         } 
 
-        let ramparts = this.minion.room.find<StructureRampart>(FIND_STRUCTURES, { 
-            filter: rampart => rampart.structureType == STRUCTURE_RAMPART && rampart.hits < Configuration.Defenses.rampart
+        let walls = this.minion.room.find<StructureRampart>(FIND_STRUCTURES, { 
+            filter: wall => (wall.structureType == STRUCTURE_RAMPART && wall.hits < Configuration.Defenses.rampart) ||
+                            (wall.structureType == STRUCTURE_WALL && wall.hits < Configuration.Defenses.wall)
         });
-        let rampart = _.min(ramparts, r => r.hits);
-        if (rampart && rampart.pos) {
-            this.SetDestination(rampart.pos.x, rampart.pos.y, 3, rampart.id, rampart.room.name);
-            this.minion.memory.postMovingState = Constants.STATE_REPAIRING;
-            return true;                
-        }
-
-        let walls = this.minion.room.find<StructureWall>(FIND_STRUCTURES, { 
-            filter: wall => wall.structureType == STRUCTURE_WALL && wall.hits < Configuration.Defenses.wall
-        });
-        let wall = _.min(walls, w => w.hits);
+        let wall = _.min(walls, r => r.hits);
         if (wall && wall.pos) {
             this.SetDestination(wall.pos.x, wall.pos.y, 3, wall.id, wall.room.name);
             this.minion.memory.postMovingState = Constants.STATE_REPAIRING;
-            return true;
+            return true;                
         }
 
         return false;
