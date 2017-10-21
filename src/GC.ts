@@ -12,10 +12,8 @@ export default class GC {
      * @memberof GC
      */
     public static SyncAll() {
-        if (Game.time % 50 == 0) {
-            GC.Sync(Memory.creeps, Game.creeps);
-            GC.Sync(Memory.rooms, Game.rooms);    
-        }
+        GC.Sync(Memory.creeps, Game.creeps);
+        GC.Sync(Memory.rooms, Game.rooms);    
     }
 
     /**
