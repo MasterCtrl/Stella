@@ -31,7 +31,7 @@ export default class Terminal {
         if (this.SellResources()) {
             return true;
         }
-        return this.SendRelief();
+        return this.SendResources();
     }
 
     private SellResources(): boolean {
@@ -71,7 +71,7 @@ export default class Terminal {
         return false;
     }
 
-    private SendRelief(): boolean {
+    private SendResources(): boolean {
         if (!Memory.rooms) {
             return false;
         }
