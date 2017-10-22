@@ -7,6 +7,7 @@
 export default class Configuration {
     static Profiling = true;
     static Statistics = false;
+    static DrawVisuals = false;
     static Defenses = {
         wall:       400000,
         rampart:    350000

@@ -11,6 +11,7 @@ import Miner from "../Minions/Miner";
 import Raider from "../Minions/Raider";
 import Scout from "../Minions/Scout";
 import Seeder from "../Minions/Seeder";
+import Barbarian from "../Minions/Barbarian"
 import Upgrader from "../Minions/Upgrader";
 import Configuration from "../Configuration"
 type RoomHash = {[roomName: string]: Room};
@@ -60,6 +61,7 @@ export default class RoomController {
      * @memberof RoomController
      */
     public Run() {
+        this.DrawVisuals();
         this.LogStats();
 
         let tick = Game.time % Configuration.TickRate;
@@ -86,6 +88,19 @@ export default class RoomController {
         }
         
         EntityController.RunTerminal(this.room.terminal);
+    }
+
+    private DrawVisuals() {
+        if(!this.room.controller || !this.room.controller.my || !Configuration.DrawVisuals) {
+            return;
+        }
+        new RoomVisual(this.room.name).rect(
+            this.room.controller.pos.x - 3, 
+            this.room.controller.pos.y - 3, 
+            6, 
+            6,
+            {fill: "transparent", stroke: "#ffffff", lineStyle: "dashed"}
+        );
     }
 
     private LogStats() {
@@ -194,8 +209,9 @@ export default class RoomController {
         (room: Room): any => Miner.GetOptions(room),
         (room: Room): any => LinkMiner.GetOptions(room),
         (room: Room): any => Filler.GetOptions(room),
-        (room: Room): any => Guardian.GetOptions(room),
         (room: Room): any => Builder.GetOptions(room),
+        (room: Room): any => Guardian.GetOptions(room),
+        (room: Room): any => Barbarian.GetOptions(room),
         (room: Room): any => Upgrader.GetOptions(room),
         (room: Room): any => Scout.GetOptions(room),
         (room: Room): any => Seeder.GetOptions(room),

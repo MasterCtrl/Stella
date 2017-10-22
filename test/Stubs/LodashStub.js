@@ -1,6 +1,7 @@
 module.exports = class LodashStub {
     constructor(pos) {
         this.maxResult = {};
+        this.minResult = {};
         Object.assign(global, { _: this });
     }
 
@@ -13,5 +14,9 @@ module.exports = class LodashStub {
 
     max(...values) {
         return this.maxResult;
+    }
+
+    min(...values) {
+        return this.minResult;
     }
 };

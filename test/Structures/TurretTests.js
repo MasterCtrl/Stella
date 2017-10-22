@@ -2,13 +2,15 @@ var assert = require("assert");
 require("../global").Register();
 
 var Turret = require("../../lib/Structures/Turret");
+var LodashStub = require("../Stubs/LodashStub");
 var TowerStub = require("../Stubs/TowerStub");
 
 describe("Turret Tests", () => {
-    var towerStub;
+    var towerStub, lodashStub;
 
     beforeEach(() =>{
         towerStub = new TowerStub();
+        lodashStub = new LodashStub();
     });
     
     describe("#AttackHostile", () => {
@@ -34,7 +36,7 @@ describe("Turret Tests", () => {
 
     describe("#RepairStructure", () => {
         it("Returns false there are no structures", () => {
-            towerStub.pos.findClosestByRangeResult = undefined;
+            lodashStub.minResult = undefined;
 
             var turret = new Turret.default(towerStub);
             assert.equal(turret.RepairStructure(), false, "Turret RepairStructure found a structure?");

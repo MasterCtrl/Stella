@@ -20,4 +20,6 @@ export default class Constants {
     static STATE_RESET: number = 11;
     static STATE_ATTACK: number = 12;
     static STATE_RANGED_ATTACK: number = 13;
+    static STATE_MELEE_ATTACK: number = 14;
+    static STATE_HEAL: number = 15;
 }
