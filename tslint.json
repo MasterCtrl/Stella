@@ -5,6 +5,7 @@
     "rules": {
         "forin": false,
         "member-ordering": false,
+        "object-literal-sort-keys": false,
         "interface-over-type-literal": false,
         "ordered-imports": false,
         "no-var-requires": false,
