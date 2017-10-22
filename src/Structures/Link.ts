@@ -1,8 +1,6 @@
-import Filler from "../Minions/Filler"
-
 /**
  * Link, used to send resources around a room.
- * 
+ *
  * @export
  * @class Link
  */
@@ -11,7 +9,7 @@ export default class Link {
 
     /**
      * Creates an instance of Link.
-     * @param {Link} link 
+     * @param {Link} link
      * @memberof Link
      */
     constructor(link: StructureLink) {
@@ -20,7 +18,7 @@ export default class Link {
 
     /**
      * Gets if the link is on cooldown
-     * 
+     *
      * @readonly
      * @type {boolean}
      * @memberof Link
@@ -31,31 +29,31 @@ export default class Link {
 
     /**
      * Gets if this link is a target
-     * 
+     *
      * @readonly
      * @protected
      * @type {boolean}
      * @memberof Link
      */
     public get IsTarget(): boolean {
-        return this.link.room.memory.linkTarget == this.link.id;
+        return this.link.room.memory.linkTarget === this.link.id;
     }
 
     /**
      * Runs the Link
-     * 
-     * @returns {boolean} 
+     *
+     * @returns {boolean}
      * @memberof Link
      */
     public Run(): boolean {
         if (this.IsOnCooldown || this.IsTarget || this.link.energy / this.link.energyCapacity < 0.5) {
             return false;
         }
-        
-        let target = this.link.pos.findClosestByRange<StructureLink>(FIND_STRUCTURES, {
-            filter : link => link.structureType == STRUCTURE_LINK && link.id == this.link.room.memory.linkTarget
+
+        const target = this.link.pos.findClosestByRange<StructureLink>(FIND_STRUCTURES, {
+            filter : (l) => l.structureType === STRUCTURE_LINK && l.id === this.link.room.memory.linkTarget
         });
-        if (!target || target.energy == target.energyCapacity) {
+        if (!target || target.energy === target.energyCapacity) {
             return false;
         }
 
@@ -63,7 +61,7 @@ export default class Link {
     }
 
     private TransferToTarget(target: StructureLink, targetFreeSpace: number) {
-        var result = this.link.transferEnergy(target, targetFreeSpace > this.link.energy ? this.link.energy : targetFreeSpace);
-        return result == OK;
+        const result = this.link.transferEnergy(target, targetFreeSpace > this.link.energy ? this.link.energy : targetFreeSpace);
+        return result === OK;
     }
 }

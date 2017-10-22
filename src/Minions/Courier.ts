@@ -1,11 +1,11 @@
 import RoomController from "../Controllers/RoomController";
 import Minion from "./Minion";
-import Constants from "../Constants"
+import Constants from "../Constants";
 
 /**
  * Courier minion, used to purely to move energy from sources to fill spawns, extensions, towers, and containers.
  * Only spawns if the rcl is >= 4 and have stopped harvester spawning.
- * 
+ *
  * @export
  * @class Courier
  * @extends {Minion}
@@ -15,7 +15,7 @@ export default class Courier extends Minion {
 
     /**
      * Creates an instance of Courier.
-     * @param {Creep} minion 
+     * @param {Creep} minion
      * @memberof Courier
      */
     constructor(minion: Creep) {
@@ -24,8 +24,8 @@ export default class Courier extends Minion {
 
     /**
      * Initializes the Courier, sets state and destination.
-     * 
-     * @returns 
+     *
+     * @returns
      * @memberof Courier
      */
     public Initialize() {
@@ -52,24 +52,24 @@ export default class Courier extends Minion {
 
         this.Rally();
     }
-    
+
     /**
      * Gets the options for the Courier minion based on the room.
-     * 
+     *
      * @static
-     * @param {Room} room 
-     * @returns {*} 
+     * @param {Room} room
+     * @returns {*}
      * @memberof Courier
      */
     public static GetOptions(room: Room): any {
         if (!RoomController.AreWeContainerMining(room) && !RoomController.AreWeLinkMining(room)) {
             return undefined;
         }
-        return { 
+        return {
             Type: this.Type,
             Count: room.find(FIND_SOURCES).length,
             Parts: Minion.GetPartsFromRoom(room, 4, this.CourierParts)
         };
     }
-    private static CourierParts: string[] = [CARRY, MOVE, CARRY, MOVE];   
+    private static CourierParts: string[] = [CARRY, MOVE, CARRY, MOVE];
 }

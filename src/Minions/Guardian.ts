@@ -1,12 +1,11 @@
 import RoomController from "../Controllers/RoomController";
 import Minion from "./Minion";
-import Constants from "../Constants"
-
+import Constants from "../Constants";
 
 /**
  * Guardian minion, used to defend a room.
- * Spawns minions based on the threat level in the room. 
- * 
+ * Spawns minions based on the threat level in the room.
+ *
  * @export
  * @class Raider
  * @extends {Minion}
@@ -16,7 +15,7 @@ export default class Guardian extends Minion {
 
     /**
      * Creates an instance of Guardian.
-     * @param {Creep} minion 
+     * @param {Creep} minion
      * @memberof Guardian
      */
     constructor(minion: Creep) {
@@ -25,8 +24,8 @@ export default class Guardian extends Minion {
 
     /**
      *  Initializes the Guardian, sets state and target.
-     * 
-     * @returns 
+     *
+     * @returns
      * @memberof Guardian
      */
     public Initialize() {
@@ -34,29 +33,29 @@ export default class Guardian extends Minion {
         if (this.FindHostileMinion()) {
             return;
         }
-        
+
         this.Rally();
     }
 
     /**
      * Gets the options for the Guardian minion based on the room.
-     * 
+     *
      * @static
-     * @param {Room} room 
-     * @returns {*} 
+     * @param {Room} room
+     * @returns {*}
      * @memberof Guardian
      */
     public static GetOptions(room: Room): any {
-        let defcon = room.memory.defcon;
-        let count: number;
-        if (!defcon || !(count = Math.min(Math.floor(defcon.level / 2), 4) * 2)) {
+        const defcon = room.memory.defcon;
+        const count = !defcon ? 0 : Math.min(Math.floor(defcon.level / 2), 4) * 2;
+        if (!count) {
             return undefined;
         }
-        return { 
+        return {
             Type: this.Type,
             Count: count,
             Parts: Minion.GetPartsFromRoom(room, 4, this.GuardianParts)
         };
     }
-    private static GuardianParts: string[] = [TOUGH, RANGED_ATTACK, MOVE, MOVE];   
+    private static GuardianParts: string[] = [TOUGH, RANGED_ATTACK, MOVE, MOVE];
 }

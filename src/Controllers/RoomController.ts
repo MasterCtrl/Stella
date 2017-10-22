@@ -3,24 +3,24 @@ import SpawnController from "./SpawnController";
 import Builder from "../Minions/Builder";
 import Courier from "../Minions/Courier";
 import Drone from "../Minions/Drone";
-import Filler from "../Minions/Filler"
-import Guardian from "../Minions/Guardian"
+import Filler from "../Minions/Filler";
+import Guardian from "../Minions/Guardian";
 import Harvester from "../Minions/Harvester";
 import LinkMiner from "../Minions/LinkMiner";
 import Miner from "../Minions/Miner";
 import Raider from "../Minions/Raider";
 import Scout from "../Minions/Scout";
 import Seeder from "../Minions/Seeder";
-import Barbarian from "../Minions/Barbarian"
+import Barbarian from "../Minions/Barbarian";
 import Upgrader from "../Minions/Upgrader";
-import Configuration from "../Configuration"
+import Configuration from "../Configuration";
 type RoomHash = {[roomName: string]: Room};
 type DefconType = {level, tick};
 
 /**
  * RoomController, used to run all aspects of a room.
  * Spawns minions, runs each minion in the room, and runs each turret in the room.
- * 
+ *
  * @export
  * @class RoomController
  */
@@ -29,14 +29,14 @@ export default class RoomController {
 
     /**
      * Creates an instance of RoomController.
-     * @param {Room} room 
+     * @param {Room} room
      * @memberof RoomController
      */
     constructor(room: Room) {
         this.room = room;
         if (!this.Index) {
             let index = 0;
-            let max = _.max(Game.rooms, r => r.memory.index);
+            const max = _.max(Game.rooms, (r) => r.memory.index);
             if (max && max.memory) {
                 index = max.memory.index + 1;
             }
@@ -46,7 +46,7 @@ export default class RoomController {
 
     /**
      * Gets the index of this room
-     * 
+     *
      * @readonly
      * @type {number}
      * @memberof RoomController
@@ -57,35 +57,35 @@ export default class RoomController {
 
     /**
      * Runs the room
-     * 
+     *
      * @memberof RoomController
      */
     public Run() {
         this.Initialize();
 
-        let tick = Game.time % Configuration.TickRate;
-        
-        if (tick == this.Index) {
-            let spawnQueue = this.GetSpawnQueue();
+        const tick = Game.time % Configuration.TickRate;
+
+        if (tick === this.Index) {
+            const spawnQueue = this.GetSpawnQueue();
             if (spawnQueue) {
-                SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), spawnQueue);            
+                SpawnController.Spawn(this.room.find(FIND_MY_SPAWNS), spawnQueue);
             }
         }
-        
-        if (tick == Configuration.TickRate - 1) {
-            EntityController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_LINK }));            
+
+        if (tick === Configuration.TickRate - 1) {
+            EntityController.RunLinks(this.room.find(FIND_MY_STRUCTURES, { filter: (tower) => tower.structureType === STRUCTURE_LINK }));
         }
 
-        if (tick == Configuration.TickRate - 2) {
+        if (tick === Configuration.TickRate - 2) {
             this.RefreshRoomMemory();
         }
-        
+
         EntityController.RunCreeps(this.room.find(FIND_MY_CREEPS));
-      
-        if (tick == Configuration.TickRate - 3 || RoomController.GetDefcon(this.room).level > 0) {
-            EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: tower => tower.structureType == STRUCTURE_TOWER }));            
+
+        if (tick === Configuration.TickRate - 3 || RoomController.GetDefcon(this.room).level > 0) {
+            EntityController.RunTowers(this.room.find(FIND_MY_STRUCTURES, { filter: (tower) => tower.structureType === STRUCTURE_TOWER }));
         }
-        
+
         EntityController.RunTerminal(this.room.terminal);
     }
 
@@ -101,23 +101,23 @@ export default class RoomController {
     }
 
     private DrawVisuals() {
-        if(!Configuration.DrawVisuals || !this.room.controller || !this.room.controller.my) {
+        if (!Configuration.DrawVisuals || !this.room.controller || !this.room.controller.my) {
             return;
         }
         new RoomVisual(this.room.name).rect(
-            this.room.controller.pos.x - 3, 
-            this.room.controller.pos.y - 3, 
-            6, 
+            this.room.controller.pos.x - 3,
+            this.room.controller.pos.y - 3,
+            6,
             6,
             {fill: "transparent", stroke: "#ffffff", lineStyle: "dashed"}
         );
     }
 
     private LogStats() {
-        if (!Configuration.Statistics || Game.time % 1200 != 0 || !this.room.storage) {
+        if (!Configuration.Statistics || Game.time % 1200 !== 0 || !this.room.storage) {
             return;
         }
-        this.room.memory.income.push({time: Game.time, bank: this.room.storage.store.energy})            
+        this.room.memory.income.push({time: Game.time, bank: this.room.storage.store.energy});
     }
 
     private RefreshRoomMemory() {
@@ -126,38 +126,36 @@ export default class RoomController {
             this.room.memory.needs.push(RESOURCE_ENERGY);
         }
         if (this.room.terminal) {
-            let minerals = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_UTRIUM, RESOURCE_ZYNTHIUM];
-            for (var m in minerals) {
-                let mineral = minerals[m];
-                let limits = Configuration.Terminal[mineral] || Configuration.Terminal.Fallback;
+            const minerals = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_UTRIUM, RESOURCE_ZYNTHIUM];
+            for (const mineral of minerals) {
+                const limits = Configuration.Terminal[mineral] || Configuration.Terminal.Fallback;
                 if (this.room.terminal.store[mineral] >= limits.Minimum) {
                     continue;
                 }
                 this.room.memory.needs.push(mineral);
             }
         }
-                
+
         if (!this.room.memory.linkTarget && this.room.storage && this.room.controller.level >= 5) {
-            let targetLink = this.room.storage.pos.findClosestByRange<StructureLink>(FIND_MY_STRUCTURES, { filter: link => link.structureType == STRUCTURE_LINK });
+            const targetLink = this.room.storage.pos.findClosestByRange<StructureLink>(FIND_MY_STRUCTURES, { filter: (l) => l.structureType === STRUCTURE_LINK });
             this.room.memory.linkTarget = targetLink.id;
         }
 
         if (RoomController.AreWeLinkMining(this.room) && !this.room.memory.sources) {
-            let sourceList = {};
-            let sources = this.room.find<Source>(FIND_SOURCES);
-            for (var s in sources) {
-                let source = sources[s];
-                let ramparts = source.pos.findInRange<StructureRampart>(FIND_STRUCTURES, 1, {
-                    filter: rampart => rampart.structureType == STRUCTURE_RAMPART
+            const sourceList = {};
+            const sources = this.room.find<Source>(FIND_SOURCES);
+            for (const source of sources) {
+                const ramparts = source.pos.findInRange<StructureRampart>(FIND_STRUCTURES, 1, {
+                    filter: (r) => r.structureType === STRUCTURE_RAMPART
                 });
-                if (ramparts.length == 0) {
+                if (ramparts.length === 0) {
                     break;
                 }
                 let rampart: StructureRampart;
-                for (var r in ramparts) {
-                    let ramp = ramparts[r];
-                    let structures = ramp.pos.lookFor<Structure>(LOOK_STRUCTURES);
-                    if (_.all(structures, s => s.structureType != STRUCTURE_LINK)) {
+                for (const r in ramparts) {
+                    const ramp = ramparts[r];
+                    const structures = ramp.pos.lookFor<Structure>(LOOK_STRUCTURES);
+                    if (_.all(structures, (s) => s.structureType !== STRUCTURE_LINK)) {
                         rampart = ramp;
                         break;
                     }
@@ -170,7 +168,7 @@ export default class RoomController {
                     y: rampart.pos.y
                 };
             }
-            if (Object.keys(sourceList).length == sources.length) {
+            if (Object.keys(sourceList).length === sources.length) {
                 this.room.memory.sources = sourceList;
             }
         }
@@ -178,13 +176,13 @@ export default class RoomController {
 
     /**
      * Gets the spawn options for the different minion types.
-     * 
-     * @returns {any[]} 
+     *
+     * @returns {any[]}
      * @memberof RoomController
      */
     public GetSpawnQueue(): any[] {
-        let spawnQueue = [];
-        for (var i in RoomController.Options) {
+        const spawnQueue = [];
+        for (const i in RoomController.Options) {
             this.AddOptions(spawnQueue, RoomController.Options[i]);
         }
         return spawnQueue;
@@ -194,32 +192,32 @@ export default class RoomController {
         if (!this.room.controller) {
             return;
         }
-        let opt = getFunc(this.room);
-        if (opt && opt.Count != 0) {
+        const opt = getFunc(this.room);
+        if (opt && opt.Count !== 0) {
             options.push(opt);
         }
     }
 
     /**
      * Runs each of the rooms in the specified room hash.
-     * 
+     *
      * @static
-     * @param {{[roomName: string]: Room;}} rooms 
+     * @param {{[roomName: string]: Room;}} rooms
      * @memberof RoomController
      */
-    public static RunRooms(rooms: {[roomName: string]: Room;}) {
-        for (var key in rooms) {
-            if (!rooms.hasOwnProperty(key)) {
+    public static RunRooms(rooms: { [roomName: string]: Room }) {
+        for (const r in rooms) {
+            if (!rooms.hasOwnProperty(r)) {
                 continue;
             }
-            let controller = new RoomController(rooms[key]);
+            const controller = new RoomController(rooms[r]);
             controller.Run();
         }
     }
 
     /**
      * List of functions to get the spawn options for all the minion types.
-     * 
+     *
      * @static
      * @memberof RoomController
      */
@@ -241,16 +239,16 @@ export default class RoomController {
 
     /**
      * Gets if we are link mining in this room
-     * 
+     *
      * @static
-     * @param {Room} room 
-     * @returns {boolean} 
+     * @param {Room} room
+     * @returns {boolean}
      * @memberof RoomController
      */
     public static AreWeLinkMining(room: Room): boolean {
-        if (room.memory.linkMining == undefined) {
-            let sources = room.find(FIND_SOURCES).length;
-            let links = room.find(FIND_MY_STRUCTURES, {filter : link => link.structureType == STRUCTURE_LINK}).length;
+        if (room.memory.linkMining === undefined) {
+            const sources = room.find(FIND_SOURCES).length;
+            const links = room.find(FIND_MY_STRUCTURES, {filter : (l) => l.structureType === STRUCTURE_LINK}).length;
             return (room.memory.linkMining = links > sources);
         }
         return room.memory.linkMining;
@@ -258,16 +256,16 @@ export default class RoomController {
 
     /**
      * Gets if we are container mining in this room
-     * 
+     *
      * @static
-     * @param {Room} room 
-     * @returns {boolean} 
+     * @param {Room} room
+     * @returns {boolean}
      * @memberof RoomController
      */
     public static AreWeContainerMining(room: Room): boolean {
-        if (room.memory.containerMining == undefined) {
-            let sources = room.find(FIND_SOURCES).length;
-            let containers = room.find(FIND_STRUCTURES, {filter : container => container.structureType == STRUCTURE_CONTAINER}).length;
+        if (room.memory.containerMining === undefined) {
+            const sources = room.find(FIND_SOURCES).length;
+            const containers = room.find(FIND_STRUCTURES, {filter : (c) => c.structureType === STRUCTURE_CONTAINER}).length;
             return (room.memory.containerMining = containers >= sources);
         }
         return room.memory.containerMining;
@@ -275,29 +273,29 @@ export default class RoomController {
 
     /**
      * Gets the threat level in this room
-     * 
+     *
      * Defcon 0  => no threat.
      *        1  => hostiles in room, turrets fire every tick.
      *        2  => 60 ticks under siege, rooms spawns 2 guardians to defend.
-     *        3  => 120 ticks under siege, same as defcon 2. 
+     *        3  => 120 ticks under siege, same as defcon 2.
      *        4+ => 180 ticks under siege, rooms spawns 2 additional guardians to defend
-     * 
+     *
      * @static
-     * @param {Room} room 
-     * @returns {DefconType} 
+     * @param {Room} room
+     * @returns {DefconType}
      * @memberof RoomController
      */
     public static GetDefcon(room: Room): DefconType {
-        let hostiles = room.find<Creep>(FIND_HOSTILE_CREEPS);
-        let current: DefconType = room.memory.defcon || { level: 0, tick: Game.time };
-        let tick = Game.time - current.tick;
-        if (tick != 0 && tick % 50 == 0) {
+        const hostiles = room.find<Creep>(FIND_HOSTILE_CREEPS);
+        const current: DefconType = room.memory.defcon || { level: 0, tick: Game.time };
+        const tick = Game.time - current.tick;
+        if (tick !== 0 && tick % 50 === 0) {
             if (hostiles.length > 0) {
                 current.level = Math.min(8, current.level + 1);
-                console.log(room.name + ": Upgrading defcon to " + current.level);
-            } else if (current.level != 0) {
+                console.log(`${room.name}: Upgrading defcon to ${current.level}`);
+            } else if (current.level !== 0) {
                 current.level = 0;
-                console.log(room.name + ": Downgrading defcon to " + current.level);
+                console.log(`${room.name}: Downgrading defcon to ${current.level}`);
             }
             current.tick = Game.time;
         }

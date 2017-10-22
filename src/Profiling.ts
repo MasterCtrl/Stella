@@ -1,10 +1,10 @@
-import Configuration from "./Configuration"
+import Configuration from "./Configuration";
 
 let Profiler;
 if (Configuration.Profiling) {
     Profiler = require("screeps-profiler");
     Profiler.enable();
-    Profiler.registerClass(require("./Controllers/EntityController").default, "EntityController");    
+    Profiler.registerClass(require("./Controllers/EntityController").default, "EntityController");
     Profiler.registerClass(require("./Controllers/RoomController").default, "RoomController");
     Profiler.registerClass(require("./Controllers/SpawnController").default, "SpawnController");
     Profiler.registerClass(require("./Minions/Builder").default, "Builder");
