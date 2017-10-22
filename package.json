@@ -18,8 +18,7 @@
   },
   "homepage": "https://github.com/MasterCtrl/Stella#readme",
   "dependencies": {
-    "screeps-profiler": "^2.0.1",
-    "sodb": "^1.2.5"
+    "screeps-profiler": "^2.0.1"
   },
   "devDependencies": {
     "grunt": "^1.0.1",
