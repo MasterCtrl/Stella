@@ -4,7 +4,10 @@
         {
             "taskName": "Build",
             "type": "shell",
-            "command": "tsc -p tsconfig.json",
+            "command": "./node_modules/.bin/tsc -p tsconfig.json",
+            "windows": {
+                "command": ".\\node_modules\\.bin\\tsc.cmd -p tsconfig.json"
+            },
             "group": "build",
             "problemMatcher": [
                 "$tsc"
