@@ -63,7 +63,7 @@ export default class Raider extends Minion {
      */
     public static GetOptions(room: Room): any {
         let percentage = room.storage ? room.storage.store.energy / room.storage.storeCapacity : 0;
-        if (room.memory.needRelief || percentage <= 0.4) {
+        if (room.memory.needs.indexOf(RESOURCE_ENERGY) != -1 || percentage <= 0.4) {
             return undefined;
         }
         let raiders = _.filter(Memory.creeps, creep => creep.type == this.Type);

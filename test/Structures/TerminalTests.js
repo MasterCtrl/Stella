@@ -44,43 +44,43 @@ describe("Terminal Tests", () => {
 
     describe("#SellResources", () =>{
         it("Returns false if there are no minerals in storage", () => {
-            terminalStub.store = { energy: Configuration.default.Terminal.energy + 1 };
+            terminalStub.store = { energy: Configuration.default.Terminal.energy.Maximum + 1 };
             
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => { return terminal.SellResources() }), false, "Terminal SellResources did not exit");
+            assert.equal(Suppressor(() => terminal.SellResources()), false, "Terminal SellResources did not exit");
         });
 
         it("Returns false if the minerals are below threshold", () => {
             terminalStub.store[RESOURCE_HYDROGEN] = 1;
             
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => { return terminal.SellResources() }), false, "Terminal SellResources did not exit");
+            assert.equal(Suppressor(() => terminal.SellResources()), false, "Terminal SellResources did not exit");
         });
 
         it("Returns false if there are no orders", () => {
             gameStub.market.getAllOrdersResult = [];
             
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => { return terminal.SellResources() }), false, "Terminal SellResources did not exit");
+            assert.equal(Suppressor(() => terminal.SellResources()), false, "Terminal SellResources did not exit");
         });
 
         it("Returns false if the transfer cost is too high", () => {
-            gameStub.market.calcTransactionCostResult = Configuration.default.Terminal.energy + 10;
+            gameStub.market.calcTransactionCostResult = Configuration.default.Terminal.energy.Maximum + 10;
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => { return terminal.SellResources() }), false, "Terminal SellResources did not exit");
+            assert.equal(Suppressor(() => terminal.SellResources()), false, "Terminal SellResources did not exit");
         });
 
         it("Returns false if the transfer fails", () => {
             gameStub.market.dealResult = -1;
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => { return terminal.SellResources() }), false, "Terminal SellResources did not exit");
+            assert.equal(Suppressor(() => terminal.SellResources()), false, "Terminal SellResources did not exit");
         });
 
-        it("Completes if the transfer is valid", () => {
+        it("Completes if the transfer is successful", () => {
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => { return terminal.SellResources() }), true, "Terminal SellResources did not complete successfully");
+            assert.equal(Suppressor(() => terminal.SellResources()), true, "Terminal SellResources did not complete successfully");
         });
     });
 
@@ -89,47 +89,47 @@ describe("Terminal Tests", () => {
             memoryStub.rooms = [];
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => { return terminal.SendRelief() }), false, "Terminal SendRelief found rooms in memory?");
+            assert.equal(Suppressor(() => terminal.SendRelief()), false, "Terminal SendRelief found rooms in memory?");
         });
 
         it("Returns false if no rooms need relief", () => {
             memoryStub.rooms = [{}];
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => { return terminal.SendRelief() }), false, "Terminal SendRelief found a room that needs relief?");
+            assert.equal(Suppressor(() => terminal.SendRelief()), false, "Terminal SendRelief found a room that needs relief?");
         });
 
         it("Returns false if there are no in game rooms", () => {
             gameStub.rooms = {};
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => { return terminal.SendRelief() }), false, "Terminal SendRelief found rooms in game?");
+            assert.equal(Suppressor(() => terminal.SendRelief()), false, "Terminal SendRelief found rooms in game?");
         });
 
         it("Returns false if the room has no terminal", () => {
             gameStub.rooms = { B : {} };
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => { return terminal.SendRelief() }), false, "Terminal SendRelief found a terminal?");
+            assert.equal(Suppressor(() => terminal.SendRelief()), false, "Terminal SendRelief found a terminal?");
         });
 
         it("Returns false if there is not enough energy", () => {
             terminalStub.store.energy = 0;
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => { return terminal.SendRelief() }), false, "Terminal SendRelief found a terminal?");
+            assert.equal(Suppressor(() => terminal.SendRelief()), false, "Terminal SendRelief had enough energy?");
         });
 
         it("Returns false if send fails", () => {
             terminalStub.sendResult = -1;
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => { return terminal.SendRelief() }), false, "Terminal SendRelief sent successfully?");
+            assert.equal(Suppressor(() => terminal.SendRelief()), false, "Terminal SendRelief sent successfully?");
         });
 
         it("Completes if the send is successful", () => {
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => { return terminal.SendRelief() }), true, "Terminal SendRelief did not complete successfully");
+            assert.equal(Suppressor(() => terminal.SendRelief()), true, "Terminal SendRelief did not complete successfully");
         });
     });
 });

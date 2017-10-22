@@ -67,7 +67,7 @@ export default class Seeder extends Minion {
      */
     public static GetOptions(room: Room): any {
         let rooms = _.filter(Game.flags, flag => flag.color == COLOR_BLUE).map(flag => flag.pos.roomName);
-        if (rooms.indexOf(room.name) != -1 || room.memory.needRelief) {
+        if (rooms.indexOf(room.name) != -1 || room.memory.needs.indexOf(RESOURCE_ENERGY) != -1) {
             return undefined;
         }
         let seeders = _.filter(Memory.creeps, creep => creep.type == this.Type);

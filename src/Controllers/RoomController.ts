@@ -11,6 +11,7 @@ import Miner from "../Minions/Miner";
 import Raider from "../Minions/Raider";
 import Scout from "../Minions/Scout";
 import Seeder from "../Minions/Seeder";
+import Barbarian from "../Minions/Barbarian"
 import Upgrader from "../Minions/Upgrader";
 import Configuration from "../Configuration"
 type RoomHash = {[roomName: string]: Room};
@@ -60,7 +61,7 @@ export default class RoomController {
      * @memberof RoomController
      */
     public Run() {
-        this.LogStats();
+        this.Initialize();
 
         let tick = Game.time % Configuration.TickRate;
         
@@ -88,20 +89,54 @@ export default class RoomController {
         EntityController.RunTerminal(this.room.terminal);
     }
 
-    private LogStats() {
-        if (Game.time % 1200 == 0 && this.room.storage) {
-            if (!this.room.memory.income) {
-                this.room.memory.income = [];
-            }
-            this.room.memory.income.push({time: Game.time, bank: this.room.storage.store.energy})            
+    private Initialize() {
+        this.DrawVisuals();
+        this.LogStats();
+        if (!this.room.memory.needs) {
+            this.room.memory.needs = [];
+        }
+        if (!this.room.memory.income) {
+            this.room.memory.income = [];
         }
     }
 
+    private DrawVisuals() {
+        if(!Configuration.DrawVisuals || !this.room.controller || !this.room.controller.my) {
+            return;
+        }
+        new RoomVisual(this.room.name).rect(
+            this.room.controller.pos.x - 3, 
+            this.room.controller.pos.y - 3, 
+            6, 
+            6,
+            {fill: "transparent", stroke: "#ffffff", lineStyle: "dashed"}
+        );
+    }
+
+    private LogStats() {
+        if (!Configuration.Statistics || Game.time % 1200 != 0 || !this.room.storage) {
+            return;
+        }
+        this.room.memory.income.push({time: Game.time, bank: this.room.storage.store.energy})            
+    }
+
     private RefreshRoomMemory() {
-        this.room.memory.needRelief = !this.room.storage || this.room.storage.store.energy < 50000;
-        
-        this.room.memory.underAttack = undefined;
-        
+        this.room.memory.needs = [];
+        if (this.room.storage && this.room.storage.store.energy < 50000) {
+            this.room.memory.needs.push(RESOURCE_ENERGY);
+        }
+        if (this.room.terminal) {
+            let minerals = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_UTRIUM, RESOURCE_ZYNTHIUM];
+            for (var m in minerals) {
+                let mineral = minerals[m];
+                let limits = Configuration.Terminal[mineral] || Configuration.Terminal.Fallback;
+                if (this.room.terminal.store[mineral] >= limits.Minimum) {
+                    continue;
+                }
+                this.room.memory.needs.push(mineral);
+            }
+        }
+                
         if (!this.room.memory.linkTarget && this.room.storage && this.room.controller.level >= 5) {
             let targetLink = this.room.storage.pos.findClosestByRange<StructureLink>(FIND_MY_STRUCTURES, { filter: link => link.structureType == STRUCTURE_LINK });
             this.room.memory.linkTarget = targetLink.id;
@@ -194,8 +229,9 @@ export default class RoomController {
         (room: Room): any => Miner.GetOptions(room),
         (room: Room): any => LinkMiner.GetOptions(room),
         (room: Room): any => Filler.GetOptions(room),
-        (room: Room): any => Guardian.GetOptions(room),
         (room: Room): any => Builder.GetOptions(room),
+        (room: Room): any => Guardian.GetOptions(room),
+        (room: Room): any => Barbarian.GetOptions(room),
         (room: Room): any => Upgrader.GetOptions(room),
         (room: Room): any => Scout.GetOptions(room),
         (room: Room): any => Seeder.GetOptions(room),

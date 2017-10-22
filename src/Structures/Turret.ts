@@ -39,12 +39,12 @@ export default class Turret {
     }
 
     private RepairStructure(): boolean {
-        let structure = this.turret.pos.findClosestByRange<Structure>(FIND_STRUCTURES, {
+        let structures = this.turret.room.find<Structure>(FIND_STRUCTURES, {
             filter: (structure) => structure.structureType != STRUCTURE_WALL && 
                                    structure.structureType != STRUCTURE_RAMPART && 
                                    structure.hits < structure.hitsMax
-            }
-        );
+        });
+        let structure = _.min(structures, s => s.hits);
         if (structure) {
             return this.turret.repair(structure) == OK;
         }
