@@ -653,11 +653,11 @@ export default abstract class Minion {
     }
 
     private FindTerminalStorage() {
-        if (this.minion.room.memory.needRelief) {
+        if (this.minion.room.memory.needs.indexOf(RESOURCE_ENERGY) != -1) {
             return false;
         }
         let terminal = this.minion.room.terminal;
-        if (terminal && terminal.store[RESOURCE_ENERGY] < Configuration.Terminal.energy) {
+        if (terminal && terminal.store[RESOURCE_ENERGY] < Configuration.Terminal.energy.Maximum) {
             this.SetDestination(terminal.pos.x, terminal.pos.y, 1, terminal.id, terminal.room.name);
             this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
             return true;
@@ -966,7 +966,7 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected FindTerminalTarget(): boolean {
-        if (this.IsEmpty || this.minion.room.memory.needRelief) {
+        if (this.IsEmpty || this.minion.room.memory.needs.indexOf(RESOURCE_ENERGY) != -1) {
             return false;
         }
         let terminal = this.minion.room.terminal;
@@ -986,7 +986,7 @@ export default abstract class Minion {
      * @memberof Minion
      */
     protected FindTerminalSource(): boolean {
-        if (this.IsFull || !this.minion.room.terminal || (!this.minion.room.memory.needRelief && this.minion.room.terminal.store.energy < (Configuration.Terminal.energy * 1.1))) {
+        if (this.IsFull || !this.minion.room.terminal || (this.minion.room.memory.needs.indexOf(RESOURCE_ENERGY) == -1 && this.minion.room.terminal.store.energy < (Configuration.Terminal.energy.Maximum * 1.1))) {
             return false;
         }
         this.SetDestination(this.minion.room.terminal.pos.x, this.minion.room.terminal.pos.y, 1, this.minion.room.terminal.id);
@@ -1122,7 +1122,7 @@ export default abstract class Minion {
     public static GetPartsFromRoom(room: Room, max: number, parts: string[] = this.MinimumParts): string[] {
         let cost = this.GetPartsCost(parts);
         let size = 1;
-        if (!room.memory.needRelief) {
+        if (room.memory.needs.indexOf(RESOURCE_ENERGY) == -1) {
             let shiftingSize = max * cost;
             if (room.storage) {
                 shiftingSize = ((room.storage.store.energy + 1) / room.storage.storeCapacity) * shiftingSize;

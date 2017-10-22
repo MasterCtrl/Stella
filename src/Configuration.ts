@@ -13,11 +13,12 @@ export default class Configuration {
         rampart:    350000
     };
     static Terminal = {
-        Z:          {Threshold : 10000, Packet: 1000},
-        O:          {Threshold : 10000, Packet: 1000},
-        U:          {Threshold : 10000, Packet: 1000},
-        Fallback:   {Threshold : 10000, Packet: 1000},
-        energy:     100000
+        H:          {Minimum: 1000, Maximum: 10000, Packet: 1000},
+        O:          {Minimum: 1000, Maximum: 10000, Packet: 1000},
+        Z:          {Minimum: 1000, Maximum: 10000, Packet: 1000},
+        U:          {Minimum: 1000, Maximum: 10000, Packet: 1000},
+        energy:     {Minimum: 50000, Maximum: 100000},
+        Fallback:   {Minimum: 1000, Maximum: 10000, Packet: 1000}
     };
-    static TickRate = 7;
+    static TickRate = 11;
 }

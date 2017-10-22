@@ -49,7 +49,7 @@ export default class Scout extends Minion {
      * @memberof Scout
      */
     public static GetOptions(room: Room): any {
-        if (room.memory.needRelief) {
+        if (room.memory.needs.indexOf(RESOURCE_ENERGY) != -1) {
             return undefined;
         }
         let scouts = _.filter(Memory.creeps, creep => creep.type == this.Type);

@@ -7,8 +7,8 @@ module.exports = class TerminalStub {
         this.pos = pos || new RoomPositionStub();
         this.room = new RoomStub("A");
         this.store = { 
-            energy: Configuration.default.Terminal.energy + 1,
-            H: Configuration.default.Terminal.Fallback + 1
+            energy: Configuration.default.Terminal.energy.Maximum + 1,
+            H: Configuration.default.Terminal.H.Maximum + 1
         };
         this.cooldown = 0;
         this.sendResult = OK;

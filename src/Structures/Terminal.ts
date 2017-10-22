@@ -25,7 +25,7 @@ export default class Terminal {
      * @memberof Terminal
      */
     public Run(): boolean {
-        if ((this.terminal.store[RESOURCE_ENERGY] < Configuration.Terminal.energy) || ((Game.time % 20) != 0) || this.terminal.cooldown != 0) {
+        if ((this.terminal.store[RESOURCE_ENERGY] < Configuration.Terminal.energy.Maximum) || ((Game.time % 20) != 0) || this.terminal.cooldown != 0) {
             return false;
         }
         if (this.SellResources()) {
@@ -42,7 +42,7 @@ export default class Terminal {
             
             let resource: number = this.terminal.store[type];
             let configuration = Configuration.Terminal[type] || Configuration.Terminal.Fallback;
-            if (resource < configuration.Threshold) {
+            if (resource < configuration.Maximum) {
                 continue;
             }
 
@@ -76,23 +76,30 @@ export default class Terminal {
             return false;
         }
         for (var name in Memory.rooms) {
-            if (!Memory.rooms[name].needRelief) {
-                continue;
-            }
             let room = Game.rooms[name];
             if (!room || !room.terminal) {
                 continue;
             }
-            let amount = 10000;
-            let cost = Game.market.calcTransactionCost(amount, this.terminal.room.name, name);
-            if (this.terminal.store.energy < cost + amount) {
-                console.log(this.terminal.room.name + ": Not enough energy to send relief");
-                continue;
-            }
-            let result = this.terminal.send(RESOURCE_ENERGY, amount, name);
-            if (result == OK) {
-                console.log(this.terminal.room.name + ": Sent " + amount + " relief to " + name);
-                return true;
+            for (var r in Memory.rooms[name].needs) {
+                let resource = Memory.rooms[name].needs[r];
+                let amount = 1000;
+                let limit = Configuration.Terminal[resource] || Configuration.Terminal.Fallback;
+                if (this.terminal.store[resource] - amount < limit.Minimum) {
+                    continue;
+                }
+                let cost = Game.market.calcTransactionCost(amount, this.terminal.room.name, name);
+                if (resource == RESOURCE_ENERGY) {
+                    cost += amount;
+                }
+                if (this.terminal.store.energy < cost) {
+                    console.log(this.terminal.room.name + ": Not enough energy to send resources");
+                    continue;
+                }
+                let result = this.terminal.send(resource, amount, name);
+                if (result == OK) {
+                    console.log(this.terminal.room.name + ": Sent " + amount + " " + resource + " to " + name);
+                    return true;
+                }
             }
         }
         return false;
