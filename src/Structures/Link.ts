@@ -51,7 +51,7 @@ export default class Link {
         }
 
         const target = this.link.pos.findClosestByRange<StructureLink>(FIND_STRUCTURES, {
-            filter : (l) => l.structureType === STRUCTURE_LINK && l.id === this.link.room.memory.linkTarget
+            filter: (l) => l.structureType === STRUCTURE_LINK && l.id === this.link.room.memory.linkTarget
         });
         if (!target || target.energy === target.energyCapacity) {
             return false;

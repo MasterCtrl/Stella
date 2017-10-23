@@ -248,7 +248,7 @@ export default class RoomController {
     public static AreWeLinkMining(room: Room): boolean {
         if (room.memory.linkMining === undefined) {
             const sources = room.find(FIND_SOURCES).length;
-            const links = room.find(FIND_MY_STRUCTURES, {filter : (l) => l.structureType === STRUCTURE_LINK}).length;
+            const links = room.find(FIND_MY_STRUCTURES, { filter: (l) => l.structureType === STRUCTURE_LINK }).length;
             return (room.memory.linkMining = links > sources);
         }
         return room.memory.linkMining;
@@ -265,7 +265,7 @@ export default class RoomController {
     public static AreWeContainerMining(room: Room): boolean {
         if (room.memory.containerMining === undefined) {
             const sources = room.find(FIND_SOURCES).length;
-            const containers = room.find(FIND_STRUCTURES, {filter : (c) => c.structureType === STRUCTURE_CONTAINER}).length;
+            const containers = room.find(FIND_STRUCTURES, { filter: (c) => c.structureType === STRUCTURE_CONTAINER }).length;
             return (room.memory.containerMining = containers >= sources);
         }
         return room.memory.containerMining;
