@@ -490,7 +490,9 @@ export default abstract class Minion {
         }
 
         let closestSource: Source;
-        if (!this.minion.memory.source_id) {
+        if (this.minion.memory.source_id) {
+            closestSource = Game.getObjectById(this.minion.memory.source_id);
+        } else {
             const occupiedSources = _.filter(Game.creeps, (c) => c.memory.source_id && c.memory.type === this.Type).map((c) => c.memory.source_id);
             closestSource = this.minion.pos.findClosestByPath(FIND_SOURCES, {
                 filter: (s) => occupiedSources.indexOf(s.id) === -1
@@ -498,8 +500,6 @@ export default abstract class Minion {
             if (!closestSource) {
                 return false;
             }
-        } else {
-            closestSource = Game.getObjectById(this.minion.memory.source_id);
         }
 
         if (closestSource.energy === 0) {
@@ -905,7 +905,7 @@ export default abstract class Minion {
         if (this.IsEmpty) {
             return false;
         }
-        const link = this.minion.pos.findClosestByPath<StructureLink>(FIND_MY_STRUCTURES, {filter : (l) => l.structureType === STRUCTURE_LINK});
+        const link = this.minion.pos.findClosestByPath<StructureLink>(FIND_MY_STRUCTURES, { filter: (l) => l.structureType === STRUCTURE_LINK });
         if (link && link.energy < link.energyCapacity) {
             this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
             this.SetDestination(link.pos.x, link.pos.y, 1, link.id, link.room.name);
@@ -925,8 +925,12 @@ export default abstract class Minion {
         if (this.IsFull) {
             return false;
         }
-        const link = this.minion.pos.findClosestByPath<StructureLink>(FIND_MY_STRUCTURES, { filter : (l) => l.structureType === STRUCTURE_LINK });
-        // todo: change this to find the link near the storage/terminal and save its id into room memory, then stand in the closest unoccupied rampart
+        let link: StructureLink;
+        if (this.minion.room.memory.linkTarget) {
+            link = Game.getObjectById(this.minion.room.memory.linkTarget);
+        } else {
+            link = this.minion.pos.findClosestByPath<StructureLink>(FIND_MY_STRUCTURES, { filter: (l) => l.structureType === STRUCTURE_LINK });
+        }
         if (link && link.energy !== 0) {
             this.minion.memory.postMovingState = Constants.STATE_WITHDRAWING;
             this.SetDestination(link.pos.x, link.pos.y, 1, link.id, link.room.name);
@@ -946,7 +950,7 @@ export default abstract class Minion {
         if (!this.IsEmpty) {
             return false;
         }
-        const minerals = this.minion.pos.findClosestByPath<Mineral>(FIND_MINERALS, { filter : (m) => m.mineralAmount !== 0 });
+        const minerals = this.minion.pos.findClosestByPath<Mineral>(FIND_MINERALS, { filter: (m) => m.mineralAmount !== 0 });
         if (minerals) {
             this.SetDestination(minerals.pos.x, minerals.pos.y, 1, minerals.id, minerals.room.name);
             this.minion.memory.postMovingState = Constants.STATE_HARVESTING;
