@@ -456,10 +456,11 @@ export default abstract class Minion {
         if (!this.minion.memory.source_id) {
             const assignedSources = _.countBy(this.minion.room.find<Creep>(FIND_MY_CREEPS, { filter: (c) => c.memory.source_id }), (c) => c.memory.source_id);
             const sources = this.minion.room.find<Source>(FIND_SOURCES);
+            const unassignedSources = Object.keys(assignedSources).length < sources.length;
             const lowestCount = _.min(assignedSources);
             for (const currentSource of sources) {
                 const count = assignedSources[currentSource.id];
-                if (!count || count === lowestCount) {
+                if (!count || (!unassignedSources && count === lowestCount)) {
                     source = currentSource;
                     break;
                 }
@@ -1155,7 +1156,15 @@ export default abstract class Minion {
         return parts;
     }
 
-    private static GetPartsCost(parts: string[]): number {
+    /**
+     * Gets the cost of a list of parts
+     *
+     * @static
+     * @param {string[]} parts 
+     * @returns {number} 
+     * @memberof Minion
+     */
+    public static GetPartsCost(parts: string[]): number {
         let cost = 0;
         for (const p of parts) {
             cost += BODYPART_COST[p];

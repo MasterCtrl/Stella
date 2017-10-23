@@ -49,10 +49,17 @@ export default class Miner extends Minion {
         if (RoomController.AreWeLinkMining(room) || !RoomController.AreWeContainerMining(room)) {
             return undefined;
         }
+        const parts = this.BasicParts;
+        let cost  = this.GetPartsCost(parts);
+        while (cost < Math.min(room.energyAvailable, 600)) {
+            cost += BODYPART_COST.work;
+            parts.unshift(WORK);
+        }
         return {
             Type: this.Type,
             Count: room.find(FIND_SOURCES).length,
-            Parts: [WORK, WORK, WORK, WORK, MOVE, WORK, MOVE]
+            Parts: parts
         };
     }
+    private static BasicParts: string[] = [WORK, MOVE, WORK, MOVE];
 }

@@ -37,6 +37,10 @@ export default class Seeder extends Minion {
             return;
         }
 
+        if (this.FindContainerSource()) {
+            return;
+        }
+
         if (this.FindSource()) {
             return;
         }
@@ -70,11 +74,9 @@ export default class Seeder extends Minion {
         if (rooms.indexOf(room.name) !== -1 || room.memory.needs.indexOf(RESOURCE_ENERGY) !== -1) {
             return undefined;
         }
-        const seeders = _.filter(Memory.creeps, (c) => c.type === this.Type);
-        const count = (rooms.length * 2) - seeders.length;
         return {
             Type: this.Type,
-            Count: count,
+            Count: 1,
             Parts: Minion.GetPartsFromRoom(room, 5)
         };
     }
