@@ -1129,6 +1129,8 @@ export default abstract class Minion {
             let shiftingSize = max * cost;
             if (room.storage) {
                 shiftingSize = ((room.storage.store.energy + 1) / room.storage.storeCapacity) * shiftingSize;
+            } else {
+                shiftingSize = room.energyAvailable + 1;
             }
             if (shiftingSize > room.energyAvailable) {
                 size = Math.floor(room.energyAvailable / cost);

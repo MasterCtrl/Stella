@@ -51,7 +51,7 @@ export default class Miner extends Minion {
         }
         const parts = this.BasicParts;
         let cost  = this.GetPartsCost(parts);
-        while (cost < (Math.min(room.energyAvailable, 600) - BODYPART_COST.work)) {
+        while (cost <= (Math.min(room.energyAvailable, 600) - BODYPART_COST.work)) {
             cost += BODYPART_COST.work;
             parts.unshift(WORK);
         }
