@@ -7,5 +7,15 @@
         "outDir": "./lib",
         "listEmittedFiles": true,
         "diagnostics": true
-    }
+    },
+    "compileOnSave": false,
+    "include": [
+      "StellOs/**/*.ts",
+      "typings/index.d.ts"
+    ],
+    "exclude": [
+      "dist",
+      "node_modules",
+      "src"
+    ]
 }
