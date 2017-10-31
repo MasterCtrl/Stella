@@ -138,7 +138,9 @@ export default class RoomController {
 
         if (!this.room.memory.linkTarget && this.room.storage && this.room.controller.level >= 5) {
             const targetLink = this.room.storage.pos.findClosestByRange<StructureLink>(FIND_MY_STRUCTURES, { filter: (l) => l.structureType === STRUCTURE_LINK });
-            this.room.memory.linkTarget = targetLink.id;
+            if (targetLink) {
+                this.room.memory.linkTarget = targetLink.id;
+            }
         }
 
         if (RoomController.AreWeLinkMining(this.room) && !this.room.memory.sources) {
