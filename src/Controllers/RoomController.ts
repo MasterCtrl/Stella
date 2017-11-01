@@ -1,5 +1,6 @@
 import EntityController from "./EntityController";
 import SpawnController from "./SpawnController";
+import Barbarian from "../Minions/Barbarian";
 import Builder from "../Minions/Builder";
 import Courier from "../Minions/Courier";
 import Drone from "../Minions/Drone";
@@ -9,9 +10,9 @@ import Harvester from "../Minions/Harvester";
 import LinkMiner from "../Minions/LinkMiner";
 import Miner from "../Minions/Miner";
 import Raider from "../Minions/Raider";
+import Scientist from "../Minions/Scientist";
 import Scout from "../Minions/Scout";
 import Seeder from "../Minions/Seeder";
-import Barbarian from "../Minions/Barbarian";
 import Upgrader from "../Minions/Upgrader";
 import Configuration from "../Configuration";
 type RoomHash = {[roomName: string]: Room};
@@ -87,6 +88,7 @@ export default class RoomController {
         }
 
         EntityController.RunTerminal(this.room.terminal);
+        EntityController.RunLabs(this.room.find(FIND_MY_STRUCTURES, { filter: (lab) => lab.structureType === STRUCTURE_LAB }));
     }
 
     private Initialize() {
@@ -97,6 +99,9 @@ export default class RoomController {
         }
         if (!this.room.memory.income) {
             this.room.memory.income = [];
+        }
+        if (!this.room.memory.labs) {
+            this.room.memory.labs = {};
         }
     }
 
@@ -126,13 +131,15 @@ export default class RoomController {
             this.room.memory.needs.push(RESOURCE_ENERGY);
         }
         if (this.room.terminal) {
-            const minerals = [RESOURCE_HYDROGEN, RESOURCE_OXYGEN, RESOURCE_UTRIUM, RESOURCE_ZYNTHIUM];
-            for (const mineral of minerals) {
-                const limits = Configuration.Terminal[mineral] || Configuration.Terminal.Fallback;
-                if (this.room.terminal.store[mineral] >= limits.Minimum) {
+            for (const resource in Configuration.Terminal) {
+                if (resource === RESOURCE_ENERGY || resource === "Fallback") {
                     continue;
                 }
-                this.room.memory.needs.push(mineral);
+                const limits = Configuration.Terminal[resource];
+                if (this.room.terminal.store[resource] >= limits.Minimum) {
+                    continue;
+                }
+                this.room.memory.needs.push(resource);
             }
         }
 
@@ -232,6 +239,7 @@ export default class RoomController {
         (room: Room): any => Builder.GetOptions(room),
         (room: Room): any => Guardian.GetOptions(room),
         (room: Room): any => Barbarian.GetOptions(room),
+        (room: Room): any => Scientist.GetOptions(room),
         (room: Room): any => Upgrader.GetOptions(room),
         (room: Room): any => Scout.GetOptions(room),
         (room: Room): any => Seeder.GetOptions(room),

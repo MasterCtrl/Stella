@@ -1,4 +1,5 @@
 import Minion from "../Minions/Minion";
+import Lab from "../Structures/Lab";
 import Link from "../Structures/Link";
 import Terminal from "../Structures/Terminal";
 import Turret from "../Structures/Turret";
@@ -11,22 +12,6 @@ type CreepHash = { [creepName: string]: Creep };
  * @class EntityController
  */
 export default class EntityController {
-
-    /**
-     * Syncs the in memory creep cache with the actual creeps.
-     *
-     * @static
-     * @param {CreepHash} inMemory
-     * @param {CreepHash} inGame
-     * @memberof EntityController
-     */
-    public static Sync(inMemory: CreepHash, inGame: CreepHash) {
-        for (const name in inMemory) {
-            if (!inGame[name]) {
-                delete inMemory[name];
-            }
-        }
-    }
 
     /**
      * Runs each of the creeps in the specified collection.
@@ -85,6 +70,20 @@ export default class EntityController {
         }
         const terminal = new Terminal(term);
         terminal.Run();
+    }
+
+    /**
+     * Runs the labs in the room.
+     *
+     * @static
+     * @param {StructureLab[]} labs 
+     * @memberof EntityController
+     */
+    public static RunLabs(labs: StructureLab[]) {
+        for (const lb of labs) {
+            const lab = new Lab(lb);
+            lab.Run();
+        }
     }
 
     private static ToMinion(creep: Creep): Minion {

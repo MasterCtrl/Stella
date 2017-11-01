@@ -131,11 +131,11 @@ export default abstract class Minion {
         if (this.minion.fatigue > 0) {
             return;
         }
-        let visuals;
+        const options: MoveToOpts = { range: this.minion.memory.range };
         if (Configuration.DrawVisuals) {
-            visuals = {visualizePathStyle: {stroke: "#ffffff"}};
+            options.visualizePathStyle = {stroke: "#ffffff"};
         }
-        this.minion.moveTo(roomPosition, visuals);
+        this.minion.moveTo(roomPosition, options);
     }
 
     private RunHarvesting(transitionState: number) {
@@ -181,13 +181,13 @@ export default abstract class Minion {
             this.Run();
             return;
         }
-        if (target.energy >= target.energyCapacity || this.TotalCarry >= target.storeCapacity) {
-            this.minion.memory.state = transitionState;
-            this.minion.memory.initialized = false;
-            return;
-        }
         for (const resource in this.minion.carry) {
-            this.minion.transfer(target, resource);
+            const result = this.minion.transfer(target, resource);
+            if (result === ERR_FULL) {
+                this.minion.memory.state = transitionState;
+                this.minion.memory.initialized = false;
+                return;
+            }
         }
     }
 
@@ -240,7 +240,8 @@ export default abstract class Minion {
             return;
         }
         const structure = Game.getObjectById<any>(this.minion.memory.destination_id);
-        if (!structure || this.minion.withdraw(structure, RESOURCE_ENERGY) !== OK) {
+        const resource = this.minion.memory.resource || RESOURCE_ENERGY;
+        if (!structure || this.minion.withdraw(structure, resource) !== OK) {
             this.minion.memory.state = transitionState;
             this.minion.memory.initialized = false;
         }
@@ -1055,6 +1056,71 @@ export default abstract class Minion {
         } else {
             this.minion.memory.state = Constants.STATE_MELEE_ATTACK;
         }
+    }
+
+    /**
+     * Finds a lab that needs resources and goes to get them from the terminal.
+     *
+     * @protected
+     * @returns 
+     * @memberof Minion
+     */
+    protected FindLabResources(): boolean {
+        if (this.TotalCarry > 0) {
+            return false;
+        }
+
+        const terminal = this.minion.room.terminal;
+        if (!terminal) {
+            return false;
+        }
+
+        for (const id in this.minion.room.memory.labs) {
+            const lab = Game.getObjectById<StructureLab>(id);
+            if (!lab || lab.mineralAmount >= (lab.mineralCapacity / 2)) {
+                continue;
+            }
+            const labMemory = this.minion.room.memory.labs[id];
+            if (!terminal.store[labMemory.resource]) {
+                continue;
+            }
+            this.minion.memory.resource = labMemory.resource;
+            this.SetDestination(terminal.pos.x, terminal.pos.y, 1, terminal.id, terminal.room.name);
+            this.minion.memory.postMovingState = Constants.STATE_WITHDRAWING;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Finds a lab to deliver resources to.
+     *
+     * @protected
+     * @returns 
+     * @memberof Minion
+     */
+    protected FindLabTarget(): boolean {
+        if (this.TotalCarry === 0) {
+            console.log("im full");
+            return false;
+        }
+
+        for (const id in this.minion.room.memory.labs) {
+            const labMemory = this.minion.room.memory.labs[id];
+            if (labMemory.resource !== this.minion.memory.resource) {
+                continue;
+            }
+            const lab = Game.getObjectById<StructureLab>(id);
+            if (!lab || lab.mineralAmount >= lab.mineralCapacity) {
+                continue;
+            }
+            this.SetDestination(lab.pos.x, lab.pos.y, 1, lab.id, lab.room.name);
+            this.minion.memory.postMovingState = Constants.STATE_TRANSFERRING;
+            return true;
+        }
+
+        console.log("no one needs me");
+        return false;
     }
 
     /**

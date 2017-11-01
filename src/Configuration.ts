@@ -17,7 +17,9 @@ export default class Configuration {
         O:          {Minimum: 1000, Maximum: 10000, Packet: 1000},
         Z:          {Minimum: 1000, Maximum: 10000, Packet: 1000},
         U:          {Minimum: 1000, Maximum: 10000, Packet: 1000},
-        energy:     {Minimum: 50000, Maximum: 100000},
+        K:          {Minimum: 1000, Maximum: 10000, Packet: 1000},
+        L:          {Minimum: 1000, Maximum: 10000, Packet: 1000},
+        energy:     {Minimum: 50000, Maximum: 100000, Packet: 10000},
         Fallback:   {Minimum: 1000, Maximum: 10000, Packet: 1000}
     };
     public static TickRate = 11;

@@ -31,7 +31,10 @@ export default class Terminal {
         if (this.SellResources()) {
             return true;
         }
-        return this.SendResources();
+        if (this.SendResources()) {
+            return true;
+        }
+        return this.BuyResources();
     }
 
     private SellResources(): boolean {
@@ -82,24 +85,64 @@ export default class Terminal {
             }
             for (const r in Memory.rooms[name].needs) {
                 const resource = Memory.rooms[name].needs[r];
-                const amount = 1000;
                 const limit = Configuration.Terminal[resource] || Configuration.Terminal.Fallback;
-                if (this.terminal.store[resource] - amount < limit.Minimum) {
+                if (this.terminal.store[resource] - limit.Packet < limit.Minimum) {
                     continue;
                 }
-                let cost = Game.market.calcTransactionCost(amount, this.terminal.room.name, name);
+                let cost = Game.market.calcTransactionCost(limit.Packet, this.terminal.room.name, name);
                 if (resource === RESOURCE_ENERGY) {
-                    cost += amount;
+                    cost += limit.Packet;
                 }
                 if (this.terminal.store.energy < cost) {
                     console.log(`${this.terminal.room.name}: Not enough energy to send resources`);
                     continue;
                 }
-                const result = this.terminal.send(resource, amount, name);
+                const result = this.terminal.send(resource, limit.Packet, name);
                 if (result === OK) {
-                    console.log(`${this.terminal.room.name}: Sent ${amount} ${resource} to ${name}`);
+                    console.log(`${this.terminal.room.name}: Sent ${limit.Packet} ${resource} to ${name}`);
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+
+    private BuyResources(): boolean {
+        for (const type of this.terminal.room.memory.needs) {
+            if (type === RESOURCE_ENERGY) {
+                continue;
+            }
+
+            const limit = Configuration.Terminal[type] || Configuration.Terminal.Fallback;
+            if (this.terminal.store[type] >= limit.Minimum) {
+                continue;
+            }
+
+            const orders = _.sortBy(Game.market.getAllOrders({ type: ORDER_SELL, resourceType: type }), (o) => o.price);
+            if (orders.length === 0) {
+                continue;
+            }
+
+            const order = orders[0];
+            let amount = limit.Packet;
+            if (order.remainingAmount < amount) {
+                amount = order.remainingAmount;
+            }
+
+            if (order.price * amount > Game.market.credits) {
+                console.log(`${this.terminal.room.name}: Not enough credits to transfer`);
+                return false;
+            }
+
+            if (Game.market.calcTransactionCost(amount, this.terminal.room.name, order.roomName) > this.terminal.store[RESOURCE_ENERGY]) {
+                console.log(`${this.terminal.room.name}: Not enough energy to transfer`);
+                return false;
+            }
+
+            const result = Game.market.deal(order.id, amount, this.terminal.room.name);
+            if (result === OK) {
+                console.log(`${this.terminal.room.name}: Recieved ${amount} mineral(${type}) from ${order.roomName} for ${order.price * amount}`);
+                return true;
             }
         }
         return false;
