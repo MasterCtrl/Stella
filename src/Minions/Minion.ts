@@ -1101,7 +1101,6 @@ export default abstract class Minion {
      */
     protected FindLabTarget(): boolean {
         if (this.TotalCarry === 0) {
-            console.log("im full");
             return false;
         }
 
@@ -1119,7 +1118,6 @@ export default abstract class Minion {
             return true;
         }
 
-        console.log("no one needs me");
         return false;
     }
 
