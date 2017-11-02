@@ -1,20 +1,20 @@
 import Minion from "./Minion";
-import Constants from "../Constants"
+import Constants from "../Constants";
 
 /**
  * Seeder minion, used to provide support to another room.
  * Sends 2 minions to help any requesting room with a COLOR_BLUE flag.
- * 
+ *
  * @export
  * @class Seeder
  * @extends {Minion}
  */
 export default class Seeder extends Minion {
     public static Type: string = "Seeder";
-    
+
     /**
      * Creates an instance of Seeder.
-     * @param {Creep} minion 
+     * @param {Creep} minion
      * @memberof Seeder
      */
     constructor(minion: Creep) {
@@ -23,8 +23,8 @@ export default class Seeder extends Minion {
 
     /**
      * Initializes the Seeder, sets state and destination.
-     * 
-     * @returns 
+     *
+     * @returns
      * @memberof Seeder
      */
     public Initialize() {
@@ -37,6 +37,10 @@ export default class Seeder extends Minion {
             return;
         }
 
+        if (this.FindContainerSource()) {
+            return;
+        }
+
         if (this.FindSource()) {
             return;
         }
@@ -44,7 +48,7 @@ export default class Seeder extends Minion {
         if (this.FindStorage()) {
             return;
         }
-        
+
         if (this.FindConstructionSite()) {
             return;
         }
@@ -59,22 +63,20 @@ export default class Seeder extends Minion {
     /**
      * Gets the options for the Seeder minion based on the room.
      * Every other room tries to spawn Seeders to send to the requesting room
-     * 
+     *
      * @static
-     * @param {Room} room 
-     * @returns {*} 
+     * @param {Room} room
+     * @returns {*}
      * @memberof Seeder
      */
     public static GetOptions(room: Room): any {
-        let rooms = _.filter(Game.flags, flag => flag.color == COLOR_BLUE).map(flag => flag.pos.roomName);
-        if (rooms.indexOf(room.name) != -1 || room.memory.needs.indexOf(RESOURCE_ENERGY) != -1) {
+        const rooms = _.filter(Game.flags, (f) => f.color === COLOR_BLUE).map((f) => f.pos.roomName);
+        if (rooms.length === 0 || rooms.indexOf(room.name) !== -1 || room.memory.needs.indexOf(RESOURCE_ENERGY) !== -1) {
             return undefined;
         }
-        let seeders = _.filter(Memory.creeps, creep => creep.type == this.Type);
-        let count = (rooms.length * 2) - seeders.length;
-        return { 
+        return {
             Type: this.Type,
-            Count: count,
+            Count: 1,
             Parts: Minion.GetPartsFromRoom(room, 5)
         };
     }

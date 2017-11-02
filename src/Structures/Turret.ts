@@ -1,6 +1,6 @@
 /**
  * Turret, used to defend and repair structures in a room.
- * 
+ *
  * @export
  * @class Turret
  */
@@ -9,7 +9,7 @@ export default class Turret {
 
     /**
      * Creates an instance of Turret.
-     * @param {Tower} tower 
+     * @param {Tower} tower
      * @memberof Turret
      */
     constructor(tower: Tower) {
@@ -18,11 +18,11 @@ export default class Turret {
 
     /**
      * Runs the turret
-     * 
+     *
      * @memberof Turret
      */
     public Run(): boolean {
-        if(this.AttackHostile()){
+        if (this.AttackHostile()) {
             return true;
         }
 
@@ -30,23 +30,23 @@ export default class Turret {
     }
 
     private AttackHostile(): boolean {
-        let hostiles = this.turret.room.find<Creep>(FIND_HOSTILE_CREEPS);
+        const hostiles = this.turret.room.find<Creep>(FIND_HOSTILE_CREEPS);
         if (hostiles.length > 0) {
-            let hostile = hostiles[Math.floor(Math.random() * hostiles.length)];
-            return this.turret.attack(hostile) == OK;
+            const hostile = hostiles[Math.floor(Math.random() * hostiles.length)];
+            return this.turret.attack(hostile) === OK;
         }
         return false;
     }
 
     private RepairStructure(): boolean {
-        let structures = this.turret.room.find<Structure>(FIND_STRUCTURES, {
-            filter: (structure) => structure.structureType != STRUCTURE_WALL && 
-                                   structure.structureType != STRUCTURE_RAMPART && 
-                                   structure.hits < structure.hitsMax
+        const structures = this.turret.room.find<Structure>(FIND_STRUCTURES, {
+            filter: (s) => s.structureType !== STRUCTURE_WALL &&
+                           s.structureType !== STRUCTURE_RAMPART &&
+                           s.hits < s.hitsMax
         });
-        let structure = _.min(structures, s => s.hits);
+        const structure = _.min(structures, (s) => s.hits);
         if (structure) {
-            return this.turret.repair(structure) == OK;
+            return this.turret.repair(structure) === OK;
         }
         return false;
     }

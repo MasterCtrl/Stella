@@ -2,17 +2,17 @@ import Minion from "./Minion";
 
 /**
  * Builder minion, used to build and repair structures.
- * 
+ *
  * @export
  * @class Builder
  * @extends {Minion}
  */
 export default class Builder extends Minion {
     public static Type: string = "Builder";
-    
+
     /**
      * Creates an instance of Builder.
-     * @param {Creep} minion 
+     * @param {Creep} minion
      * @memberof Builder
      */
     constructor(minion: Creep) {
@@ -21,8 +21,8 @@ export default class Builder extends Minion {
 
     /**
      * Initializes the Builder, sets state and destination.
-     * 
-     * @returns 
+     *
+     * @returns
      * @memberof Builder
      */
     public Initialize() {
@@ -30,7 +30,7 @@ export default class Builder extends Minion {
         if (this.FindDroppedEnergy()) {
             return;
         }
-        
+
         if (this.FindStorageSource()) {
             return;
         }
@@ -42,12 +42,12 @@ export default class Builder extends Minion {
         if (this.FindSource()) {
             return;
         }
-        
+
         if (this.FindConstructionSite()) {
             return;
         }
 
-        if(this.FindStructureToRepair()){
+        if (this.FindStructureToRepair()) {
             return;
         }
 
@@ -60,14 +60,14 @@ export default class Builder extends Minion {
 
     /**
      * Gets the options for the Builder minion based on the room.
-     * 
+     *
      * @static
-     * @param {Room} room 
-     * @returns {*} 
+     * @param {Room} room
+     * @returns {*}
      * @memberof Builder
      */
-    public static GetOptions(room: Room): any { 
-        return { 
+    public static GetOptions(room: Room): any {
+        return {
             Type: this.Type,
             Count: room.find(FIND_SOURCES).length,
             Parts: Minion.GetPartsFromRoom(room, 5)

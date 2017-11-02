@@ -1,18 +1,18 @@
-import EntityController from "./Controllers/EntityController";
+import * as MemoryController from "./Controllers/MemoryController";
 import RoomController from "./Controllers/RoomController";
-import GC from "./GC"
-import Profiler from "./Profiling"
+import GC from "./GC";
+import Profiler from "./Profiling";
 
-
-export const loop = function() {
+export const loop = () => {
     if (Profiler) {
         Profiler.wrap(mainLoop);
     } else {
         mainLoop();
     }
-}
+};
 
-let mainLoop = function() {
+const mainLoop = () => {
+    MemoryController.Run();
     RoomController.RunRooms(Game.rooms);
     GC.SyncAll();
-}
+};

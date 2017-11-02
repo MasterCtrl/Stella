@@ -84,52 +84,52 @@ describe("Terminal Tests", () => {
         });
     });
 
-    describe("#SendRelief", () => {
+    describe("#SendResources", () => {
         it("Returns false if there are no rooms in memory", () => {
             memoryStub.rooms = [];
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => terminal.SendRelief()), false, "Terminal SendRelief found rooms in memory?");
+            assert.equal(Suppressor(() => terminal.SendResources()), false, "Terminal SendResources found rooms in memory?");
         });
 
-        it("Returns false if no rooms need relief", () => {
+        it("Returns false if no rooms need resources", () => {
             memoryStub.rooms = [{}];
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => terminal.SendRelief()), false, "Terminal SendRelief found a room that needs relief?");
+            assert.equal(Suppressor(() => terminal.SendResources()), false, "Terminal SendResources found a room that needs resources?");
         });
 
         it("Returns false if there are no in game rooms", () => {
             gameStub.rooms = {};
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => terminal.SendRelief()), false, "Terminal SendRelief found rooms in game?");
+            assert.equal(Suppressor(() => terminal.SendResources()), false, "Terminal SendResources found rooms in game?");
         });
 
         it("Returns false if the room has no terminal", () => {
             gameStub.rooms = { B : {} };
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => terminal.SendRelief()), false, "Terminal SendRelief found a terminal?");
+            assert.equal(Suppressor(() => terminal.SendResources()), false, "Terminal SendResources found a terminal?");
         });
 
         it("Returns false if there is not enough energy", () => {
             terminalStub.store.energy = 0;
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => terminal.SendRelief()), false, "Terminal SendRelief had enough energy?");
+            assert.equal(Suppressor(() => terminal.SendResources()), false, "Terminal SendResources had enough energy?");
         });
 
         it("Returns false if send fails", () => {
             terminalStub.sendResult = -1;
 
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => terminal.SendRelief()), false, "Terminal SendRelief sent successfully?");
+            assert.equal(Suppressor(() => terminal.SendResources()), false, "Terminal SendResources sent successfully?");
         });
 
         it("Completes if the send is successful", () => {
             var terminal = new Terminal.default(terminalStub);
-            assert.equal(Suppressor(() => terminal.SendRelief()), true, "Terminal SendRelief did not complete successfully");
+            assert.equal(Suppressor(() => terminal.SendResources()), true, "Terminal SendResources did not complete successfully");
         });
     });
 });

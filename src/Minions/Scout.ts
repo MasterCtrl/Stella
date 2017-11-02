@@ -1,20 +1,20 @@
 import Minion from "./Minion";
-import Constants from "../Constants"
+import Constants from "../Constants";
 
 /**
  * Scout minion, used to claim additional rooms.
  * Sends 1 minion to claim a room with a COLOR_GREEN flag.
- * 
+ *
  * @export
  * @class Scout
  * @extends {Minion}
  */
 export default class Scout extends Minion {
     public static Type: string = "Scout";
-    
+
     /**
      * Creates an instance of Scout.
-     * @param {Creep} minion 
+     * @param {Creep} minion
      * @memberof Scout
      */
     constructor(minion: Creep) {
@@ -23,8 +23,8 @@ export default class Scout extends Minion {
 
     /**
      * Initializes the Scout, sets state and destination.
-     * 
-     * @returns 
+     *
+     * @returns
      * @memberof Scout
      */
     public Initialize() {
@@ -32,7 +32,7 @@ export default class Scout extends Minion {
         if (this.FindUnoccupiedRoom(COLOR_GREEN)) {
             return;
         }
-        
+
         if (this.FindUnclaimedController()) {
             return;
         }
@@ -42,28 +42,26 @@ export default class Scout extends Minion {
 
     /**
      * Gets the options for the Scout minion based on the game state.
-     * 
+     *
      * @static
-     * @param {Room} room 
-     * @returns {*} 
+     * @param {Room} room
+     * @returns {*}
      * @memberof Scout
      */
     public static GetOptions(room: Room): any {
-        if (room.memory.needs.indexOf(RESOURCE_ENERGY) != -1) {
+        if (room.memory.needs.indexOf(RESOURCE_ENERGY) !== -1) {
             return undefined;
         }
-        let scouts = _.filter(Memory.creeps, creep => creep.type == this.Type);
-        let rooms = _.filter(Game.flags, flag => flag.color == COLOR_GREEN).map(flag => flag.pos.roomName);
-        let count = rooms.length - scouts.length;
+        const scouts = _.filter(Memory.creeps, (c) => c.type === this.Type);
+        const rooms = _.filter(Game.flags, (f) => f.color === COLOR_GREEN).map((f) => f.pos.roomName);
+        const count = rooms.length - scouts.length;
         if (count <= 0) {
             return undefined;
         }
-        let options = { 
+        return {
             Type: this.Type,
             Count: count,
             Parts: [CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE]
         };
-        
-        return options;
     }
 }

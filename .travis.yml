@@ -3,3 +3,4 @@ node_js:
   - "stable"
 before_script:
   - npm run-script build
+  - npm run-script lint
