@@ -1,35 +1,32 @@
-import {Kernel} from "./Kernel";
+import Logger from "../Tools/Logger";
 
 /**
- *  Process base class.
+ * Process base class.
  *
  * @export
  * @abstract
  * @class Process
+ * @implements {IProcess}
  */
-export abstract class Process {
-    private readonly kernel: Kernel;
+export default abstract class Process implements IProcess {
+    private readonly kernel: IKernel;
     private readonly processId: number;
     private readonly priority: number;
     private readonly name: string;
     private readonly type: string;
     private readonly parentId: number;
     private readonly initialized: number;
-    private suspend: string | number | boolean;
+    private state: State;
+    private completed: boolean;
 
     /**
      * Creates an instance of Process.
      *
      * @param {Kernel} kernel 
-     * @param {number} processId 
-     * @param {number} parentId 
-     * @param {number} priority 
-     * @param {number} initialized 
-     * @param {string} type 
-     * @param {Suspend} suspend 
+     * @param {IData} data 
      * @memberof Process
      */
-    constructor(kernel: Kernel, data: IProcessData) {
+    constructor(kernel: IKernel, data: IData) {
         this.kernel = kernel;
         this.processId = data.ProcessId;
         this.priority = data.Priority;
@@ -37,7 +34,19 @@ export abstract class Process {
         this.type = data.Type;
         this.parentId = data.ParentId;
         this.initialized = data.Initialized;
-        this.suspend = data.Suspend;
+        this.state = data.State;
+        this.completed = false;
+    }
+
+    /**
+     * Gets the root kernel of this process.
+     *
+     * @readonly
+     * @type {IKernel}
+     * @memberof Process
+     */
+    public get Kernel(): IKernel {
+        return this.kernel;
     }
 
     /**
@@ -107,14 +116,42 @@ export abstract class Process {
     }
 
     /**
-     * Gets the Memory of this process.
+     * Gets or sets the state of this process.
      *
-     * @readonly
+     * @type {State}
+     * @memberof Process
+     */
+    public get State(): State {
+        return this.state;
+    }
+    public set State(value: State) {
+        this.state = value;
+    }
+
+    /**
+     * Gets or sets the Memory of this process.
+     *
      * @type {*}
      * @memberof Process
      */
     public get Memory(): any {
-        return Memory.Process[this.ProcessId];
+        return Memory.Process[this.ProcessId] || (Memory.Process[this.ProcessId] = {});
+    }
+    public set Memory(value: any) {
+        Memory.Process[this.ProcessId] = value;
+    }
+
+    /**
+     * Gets or sets if this process has completed this tick.
+     *
+     * @type {boolean}
+     * @memberof Process
+     */
+    public get Completed(): boolean {
+        return this.completed;
+    }
+    public set Completed(value: boolean) {
+        this.completed = value;
     }
 
     /**
@@ -126,19 +163,25 @@ export abstract class Process {
     public abstract Execute();
 
     /**
-     * Suspends this process and 
+     * Checks if this process is in a runnable state.
      *
-     * @param {Suspend} [suspend=true]
-     * @param {boolean} [suspendChildren=false]
+     * @returns {boolean} 
      * @memberof Process
      */
-    public Suspend(suspend: string | number | boolean = true, suspendChildren: boolean = false) {
-        this.suspend = suspend;
-        if (suspendChildren) {
-            for (const childProcess of this.kernel.GetChildren(this.ProcessId)) {
-                childProcess.Suspend(suspend);
+    public CheckState(): boolean {
+        if (typeof this.state === "number") {
+            if (this.state === 0) {
+                this.Resume();
+            } else {
+                this.state--;
+            }
+        } else if (typeof this.state === "string") {
+            const waitProcess = this.Kernel.GetProcess(this.state);
+            if (!waitProcess) {
+                this.Resume();
             }
         }
+        return this.State === true;
     }
 
     /**
@@ -147,16 +190,35 @@ export abstract class Process {
      * @memberof Process
      */
     public Resume() {
-        this.suspend = false;
+        Logger.Current.Debug(`${this.Name}: resuming process.`);
+        this.state = true;
+    }
+
+    /**
+     * Suspends this process and optionally all its children.
+     *
+     * @param {Suspend} [state=false]
+     * @param {boolean} [suspendChildren=false]
+     * @memberof Process
+     */
+    public Suspend(state: State = false, suspendChildren: boolean = false) {
+        Logger.Current.Debug(`${this.Name}: suspending process - ${state}.`);
+        this.state = state;
+        if (!suspendChildren) {
+            return;
+        }
+        for (const childProcess of this.kernel.GetChildren(this.ProcessId)) {
+            childProcess.Suspend(state, suspendChildren);
+        }
     }
 
     /**
      * Serializes this process for persistence.
      *
-     * @returns {IProcessData} 
+     * @returns {IData} 
      * @memberof Process
      */
-    public Serialize(): IProcessData {
+    public Serialize(): IData {
         return {
             ProcessId: this.processId,
             Priority: this.priority,
@@ -164,17 +226,17 @@ export abstract class Process {
             Type: this.type,
             ParentId: this.parentId,
             Initialized: this.initialized,
-            Suspend: this.suspend
-        }
+            State: this.state || true
+        };
     }
-}
 
-export interface IProcessData {
-    ProcessId: number;
-    Priority: number;
-    Name: string;
-    Type: string;
-    ParentId: number;
-    Initialized: number;
-    Suspend: string | number | boolean;
+    /**
+     * Disposes this process.
+     *
+     * @memberof Process
+     */
+    public Dispose() {
+        Logger.Current.Debug(`${this.Name}: disposing process.`);
+        delete Memory.Process[this.ProcessId];
+    }
 }

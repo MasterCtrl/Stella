@@ -739,6 +739,10 @@ interface Game {
         [roomName: string]: Room;
     };
     /**
+    * An object describing the world shard where your script is currently being executed in.
+    */
+    shard: Shard;
+    /**
      * A hash containing all your spawns with spawn names as hash keys.
      */
     spawns: {
@@ -852,6 +856,29 @@ interface LookAtResult {
 }
 interface LookAtResultMatrix {
     [coord: number]: LookAtResultMatrix | LookAtResult[];
+}
+interface Shard {
+    /**
+    * The name of the shard.
+    *
+    * @type {string}
+    * @memberof Shard
+    */
+    name: string;
+    /**
+    * Currently always equals to `normal`.
+    *
+    * @type {"normal"}
+    * @memberof Shard
+    */
+    type: "normal";
+    /**
+    * Whether this shard belongs to the PTR.
+    *
+    * @type {boolean}
+    * @memberof Shard
+    */
+    ptr: boolean;
 }
 interface FindPathOpts {
     /**
@@ -1361,7 +1388,9 @@ interface RawMemory {
      * An object with asynchronous memory segments available on this tick. Each object key is the segment ID with data in string values.
      * Use RawMemory.setActiveSegments to fetch segments on the next tick. Segments data is saved automatically in the end of the tick.
      */
-    segments: string[];
+    segments: {
+        [id: number]: string;
+    };
     /**
      * An object with a memory segment of another player available on this tick.
      * Use setActiveForeignSegment to fetch segments on the next tick. The object consists of the following properties:
