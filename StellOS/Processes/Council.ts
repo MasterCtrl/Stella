@@ -6,7 +6,7 @@ import RoomProcess from "../os/RoomProcess";
  *
  * @export
  * @class Council
- * @extends {Process}
+ * @extends {RoomProcess}
  */
 export default class Council extends RoomProcess {
     /**
@@ -14,7 +14,7 @@ export default class Council extends RoomProcess {
      * 
      * @memberof Council
      */
-    public Execute() {
+    public Execute(): void {
         if (!this.Room) {
             this.Kernel.Terminate(this.Name, true);
         }

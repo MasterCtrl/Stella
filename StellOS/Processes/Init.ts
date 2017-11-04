@@ -14,15 +14,15 @@ export default class Init extends Process {
      * 
      * @memberof Init
      */
-    public Execute() {
-        if (!Memory.StellOS) {
-            Memory.StellOS = {};
-        }
-        if (!Memory.Process) {
-            Memory.Process = {};
-        }
-
+    public Execute(): void {
         this.Kernel.Load();
+
+        // register the gc process.
+        const gcProcessName = "GC-master";
+        let gcProcess = this.Kernel.GetProcess(gcProcessName);
+        if (!gcProcess) {
+            gcProcess = this.Kernel.CreateProcess(this.Priority + 1, gcProcessName, "GC");
+        }
 
         // loop through all the rooms and make sure the processes are registered for each.
         for (const room in Game.rooms) {
@@ -30,7 +30,7 @@ export default class Init extends Process {
             if (this.Kernel.GetProcess(councilProcessName)) {
                 continue;
             }
-            const councilProcess = this.Kernel.CreateProcess(this.Priority + 1, councilProcessName, "Council");
+            const councilProcess = this.Kernel.CreateProcess(this.Priority + 2, councilProcessName, "Council");
             councilProcess.Memory = { room: room };
         }
 

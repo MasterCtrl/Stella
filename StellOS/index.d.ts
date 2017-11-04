@@ -1,7 +1,8 @@
 interface IKernel {
-    Load();
-    Unload();
-    Run();
+    Load(): void;
+    Unload(): void;
+    Reset(): void;
+    Run(): void;
     UnderLimit: boolean;
     CreateProcess(priority: number, name: string, type: string, parentId?: number): IProcess;
     GetNextProcess(): IProcess;
@@ -9,7 +10,8 @@ interface IKernel {
     GetChildren(parentProcessId: number): IProcess[];
     GetNextProcessId(): number;
     ActivateProcess(data: IData): IProcess
-    Terminate(name: string, killChildren?: boolean);
+    Terminate(name: string, killChildren?: boolean): void;
+    Status(): void;
 }
 
 interface IRegister {
@@ -26,12 +28,12 @@ interface IProcess {
     State: State;
     Memory: any;
     Completed: boolean;
-    Execute();
+    Execute(): void;
     CheckState(): boolean;
-    Resume();
-    Suspend(state?: State, suspendChildren?: boolean);
+    Resume(): void;
+    Suspend(state?: State, suspendChildren?: boolean): void;
     Serialize(): IData;
-    Dispose();
+    Dispose(): void;
 }
 
 interface IData {
@@ -61,15 +63,16 @@ type State = string | number | boolean;
 
 interface ILogger {
     LogLevel;
-    Debug(message: string, room?: string);
-    Info(message: string, room?: string);
-    Warning(message: string, room?: string);
-    Error(message: string, room?: string);
-    Critical(message: string, room?: string);
+    Debug(message: string, room?: string): void;
+    Info(message: string, room?: string): void;
+    Warning(message: string, room?: string): void;
+    Error(message: string, room?: string): void;
+    Critical(message: string, room?: string): void;
 }
 
-interface IGlobal extends NodeJS.Global {
-    Logger: ILogger;
+declare namespace NodeJS {
+    interface Global {
+        Logger: ILogger;
+        StellOS: IKernel;
+    }    
 }
-
-declare var global: IGlobal;

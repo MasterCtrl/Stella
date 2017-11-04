@@ -8,7 +8,7 @@ import * as Units from "../Units";
  *
  * @export
  * @class Census
- * @extends {Process}
+ * @extends {RoomProcess}
  */
 export default class Census extends RoomProcess {
     /**
@@ -16,42 +16,41 @@ export default class Census extends RoomProcess {
      *
      * @memberof Census
      */
-    public Execute() {
+    public Execute(): void {
         const spawnProcessName = `Spawn-${this.RoomName}`;
-        // TODO: actually write the spawn process
         let spawnProcess = this.Kernel.GetProcess(spawnProcessName) as Spawn;
         if (!spawnProcess) {
             spawnProcess = this.Kernel.CreateProcess(this.Priority + 1, spawnProcessName, "Spawn", this.ProcessId) as Spawn;
             spawnProcess.RoomName = this.RoomName;
         }
+        // Update the spawn queue.
         spawnProcess.Queue = this.GetSpawnQueue(spawnProcess.Queue);
 
-        // Suspend this process for 7 ticks.
+        // Suspend this process for a while.
         this.Suspend(7);
     }
 
     private GetSpawnQueue(queue: IUnitOptions[] = []): IUnitOptions[] {
-        // TODO: write some units? is this even a good way of doing this?
         for (const type of Object.keys(Units)) {
-            const unitDefinition = Units[type] as IUnitDefintion;
-            const unit = queue.find((e) => e.Type === unitDefinition.Type);
-            // if the queue already has an entry for this type then continue.
-            if (unit) {
-                continue;
-            }
-
-            const units = _.filter(Memory.creeps, (c) => c.type === unitDefinition.Type && c.room === this.RoomName);
+            const definition = Units[type] as IUnitDefintion;
+            const exsisting = _.filter(Memory.creeps, (c) => c.type === type && c.room === this.RoomName);
+            const queued = _.filter(queue, (d) => d.Type === type);
+            const required = definition.Population(this.Room);
+            const needed = required - exsisting.length - queued.length;
             // if we have already reached the population limit for this room then continue.
-            if (units.length >= unitDefinition.Population(this.Room)) {
+            if (needed <= 0) {
                 continue;
             }
 
             // otherwise push onto the spawn queue
-            queue.push({
-                Priority: unitDefinition.Priority,
-                Type: unitDefinition.Type,
-                Body: unitDefinition.CreateBody(this.Room)
-            });
+            const options = {
+                Priority: definition.Priority,
+                Type: type,
+                Body: definition.CreateBody(this.Room)
+            };
+            for (let index = 0; index < needed; index++) {
+                queue.push(options);
+            }
         }
         return _.sortBy(queue, (d) => d.Priority);
     }

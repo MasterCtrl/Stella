@@ -14,7 +14,7 @@ export default class Spawn extends RoomProcess {
      *
      * @memberof Spawn
      */
-    public Execute() {
+    public Execute(): void {
         if (!this.Queue || this.Queue.length === 0) {
             // if the spawn queue is empty then kill the process.
             this.Kernel.Terminate(this.Name);

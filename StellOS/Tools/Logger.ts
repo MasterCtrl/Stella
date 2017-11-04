@@ -46,10 +46,10 @@ export default class Logger implements ILogger {
      * @param {string} [style=this.GetStyle(level)] 
      * @memberof Logger
      */
-    public Log(message: string, level: LogLevel, room?: string, style: string = this.GetStyle(level)) {
+    public Log(message: string, level: LogLevel, room?: string, style: string = this.GetStyle(level)): void {
         if (level >= this.LogLevel) {
             const roomLink = room === undefined ? "" : `<a href='#!/room/${Game.shard.name}/${room}'>${room}</a>: `;
-            console.log(`<span style='${style}'>${roomLink}${message}</span>`);
+            console.log(`<span style='${style}'>[${LogLevel[level]}]</span> ${roomLink}${message}`);
         }
     }
 
@@ -60,7 +60,7 @@ export default class Logger implements ILogger {
      * @param {string} room 
      * @memberof Logger
      */
-    public Debug(message: string, room?: string) {
+    public Debug(message: string, room?: string): void {
         this.Log(message, LogLevel.DEBUG, room);
     }
 
@@ -71,7 +71,7 @@ export default class Logger implements ILogger {
      * @param {string} room 
      * @memberof Logger
      */
-    public Info(message: string, room?: string) {
+    public Info(message: string, room?: string): void {
         this.Log(message, LogLevel.INFO, room);
     }
 
@@ -82,7 +82,7 @@ export default class Logger implements ILogger {
      * @param {string} room 
      * @memberof Logger
      */
-    public Warning(message: string, room?: string) {
+    public Warning(message: string, room?: string): void {
         this.Log(message, LogLevel.WARNING, room);
     }
 
@@ -93,7 +93,7 @@ export default class Logger implements ILogger {
      * @param {string} room 
      * @memberof Logger
      */
-    public Error(message: string, room?: string) {
+    public Error(message: string, room?: string): void {
         this.Log(message, LogLevel.ERROR, room);
     }
 
@@ -104,7 +104,7 @@ export default class Logger implements ILogger {
      * @param {string} room 
      * @memberof Logger
      */
-    public Critical(message: string, room?: string) {
+    public Critical(message: string, room?: string): void {
         this.Log(message, LogLevel.CRITICAL, room);
     }
 

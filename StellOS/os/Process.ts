@@ -160,7 +160,7 @@ export default abstract class Process implements IProcess {
      * @abstract
      * @memberof Process
      */
-    public abstract Execute();
+    public abstract Execute(): void;
 
     /**
      * Checks if this process is in a runnable state.
@@ -189,7 +189,7 @@ export default abstract class Process implements IProcess {
      *
      * @memberof Process
      */
-    public Resume() {
+    public Resume(): void {
         Logger.Current.Debug(`${this.Name}: resuming process.`);
         this.state = true;
     }
@@ -201,7 +201,7 @@ export default abstract class Process implements IProcess {
      * @param {boolean} [suspendChildren=false]
      * @memberof Process
      */
-    public Suspend(state: State = false, suspendChildren: boolean = false) {
+    public Suspend(state: State = false, suspendChildren: boolean = false): void {
         Logger.Current.Debug(`${this.Name}: suspending process - ${state}.`);
         this.state = state;
         if (!suspendChildren) {
@@ -235,7 +235,7 @@ export default abstract class Process implements IProcess {
      *
      * @memberof Process
      */
-    public Dispose() {
+    public Dispose(): void {
         Logger.Current.Debug(`${this.Name}: disposing process.`);
         delete Memory.Process[this.ProcessId];
     }

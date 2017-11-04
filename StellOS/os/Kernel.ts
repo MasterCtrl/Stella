@@ -20,7 +20,18 @@ export default class Kernel implements IKernel {
     constructor() {
         this.limit = Game.cpu.limit * 0.9;
         this.register = {};
+        this.Initialize();
         this.CreateProcess(0, "Init-master", "Init");
+    }
+
+    private Initialize(): void {
+        if (!Memory.StellOS) {
+            Memory.StellOS = {};
+        }
+        if (!Memory.Process) {
+            Memory.Process = {};
+        }
+        global.StellOS = this;
     }
 
     /**
@@ -28,7 +39,7 @@ export default class Kernel implements IKernel {
      *
      * @memberof Kernel
      */
-    public Load() {
+    public Load(): void {
         _.forEach(Memory.StellOS.ProcessTable, (data: IData) => {
             this.register[data.Name] = this.ActivateProcess(data);
         });
@@ -39,12 +50,23 @@ export default class Kernel implements IKernel {
      *
      * @memberof Kernel
      */
-    public Unload() {
+    public Unload(): void {
         const processes = [];
         _.forEach(this.register, (process: Process) => {
             processes.push(process.Serialize());
         });
         Memory.StellOS.ProcessTable = processes;
+        delete global.StellOS;
+    }
+
+    /**
+     * Performs a hard reset on the kernel.
+     *
+     * @memberof Kernel
+     */
+    public Reset(): void {
+        delete Memory.StellOS;
+        delete Memory.Process;
     }
 
     /**
@@ -52,13 +74,11 @@ export default class Kernel implements IKernel {
      *
      * @memberof Kernel
      */
-    public Run() {
+    public Run(): void {
         while (this.UnderLimit) {
             const process = this.GetNextProcess();
             if (!process) {
-                Logger.Current.Debug("Kernel Unloading.");
-                this.Unload();
-                return;
+                break;
             }
             process.Completed = true;
             if (!process.CheckState()) {
@@ -68,6 +88,8 @@ export default class Kernel implements IKernel {
             Logger.Current.Debug(`${process.Name}: process executing`);
             process.Execute();
         }
+        Logger.Current.Debug("Kernel Unloading.");
+        this.Unload();
     }
 
     /**
@@ -187,5 +209,28 @@ export default class Kernel implements IKernel {
         for (const childProcess of this.GetChildren(process.ProcessId)) {
             this.Terminate(childProcess.Name, killChildren);
         }
+    }
+
+    /**
+     * Outputs the status of the kernel.
+     *
+     * @memberof Kernel
+     */
+    public Status(): void {
+        let status = `current tick: ${Game.time}<table><tr><th>name  </th><th>pid  </th><th>ppid  </th><th>priority  </th><th>initialized  </th><th>state  </th></tr>`;
+        const processes = _.sortBy(this.register, (p) => p.Priority);
+        for (const p in processes) {
+            const process = processes[p].Serialize();
+            status += "<tr>";
+            status += ` <th>${process.Name}  </th>`;
+            status += ` <th>${process.ProcessId}  </th>`;
+            status += ` <th>${process.ParentId}  </th>`;
+            status += ` <th>${process.Priority}  </th>`;
+            status += ` <th>${process.Initialized}  </th>`;
+            status += ` <th>${process.State}  </th>`;
+            status += "</tr>";
+        }
+        status += "</table>";
+        console.log(status);
     }
 }

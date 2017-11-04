@@ -1,1 +1,1 @@
-export {HarvesterDefintion} from "./Harvester";
+export {HarvesterDefintion as Harvester} from "./Harvester";
