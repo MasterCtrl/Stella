@@ -1,7 +1,7 @@
-import Logger from "../Tools/Logger";
-import RoomProcess from "../os/RoomProcess";
+import {Definitions} from "../../Units";
+import Logger from "../../os/Logger";
+import RoomProcess from "./RoomProcess";
 import Spawn from "./Spawn";
-import * as Units from "../Units";
 
 /**
  * Census for keeping track of the population in a room and spinning up spawn processes.
@@ -17,10 +17,14 @@ export default class Census extends RoomProcess {
      * @memberof Census
      */
     public Execute(): void {
-        const spawnProcessName = `Spawn-${this.RoomName}`;
-        let spawnProcess = this.Kernel.GetProcess(spawnProcessName) as Spawn;
+        if (!this.Room) {
+            this.Kernel.Terminate({ Name: this.Name }, true);
+            return;
+        }
+
+        let spawnProcess = this.Kernel.GetProcess<Spawn>({ Find: (p) => p.Type === "Spawn" && p.RoomName === this.RoomName });
         if (!spawnProcess) {
-            spawnProcess = this.Kernel.CreateProcess(this.Priority + 1, spawnProcessName, "Spawn", this.ProcessId) as Spawn;
+            spawnProcess = this.Kernel.CreateProcess<Spawn>(Spawn, this.RoomName, this.Priority + 1, this.ProcessId);
             spawnProcess.RoomName = this.RoomName;
         }
         // Update the spawn queue.
@@ -31,8 +35,9 @@ export default class Census extends RoomProcess {
     }
 
     private GetSpawnQueue(queue: IUnitOptions[] = []): IUnitOptions[] {
-        for (const type of Object.keys(Units)) {
-            const definition = Units[type] as IUnitDefintion;
+        let added = false;
+        for (const type of Object.keys(Definitions)) {
+            const definition = Definitions[type] as IUnitDefintion;
             const exsisting = _.filter(Memory.creeps, (c) => c.type === type && c.room === this.RoomName);
             const queued = _.filter(queue, (d) => d.Type === type);
             const required = definition.Population(this.Room);
@@ -50,8 +55,9 @@ export default class Census extends RoomProcess {
             };
             for (let index = 0; index < needed; index++) {
                 queue.push(options);
+                added = true;
             }
         }
-        return _.sortBy(queue, (d) => d.Priority);
+        return added ? _.sortBy(queue, (d) => d.Priority) : queue;
     }
 }

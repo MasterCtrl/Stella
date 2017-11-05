@@ -1,4 +1,4 @@
-import Logger from "../Tools/Logger";
+import Logger from "./Logger";
 
 /**
  * Process base class.
@@ -10,24 +10,33 @@ import Logger from "../Tools/Logger";
  */
 export default abstract class Process implements IProcess {
     private readonly kernel: IKernel;
-    private readonly processId: number;
-    private readonly priority: number;
-    private readonly name: string;
-    private readonly type: string;
-    private readonly parentId: number;
-    private readonly initialized: number;
+    private processId: number;
+    private priority: number;
+    private name: string;
+    private type: string;
+    private parentId: number;
+    private initialized: number;
     private state: State;
     private completed: boolean;
 
     /**
      * Creates an instance of Process.
      *
-     * @param {Kernel} kernel 
+     * @param {Kernel} kernel
+     * @memberof Process
+     */
+    constructor(kernel: IKernel) {
+        this.kernel = kernel;
+
+    }
+
+    /**
+     * Loads this process with its data.
+     *
      * @param {IData} data 
      * @memberof Process
      */
-    constructor(kernel: IKernel, data: IData) {
-        this.kernel = kernel;
+    public Load(data: IData) {
         this.processId = data.ProcessId;
         this.priority = data.Priority;
         this.name = data.Name;
@@ -176,7 +185,7 @@ export default abstract class Process implements IProcess {
                 this.state--;
             }
         } else if (typeof this.state === "string") {
-            const waitProcess = this.Kernel.GetProcess(this.state);
+            const waitProcess = this.Kernel.GetProcess({ Name: this.state });
             if (!waitProcess) {
                 this.Resume();
             }

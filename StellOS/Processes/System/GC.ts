@@ -1,4 +1,4 @@
-import Process from "../os/Process";
+import Process from "../../os/Process";
 
 /**
  * Garbage collector for cleaning up unused memory.
@@ -11,7 +11,7 @@ export default class GC extends Process {
     /**
      * Executes the garbage collection process.
      * 
-     * @memberof Council
+     * @memberof GC
      */
     public Execute(): void {
         this.Sync(Memory.creeps, Game.creeps);

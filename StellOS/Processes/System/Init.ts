@@ -1,5 +1,7 @@
-import Logger from "../Tools/Logger";
-import Process from "../os/Process";
+import Council from "../Room/Council";
+import GC from "./GC";
+import Logger from "../../os/Logger";
+import Process from "../../os/Process";
 
 /**
  * Initialization process used to load and start all nessecary processes.
@@ -18,23 +20,21 @@ export default class Init extends Process {
         this.Kernel.Load();
 
         // register the gc process.
-        const gcProcessName = "GC-master";
-        let gcProcess = this.Kernel.GetProcess(gcProcessName);
+        let gcProcess = this.Kernel.GetProcess<GC>({ Find: (p) => p.Type === "GC" });
         if (!gcProcess) {
-            gcProcess = this.Kernel.CreateProcess(this.Priority + 1, gcProcessName, "GC");
+            gcProcess = this.Kernel.CreateProcess(GC, "master", this.Priority + 1);
         }
 
         // loop through all the rooms and make sure the processes are registered for each.
         for (const room in Game.rooms) {
-            const councilProcessName = `Council-${room}`;
-            if (this.Kernel.GetProcess(councilProcessName)) {
+            if (this.Kernel.GetProcess<Council>({ Find: (p) => p.Type === "Council" && p.RoomName === room })) {
                 continue;
             }
-            const councilProcess = this.Kernel.CreateProcess(this.Priority + 2, councilProcessName, "Council");
+            const councilProcess = this.Kernel.CreateProcess(Council, room, this.Priority + 2);
             councilProcess.Memory = { room: room };
         }
 
         // Kill this process when we are done.
-        this.Kernel.Terminate(this.Name);
+        this.Kernel.Terminate({ Name: this.Name });
     }
 }

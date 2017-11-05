@@ -4,13 +4,12 @@ interface IKernel {
     Reset(): void;
     Run(): void;
     UnderLimit: boolean;
-    CreateProcess(priority: number, name: string, type: string, parentId?: number): IProcess;
+    CreateProcess<T extends IProcess>(processClass: any, identifier: string, priority: number, parentId?: number): T;
     GetNextProcess(): IProcess;
-    GetProcess(type: string): IProcess;
+    GetProcess<T extends IProcess>(options: ProcessFindOptions<T>): T;
     GetChildren(parentProcessId: number): IProcess[];
     GetNextProcessId(): number;
-    ActivateProcess(data: IData): IProcess
-    Terminate(name: string, killChildren?: boolean): void;
+    Terminate<T extends IProcess>(options: ProcessFindOptions<T>, killChildren?: boolean): void;
     Status(): void;
 }
 
@@ -19,6 +18,7 @@ interface IRegister {
 }
 
 interface IProcess {
+    Load(data: IData);
     ProcessId: number;
     Priority: number;
     Name: string;
@@ -40,10 +40,16 @@ interface IData {
     ProcessId: number;
     Priority: number;
     Name: string;
-    Type: string;
     ParentId: number;
     Initialized: number;
     State: State;
+    Type?: string;
+}
+
+interface ProcessFindOptions<T extends IProcess> {
+    Name?: string;
+    ProcessId?: number;
+    Find?: (p: T) => boolean; 
 }
 
 interface IUnitOptions {
@@ -54,7 +60,6 @@ interface IUnitOptions {
 
 interface IUnitDefintion {
     Priority: number;
-    Type: string;
     Population(room: Room): number;
     CreateBody(room: Room): string[];
 }
@@ -75,4 +80,8 @@ declare namespace NodeJS {
         Logger: ILogger;
         StellOS: IKernel;
     }    
+}
+
+interface IUnit {
+    Execute(unit: Creep): void;
 }

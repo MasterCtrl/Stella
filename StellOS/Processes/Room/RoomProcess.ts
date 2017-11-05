@@ -1,4 +1,4 @@
-import Process from "./Process";
+import Process from "../../os/Process";
 
 /**
  * Room Process base class, used for a room centric processes.

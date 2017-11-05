@@ -1,5 +1,5 @@
-import Logger from "../Tools/Logger";
-import RoomProcess from "../os/RoomProcess";
+import Logger from "../../os/Logger";
+import RoomProcess from "./RoomProcess";
 
 /**
  * Spawn process responsible for spawning new units. 
@@ -15,15 +15,20 @@ export default class Spawn extends RoomProcess {
      * @memberof Spawn
      */
     public Execute(): void {
-        if (!this.Queue || this.Queue.length === 0) {
+        const queue = this.Queue;
+        if (!queue || queue.length === 0 || !this.Room) {
             // if the spawn queue is empty then kill the process.
-            this.Kernel.Terminate(this.Name);
+            this.Kernel.Terminate({ Name: this.Name });
             return;
         }
 
-        const queue = this.Queue;
         const spawns = this.Room.find<StructureSpawn>(FIND_MY_SPAWNS);
-        for (const spawn of spawns) {
+        const avaliable = _.filter(spawns, (s) => !s.spawning);
+        if (avaliable.length === 0) {
+            // if there are no spawns avaliable then suspend till one is done.
+            this.Suspend(_.min(spawns, (s) => s.spawning.remainingTime).spawning.remainingTime);
+        }
+        for (const spawn of avaliable) {
             const options = queue.shift();
             const name = `${options.Type}_${options.Body.length}_${(Game.time % 2500).toLocaleString("en", { minimumIntegerDigits: 4, useGrouping: false })}`;
             const result = spawn.spawnCreep(options.Body, name, { dryRun: true });

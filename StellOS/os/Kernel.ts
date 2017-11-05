@@ -1,5 +1,6 @@
-import Logger from "../Tools/Logger";
+import Logger from "./Logger";
 import Process from "./Process";
+import * as Processes from "../Processes";
 
 /**
  * Kernel, used to create/initialize a table of processes and execute them in priority order.
@@ -21,7 +22,7 @@ export default class Kernel implements IKernel {
         this.limit = Game.cpu.limit * 0.9;
         this.register = {};
         this.Initialize();
-        this.CreateProcess(0, "Init-master", "Init");
+        this.CreateProcess(Processes.Init, "master", 0);
     }
 
     private Initialize(): void {
@@ -41,7 +42,9 @@ export default class Kernel implements IKernel {
      */
     public Load(): void {
         _.forEach(Memory.StellOS.ProcessTable, (data: IData) => {
-            this.register[data.Name] = this.ActivateProcess(data);
+            const process = new Processes[data.Type](this);
+            process.Load(data);
+            this.register[data.Name] = process;
         });
     }
 
@@ -106,25 +109,27 @@ export default class Kernel implements IKernel {
     /**
      * Creates and adds a process of the given type to the process table
      *
-     * @param {number} priority
-     * @param {string} name
-     * @param {string} type
-     * @param {number} [parentId]
-     * @returns {IProcess}
+     * @template T 
+     * @param {*} processClass 
+     * @param {string} identifier 
+     * @param {number} priority 
+     * @param {number} [parentId] 
+     * @returns {T} 
      * @memberof Kernel
      */
-    public CreateProcess(priority: number, name: string, type: string, parentId?: number): IProcess {
-        Logger.Current.Debug(`Creating process ${name}`);
-        const data: IData = {
+    public CreateProcess<T extends IProcess>(processClass: any, identifier: string, priority: number, parentId?: number): T {
+        const process: T = new processClass(this);
+        const type = process.constructor.name;
+        process.Load({
             ProcessId: this.GetNextProcessId(),
             Priority: priority,
-            Name: name,
+            Name: `${type}-${identifier}`,
             Type: type,
             ParentId: parentId,
             Initialized: Game.time,
             State: true
-        };
-        const process = this.ActivateProcess(data);
+        });
+        Logger.Current.Debug(`Created process ${process.Name}`);
         return this.register[process.Name] = process;
     }
 
@@ -143,14 +148,22 @@ export default class Kernel implements IKernel {
     }
 
     /**
-     * Gets a process by its name
+     * Gets a process that matches the given criteria.
      *
-     * @param {string} name
-     * @returns
+     * @template T 
+     * @param {ProcessFindOptions<T>} options 
+     * @returns {T} 
      * @memberof Kernel
      */
-    public GetProcess(name: string): IProcess {
-        return this.register[name];
+    public GetProcess<T extends IProcess>(options: ProcessFindOptions<T>): T {
+        if (options.Name) {
+            return this.register[options.Name] as T;
+        } else if (options.ProcessId) {
+            return _.find(this.register, (p) => p.ProcessId === options.ProcessId) as T;
+        } else if (options.Find) {
+            return _.find(this.register, options.Find) as T;
+        }
+        return undefined;
     }
 
     /**
@@ -176,38 +189,28 @@ export default class Kernel implements IKernel {
     }
 
     /**
-     * Activates a process of the given type.
-     *
-     * @returns {IProcess}
-     * @memberof Kernel
-     */
-    public ActivateProcess(data: IData): IProcess {
-        const type = require(`../Processes/${data.Type}`).default;
-        return new type(this, data);
-    }
-
-    /**
      * Terminates the process with the given name and optionally all its children.
      *
-     * @param {string} name
-     * @param {boolean} [killChildren=false]
-     * @returns
+     * @template T 
+     * @param {ProcessFindOptions<T>} options 
+     * @param {boolean} [killChildren=false] 
+     * @returns 
      * @memberof Kernel
      */
-    public Terminate(name: string, killChildren: boolean = false) {
-        const process = this.GetProcess(name);
+    public Terminate<T extends IProcess>(options: ProcessFindOptions<T>, killChildren: boolean = false) {
+        const process = this.GetProcess(options);
         if (!process) {
-            Logger.Current.Warning(`${name}: process has already been terminated.`);
+            Logger.Current.Warning(`process has already been terminated(${options}).`);
             return;
         }
-        Logger.Current.Debug(`${name}: terminating process.`);
-        delete this.register[name];
+        Logger.Current.Debug(`${process.Name}: terminating process.`);
+        delete this.register[process.Name];
         process.Dispose();
         if (!killChildren) {
             return;
         }
         for (const childProcess of this.GetChildren(process.ProcessId)) {
-            this.Terminate(childProcess.Name, killChildren);
+            this.Terminate({ Name: childProcess.Name }, killChildren);
         }
     }
 
