@@ -28,8 +28,8 @@ export default class Administrator extends RoomProcess {
                 creep.say("❗");
                 Logger.Current.Error(`${creep.name} is not a minion and has nothing to do.`, this.RoomName);
             }
-            const unit = new type() as IUnit;
-            unit.Execute(creep);
+            const unit = new type(creep) as IUnit;
+            unit.Execute();
         }
     }
 }

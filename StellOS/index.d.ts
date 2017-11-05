@@ -83,5 +83,5 @@ declare namespace NodeJS {
 }
 
 interface IUnit {
-    Execute(unit: Creep): void;
+    Execute(): void;
 }
