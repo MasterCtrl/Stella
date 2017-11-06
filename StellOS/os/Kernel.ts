@@ -144,6 +144,8 @@ export default class Kernel implements IKernel {
         if (!processesToRun || processesToRun.length === 0) {
             return undefined;
         }
+
+        // TODO: index this somehow?
         return _.sortBy(processesToRun, "Priority").reverse()[0];
     }
 

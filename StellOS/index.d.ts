@@ -3,7 +3,7 @@ interface IKernel {
     Unload(): void;
     Reset(): void;
     Run(): void;
-    UnderLimit: boolean;
+    readonly UnderLimit: boolean;
     CreateProcess<T extends IProcess>(processClass: any, identifier: string, priority: number, parentId?: number): T;
     GetNextProcess(): IProcess;
     GetProcess<T extends IProcess>(options: ProcessFindOptions<T>): T;
@@ -18,14 +18,14 @@ interface IRegister {
 }
 
 interface IProcess {
-    Load(data: IData);
-    ProcessId: number;
-    Priority: number;
-    Name: string;
-    Type: string;
-    ParentId: number;
-    Initialized: number;
+    readonly ProcessId: number;
+    readonly Priority: number;
+    readonly Name: string;
+    readonly Type: string;
+    readonly ParentId: number;
+    readonly Initialized: number;
     State: State;
+    Load(data: IData);
     Memory: any;
     Completed: boolean;
     Execute(): void;
@@ -58,7 +58,7 @@ interface IUnitOptions {
     Body: string[];
 }
 
-interface IUnitDefintion {
+interface IUnitDefinition {
     Priority: number;
     Population(room: Room): number;
     CreateBody(room: Room): string[];
@@ -83,5 +83,20 @@ declare namespace NodeJS {
 }
 
 interface IUnit {
+    readonly Unit: Creep;
+    readonly Kernel: IKernel;
+    Memory: any;
+    Stack: IState[];
     Execute(): void;
+    InvokeState(): boolean;
+    GetState(defaultState?: string): string;
+    SetState(state: string, context: any): string;
+    PushState(state: string, context?: any): string;
+    PopState(): void;
+    ClearState(): void;
+}
+
+interface IState {
+    State: string;
+    Context?: any;
 }

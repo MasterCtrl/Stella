@@ -23,12 +23,12 @@ export default class Spawn extends RoomProcess {
         }
 
         const spawns = this.Room.find<StructureSpawn>(FIND_MY_SPAWNS);
-        const avaliable = _.filter(spawns, (s) => !s.spawning);
-        if (avaliable.length === 0) {
-            // if there are no spawns avaliable then suspend till one is done.
+        const available = _.filter(spawns, (s) => !s.spawning);
+        if (available.length === 0) {
+            // if there are no spawns available then suspend till one is done.
             this.Suspend(_.min(spawns, (s) => s.spawning.remainingTime).spawning.remainingTime);
         }
-        for (const spawn of avaliable) {
+        for (const spawn of available) {
             const options = queue.shift();
             const name = `${options.Type}_${options.Body.length}_${(Game.time % 2500).toLocaleString("en", { minimumIntegerDigits: 4, useGrouping: false })}`;
             const result = spawn.spawnCreep(options.Body, name, { dryRun: true });

@@ -1,11 +1,11 @@
-import * as Builder from "./Builder";
-import * as Harvester from "./Harvester";
-import * as Upgrader from "./Upgrader";
+import * as Builder from "./Civilians/Builder";
+import * as Harvester from "./Civilians/Harvester";
+import * as Upgrader from "./Civilians/Upgrader";
 
 export const Definitions = {
-    Builder: Builder.BuilderDefintion,
-    Harvester: Harvester.HarvesterDefintion,
-    Upgrader: Upgrader.UpgraderDefintion
+    Builder: Builder.BuilderDefinition,
+    Harvester: Harvester.HarvesterDefinition,
+    Upgrader: Upgrader.UpgraderDefinition
 };
 
 export const Implementations = {
