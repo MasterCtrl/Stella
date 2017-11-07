@@ -1,5 +1,5 @@
 import Logger from "../../os/Logger";
-import Unit from "../Unit";
+import {Unit, UnitDefinition, States} from "../Unit";
 
 /**
  * Upgrader unit, used to constantly upgrade the controller in the room.
@@ -8,25 +8,23 @@ import Unit from "../Unit";
  * @class Upgrader
  * @extends {Unit}
  */
-export default class Upgrader extends Unit {
+export class Upgrader extends Unit {
     /**
-     * Runs the Initialization for this unit.
+     * Initializes this unit.
      *
      * @memberof Builder
      */
-    public RunInitialization(): void {
-        let target: Source | StructureController;
-        let range = 1;
+    public RunInitialize(): void {
         if (this.IsEmpty) {
-            target = this.Unit.pos.findClosestByPath<Source>(FIND_SOURCES);
-            this.PushState("Harvesting", { sourceId: target.id });
-        } else {
-            target = this.Unit.room.controller;
-            this.PushState("Upgrading");
-            range = 3;
+            const target = this.Unit.pos.findClosestByPath<Source>(FIND_SOURCES);
+            this.PushState(States.Harvest, {
+                sourceId: target.id,
+                position: { x: target.pos.x, y: target.pos.y, room: target.pos.roomName }
+            });
+            return;
         }
 
-        this.PushState("MoveTo", { position: { x: target.pos.x, y: target.pos.y, room: target.pos.roomName }, range: range });
+        this.PushState(States.Upgrade);
     }
 }
 
@@ -34,14 +32,7 @@ export default class Upgrader extends Unit {
  * Upgrader definition.
  *
  * @export
- * @implements {IUnitDefinition}
+ * @class UpgraderDefinition
+ * @extends {UnitDefinition}
  */
-export const UpgraderDefinition: IUnitDefinition = {
-    Priority: 9,
-    Population(room: Room): number {
-        return room.find(FIND_SOURCES).length;
-    },
-    CreateBody(room: Room): string[] {
-        return [WORK, CARRY, MOVE];
-    }
-};
+export class UpgraderDefinition extends UnitDefinition { }

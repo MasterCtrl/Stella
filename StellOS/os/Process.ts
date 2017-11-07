@@ -45,6 +45,7 @@ export default abstract class Process implements IProcess {
         this.initialized = data.Initialized;
         this.state = data.State;
         this.completed = false;
+        this.Memory = data.Memory;
     }
 
     /**

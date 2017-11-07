@@ -1,15 +1,15 @@
-import * as Builder from "./Civilians/Builder";
-import * as Harvester from "./Civilians/Harvester";
-import * as Upgrader from "./Civilians/Upgrader";
+import {BuilderDefinition, Builder} from "./Civilians/Builder";
+import {HarvesterDefinition, Harvester} from "./Civilians/Harvester";
+import {UpgraderDefinition, Upgrader} from "./Civilians/Upgrader";
 
 export const Definitions = {
-    Builder: Builder.BuilderDefinition,
-    Harvester: Harvester.HarvesterDefinition,
-    Upgrader: Upgrader.UpgraderDefinition
+    Builder: new BuilderDefinition(),
+    Harvester: new HarvesterDefinition(),
+    Upgrader: new UpgraderDefinition()
 };
 
 export const Implementations = {
-    Builder: Builder.default,
-    Harvester: Harvester.default,
-    Upgrader: Upgrader.default
+    Builder: Builder,
+    Harvester: Harvester,
+    Upgrader: Upgrader
 };

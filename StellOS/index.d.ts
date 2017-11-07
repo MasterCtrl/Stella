@@ -4,7 +4,7 @@ interface IKernel {
     Reset(): void;
     Run(): void;
     readonly UnderLimit: boolean;
-    CreateProcess<T extends IProcess>(processClass: any, identifier: string, priority: number, parentId?: number): T;
+    CreateProcess<T extends IProcess>(processClass: any, identifier: string, priority: number, options?: { ParentId?: number, Memory?: any }): T;
     GetNextProcess(): IProcess;
     GetProcess<T extends IProcess>(options: ProcessFindOptions<T>): T;
     GetChildren(parentProcessId: number): IProcess[];
@@ -43,7 +43,8 @@ interface IData {
     ParentId: number;
     Initialized: number;
     State: State;
-    Type?: string;
+    Type: string;
+    Memory?: any;
 }
 
 interface ProcessFindOptions<T extends IProcess> {
@@ -100,3 +101,11 @@ interface IState {
     State: string;
     Context?: any;
 }
+
+type PositionContext = { x: number, y: number, room: string };
+type SourceContext = { sourceId: string, position: PositionContext, range?: number };
+type ResourceContext = { targetId: string, resource: string, position: PositionContext, range?: number };
+type BuildContext = { constructionSiteId: string, resource: string, position: PositionContext, range?: number };
+type TargetContext = { targetId: string, position: PositionContext, range?: number };
+type RepairContext = { targetId: string, position: PositionContext, hits?: number, range?: number };
+type AttackContext = { targetId: string, range?: number };

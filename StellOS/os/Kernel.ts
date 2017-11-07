@@ -117,7 +117,7 @@ export default class Kernel implements IKernel {
      * @returns {T} 
      * @memberof Kernel
      */
-    public CreateProcess<T extends IProcess>(processClass: any, identifier: string, priority: number, parentId?: number): T {
+    public CreateProcess<T extends IProcess>(processClass: any, identifier: string, priority: number, options: { ParentId?: number, Memory?: any } = {}): T {
         const process: T = new processClass(this);
         const type = process.constructor.name;
         process.Load({
@@ -125,9 +125,10 @@ export default class Kernel implements IKernel {
             Priority: priority,
             Name: `${type}-${identifier}`,
             Type: type,
-            ParentId: parentId,
+            ParentId: options.ParentId,
             Initialized: Game.time,
-            State: true
+            State: true,
+            Memory: options.Memory
         });
         Logger.Current.Debug(`Created process ${process.Name}`);
         return this.register[process.Name] = process;

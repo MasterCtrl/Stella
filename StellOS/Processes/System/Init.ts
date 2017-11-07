@@ -30,8 +30,12 @@ export default class Init extends Process {
             if (this.Kernel.GetProcess<Council>({ Find: (p) => p.Type === "Council" && p.RoomName === room })) {
                 continue;
             }
-            const councilProcess = this.Kernel.CreateProcess(Council, room, this.Priority + 2);
-            councilProcess.Memory = { room: room };
+            this.Kernel.CreateProcess(
+                Council,
+                room,
+                this.Priority + 2,
+                { Memory: { room: room } }
+            );
         }
 
         // Kill this process when we are done.

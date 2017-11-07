@@ -24,8 +24,7 @@ export default class Census extends RoomProcess {
 
         let spawnProcess = this.Kernel.GetProcess<Spawn>({ Find: (p) => p.Type === "Spawn" && p.RoomName === this.RoomName });
         if (!spawnProcess) {
-            spawnProcess = this.Kernel.CreateProcess<Spawn>(Spawn, this.RoomName, this.Priority + 1, this.ProcessId);
-            spawnProcess.RoomName = this.RoomName;
+            spawnProcess = this.Kernel.CreateProcess<Spawn>(Spawn, this.RoomName, this.Priority + 1, { ParentId: this.ProcessId, Memory: { room: this.RoomName } });
         }
         // Update the spawn queue.
         spawnProcess.Queue = this.GetSpawnQueue(spawnProcess.Queue);
@@ -36,12 +35,12 @@ export default class Census extends RoomProcess {
 
     private GetSpawnQueue(queue: IUnitOptions[] = []): IUnitOptions[] {
         let added = false;
-        for (const type of Object.keys(Definitions)) {
+        for (const type in Definitions) {
             const definition = Definitions[type] as IUnitDefinition;
-            const existing = _.filter(Memory.creeps, (c) => c.type === type && c.room === this.RoomName);
-            const queued = _.filter(queue, (d) => d.Type === type);
+            const existing = _.filter(Memory.creeps, (c) => c.type === type && c.room === this.RoomName).length;
+            const queued = _.filter(queue, (d) => d.Type === type).length;
             const required = definition.Population(this.Room);
-            const needed = required - existing.length - queued.length;
+            const needed = required - existing - queued;
             // if we have already reached the population limit for this room then continue.
             if (needed <= 0) {
                 continue;

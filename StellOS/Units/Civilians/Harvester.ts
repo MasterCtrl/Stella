@@ -1,5 +1,5 @@
 import Logger from "../../os/Logger";
-import Unit from "../Unit";
+import {Unit, UnitDefinition, States} from "../Unit";
 
 /**
  * Harvester minion, used to mine and fill spawns, extensions, towers, and containers.
@@ -8,33 +8,37 @@ import Unit from "../Unit";
  * @class Harvester
  * @extends {Unit}
  */
-export default class Harvester extends Unit {
+export class Harvester extends Unit {
     /**
-     * Runs the Initialization for this unit.
+     * Initializes this unit.
      *
      * @memberof Builder
      */
-    public RunInitialization(): void {
-        let target: Source | Structure | StructureController;
-        let range = 1;
+    public RunInitialize(): void {
         if (this.IsEmpty) {
-            target = this.Unit.pos.findClosestByPath<Source>(FIND_SOURCES);
-            this.PushState("Harvesting", { sourceId: target.id });
-        } else {
-            target = this.Unit.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
-                filter: (s) => (s.structureType === STRUCTURE_EXTENSION ||
-                                s.structureType === STRUCTURE_SPAWN ||
-                                s.structureType === STRUCTURE_TOWER) && s.energy < s.energyCapacity
-            }) || this.Unit.room.controller;
-            if (target instanceof StructureController) {
-                this.PushState("Upgrading");
-                range = 3;
-            } else {
-                this.PushState("Transfering", { targetId: target.id, resource: RESOURCE_ENERGY });
-            }
+            const source = this.Unit.pos.findClosestByPath<Source>(FIND_SOURCES);
+            this.PushState(States.Harvest, {
+                sourceId: source.id,
+                position: { x: source.pos.x, y: source.pos.y, room: source.pos.roomName }
+            });
+            return;
         }
 
-        this.PushState("MoveTo", { position: { x: target.pos.x, y: target.pos.y, room: target.pos.roomName }, range: range });
+        const target = this.Unit.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
+            filter: (s) => (s.structureType === STRUCTURE_EXTENSION ||
+                            s.structureType === STRUCTURE_SPAWN ||
+                            s.structureType === STRUCTURE_TOWER) && s.energy < s.energyCapacity
+        });
+        if (target) {
+            this.PushState(States.Transfer, {
+                targetId: target.id,
+                resource: RESOURCE_ENERGY,
+                position: { x: target.pos.x, y: target.pos.y, room: target.pos.roomName }
+            });
+            return;
+        }
+
+        this.PushState(States.Upgrade);
     }
 }
 
@@ -42,14 +46,7 @@ export default class Harvester extends Unit {
  * Harvester definition.
  *
  * @export
- * @implements {IUnitDefinition}
+ * @class HarvesterDefinition
+ * @extends {UnitDefinition}
  */
-export const HarvesterDefinition: IUnitDefinition = {
-    Priority: 9,
-    Population(room: Room): number {
-        return room.find(FIND_SOURCES).length;
-    },
-    CreateBody(room: Room): string[] {
-        return [WORK, CARRY, MOVE];
-    }
-};
+export class HarvesterDefinition extends UnitDefinition { }
