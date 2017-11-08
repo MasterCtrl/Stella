@@ -1,6 +1,7 @@
 import Logger from "./Logger";
 import Process from "./Process";
 import * as Processes from "../Processes";
+import "../Prototypes";
 
 /**
  * Kernel, used to create/initialize a table of processes and execute them in priority order.
@@ -42,8 +43,7 @@ export default class Kernel implements IKernel {
      */
     public Load(): void {
         _.forEach(Memory.StellOS.ProcessTable, (data: IData) => {
-            const process = new Processes[data.Type](this);
-            process.Load(data);
+            const process = new Processes[data.Type](this, data);
             this.register[data.Name] = process;
         });
     }
@@ -110,17 +110,16 @@ export default class Kernel implements IKernel {
      * Creates and adds a process of the given type to the process table
      *
      * @template T 
-     * @param {*} processClass 
+     * @param {{ new (kernel: IKernel, data: IData): T }} ctor 
      * @param {string} identifier 
      * @param {number} priority 
-     * @param {number} [parentId] 
+     * @param {{ ParentId?: number, Memory?: any }} [options={}] 
      * @returns {T} 
      * @memberof Kernel
      */
-    public CreateProcess<T extends IProcess>(processClass: any, identifier: string, priority: number, options: { ParentId?: number, Memory?: any } = {}): T {
-        const process: T = new processClass(this);
-        const type = process.constructor.name;
-        process.Load({
+    public CreateProcess<T extends IProcess>(ctor: { new (kernel: IKernel, data: IData): T }, identifier: string, priority: number, options: { ParentId?: number, Memory?: any } = {}): T {
+        const type = ctor.name;
+        const data = {
             ProcessId: this.GetNextProcessId(),
             Priority: priority,
             Name: `${type}-${identifier}`,
@@ -129,8 +128,9 @@ export default class Kernel implements IKernel {
             Initialized: Game.time,
             State: true,
             Memory: options.Memory
-        });
-        Logger.Current.Debug(`Created process ${process.Name}`);
+        };
+        Logger.Current.Debug(`Creating process ${data.Name}`);
+        const process: T = new ctor(this, data);
         return this.register[process.Name] = process;
     }
 
@@ -159,6 +159,9 @@ export default class Kernel implements IKernel {
      * @memberof Kernel
      */
     public GetProcess<T extends IProcess>(options: ProcessFindOptions<T>): T {
+
+        // TODO: this doesnt work at all... fina better way or put it back to the original, find by type is the only thing that reliably works...
+
         if (options.Name) {
             return this.register[options.Name] as T;
         } else if (options.ProcessId) {
@@ -187,8 +190,8 @@ export default class Kernel implements IKernel {
      * @memberof Kernel
      */
     public GetNextProcessId(): number {
-        const proc = _.max(this.register, (p) => p.Priority);
-        return proc ? proc.Priority + 1 : 0;
+        const proc = _.max(this.register, (p) => p.ProcessId);
+        return proc ? proc.ProcessId + 1 : 0;
     }
 
     /**
@@ -203,7 +206,7 @@ export default class Kernel implements IKernel {
     public Terminate<T extends IProcess>(options: ProcessFindOptions<T>, killChildren: boolean = false) {
         const process = this.GetProcess(options);
         if (!process) {
-            Logger.Current.Warning(`process has already been terminated(${options}).`);
+            Logger.Current.Warning(`process has already been terminated(${JSON.stringify(options)}).`);
             return;
         }
         Logger.Current.Debug(`${process.Name}: terminating process.`);
@@ -225,8 +228,8 @@ export default class Kernel implements IKernel {
     public Status(): void {
         let status = `current tick: ${Game.time}<table><tr><th>name  </th><th>pid  </th><th>ppid  </th><th>priority  </th><th>initialized  </th><th>state  </th></tr>`;
         const processes = _.sortBy(this.register, (p) => p.Priority);
-        for (const p in processes) {
-            const process = processes[p].Serialize();
+        for (const current in processes) {
+            const process = processes[current].Serialize();
             status += "<tr>";
             status += ` <th>${process.Name}  </th>`;
             status += ` <th>${process.ProcessId}  </th>`;

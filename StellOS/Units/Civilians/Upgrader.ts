@@ -14,7 +14,7 @@ export class Upgrader extends Unit {
      *
      * @memberof Builder
      */
-    public RunInitialize(): void {
+    public InitializeState(): void {
         if (this.IsEmpty) {
             const target = this.Unit.pos.findClosestByPath<Source>(FIND_SOURCES);
             this.PushState(States.Harvest, {

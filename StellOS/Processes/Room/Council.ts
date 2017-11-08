@@ -1,5 +1,6 @@
 import Administrator from "./Administrator";
 import Census from "./Census";
+import Library from "./Library";
 import RoomProcess from "./RoomProcess";
 
 /**
@@ -17,13 +18,13 @@ export default class Council extends RoomProcess {
      */
     public Execute(): void {
         if (!this.Room) {
-            this.Kernel.Terminate({ Name: this.Name }, true);
+            this.Kernel.Terminate({ Name: this.Name });
             return;
         }
 
         // spin up a census to keep track of our population.
-        if (!this.Kernel.GetProcess<Census>({ Find: (p) => p.Type === "Census" && p.RoomName === this.RoomName })) {
-            this.Kernel.CreateProcess<Census>(
+        if (!this.Kernel.GetProcess<Census>({ Name: `${Census.name}-${this.RoomName}` })) {
+            this.Kernel.CreateProcess(
                 Census,
                 this.RoomName,
                 this.Priority + 1,
@@ -32,11 +33,21 @@ export default class Council extends RoomProcess {
         }
 
         // spin up an administrator to manage the units in this room.
-        if (!this.Kernel.GetProcess<Administrator>({ Find: (p) => p.Type === "Administrator" && p.RoomName === this.RoomName })) {
-            this.Kernel.CreateProcess<Administrator>(
+        if (!this.Kernel.GetProcess<Administrator>({ Name: `${Administrator.name}-${this.RoomName}` })) {
+            this.Kernel.CreateProcess(
                 Administrator,
                 this.RoomName,
                 this.Priority + 1,
+                { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
+            );
+        }
+
+        // spin up a library process to manage this rooms memory.
+        if (!this.Kernel.GetProcess<Library>({ Name: `${Library.name}-${this.RoomName}` })) {
+            this.Kernel.CreateProcess(
+                Library,
+                this.RoomName,
+                this.Priority + 5,
                 { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
             );
         }

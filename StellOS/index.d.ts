@@ -25,7 +25,6 @@ interface IProcess {
     readonly ParentId: number;
     readonly Initialized: number;
     State: State;
-    Load(data: IData);
     Memory: any;
     Completed: boolean;
     Execute(): void;
@@ -50,7 +49,7 @@ interface IData {
 interface ProcessFindOptions<T extends IProcess> {
     Name?: string;
     ProcessId?: number;
-    Find?: (p: T) => boolean; 
+    Find?: any; 
 }
 
 interface IUnitOptions {
@@ -60,7 +59,7 @@ interface IUnitOptions {
 }
 
 interface IUnitDefinition {
-    Priority: number;
+    Priority(room: Room): number;
     Population(room: Room): number;
     CreateBody(room: Room): string[];
 }
@@ -88,10 +87,9 @@ interface IUnit {
     readonly Kernel: IKernel;
     Memory: any;
     Stack: IState[];
-    Execute(): void;
-    InvokeState(): boolean;
+    Execute(): boolean;
     GetState(defaultState?: string): string;
-    SetState(state: string, context: any): string;
+    SetState(state: string, context?: any): string;
     PushState(state: string, context?: any): string;
     PopState(): void;
     ClearState(): void;
@@ -109,3 +107,15 @@ type BuildContext = { constructionSiteId: string, resource: string, position: Po
 type TargetContext = { targetId: string, position: PositionContext, range?: number };
 type RepairContext = { targetId: string, position: PositionContext, hits?: number, range?: number };
 type AttackContext = { targetId: string, range?: number };
+type SignContext = { message: string };
+
+interface Room {
+    readonly Defcon: Defcon;
+    readonly IsLinkMining: boolean;
+    readonly IsContainerMining: boolean;
+}
+
+interface Defcon {
+    level: number, 
+    tick: number
+}

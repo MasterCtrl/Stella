@@ -14,7 +14,7 @@ export class Harvester extends Unit {
      *
      * @memberof Builder
      */
-    public RunInitialize(): void {
+    public InitializeState(): void {
         if (this.IsEmpty) {
             const source = this.Unit.pos.findClosestByPath<Source>(FIND_SOURCES);
             this.PushState(States.Harvest, {

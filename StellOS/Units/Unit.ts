@@ -1,6 +1,8 @@
+import Logger from "../os/Logger";
+
 /**
  * Unit base class, contains common unit logic.
- * This is my implementation of warinternals push down automata example: 
+ * This is my implementation of warinternal's push down automata example: 
  * https://screeps.slack.com/files/U1XTCBJ9L/F7KTF6KMJ/Pushdown_Automata_-_Stack_machine_prototypes__with_examples_.js
  *
  * @export
@@ -113,21 +115,12 @@ export abstract class Unit implements IUnit {
     }
 
     /**
-     * Executes this unit.
-     *
-     * @memberof Unit
-     */
-    public Execute(): void {
-        this.InvokeState();
-    }
-
-    /**
-     * Invokes the state on top of the stack.
+     * Executes the state on top of the stack.
      *
      * @returns {boolean}
      * @memberof Unit
      */
-    public InvokeState(): boolean {
+    public Execute(): boolean {
         if (!this.Stack || !this.Stack.length) {
             this.Unit.say("🚬");
             return false;
@@ -137,6 +130,7 @@ export abstract class Unit implements IUnit {
         if (!this[method]) {
             return false;
         }
+        Logger.Current.Debug(`${this.Unit.name} executing state: ${current.State}`);
         this[method](current.Context);
         return true;
     }
@@ -158,12 +152,12 @@ export abstract class Unit implements IUnit {
     /**
      * Sets the state at the top of the stack.
      *
-     * @param {string} state
-     * @param {*} context
-     * @returns {string}
+     * @param {string} state 
+     * @param {*} [context] 
+     * @returns {string} 
      * @memberof Unit
      */
-    public SetState(state: string, context: any): string {
+    public SetState(state: string, context?: any): string {
         this.Stack[0] = { State: state, Context: context };
         return state;
     }
@@ -215,13 +209,23 @@ export abstract class Unit implements IUnit {
     }
 
     /**
-     * Initializes this unit.
-     * TODO: its takes a extra tick for the initialization to kick in, need to figure out a better way.
-     * 
+     * Initializes the units state stack.
+     *
      * @abstract
      * @memberof Unit
      */
-    public abstract RunInitialize(): void;
+    public abstract InitializeState(): void;
+
+    /**
+     * Initializes this unit.
+     * 
+     * @protected
+     * @memberof Unit
+     */
+    protected RunInitialize(): void {
+        this.InitializeState();
+        this.Execute();
+    }
 
     /**
      * Moves the unit to the specified position.
@@ -231,9 +235,6 @@ export abstract class Unit implements IUnit {
      * @memberof Unit
      */
     protected RunMoveTo(context: any): void {
-        if (this.Unit.fatigue !== 0) {
-            return;
-        }
         const { position, range } = context;
         const result = this.Unit.moveTo(new RoomPosition(position.x, position.y, position.room || this.Unit.room.name), { range: range });
         if (result === ERR_NO_PATH) {
@@ -257,6 +258,7 @@ export abstract class Unit implements IUnit {
         const source = Game.getObjectById<Source|Mineral>(sourceId);
         if (!source) {
             this.PopState();
+            this.Execute();
             return;
         }
 
@@ -301,6 +303,7 @@ export abstract class Unit implements IUnit {
         const target = Game.getObjectById<Creep|Structure>(targetId);
         if (!target) {
             this.PopState();
+            this.Execute();
             return;
         }
 
@@ -326,6 +329,7 @@ export abstract class Unit implements IUnit {
         const target = Game.getObjectById<Structure>(targetId);
         if (!target) {
             this.PopState();
+            this.Execute();
             return;
         }
 
@@ -336,7 +340,7 @@ export abstract class Unit implements IUnit {
     }
 
     /**
-     * Upgrades a room controller.
+     * Upgrades the room controller.
      *
      * @protected
      * @memberof Unit
@@ -351,6 +355,87 @@ export abstract class Unit implements IUnit {
         if (this.IsEmpty || result !== OK) {
             this.PopState();
         }
+    }
+
+    /**
+     * Signs the room controller.
+     *
+     * @protected
+     * @param {SignContext} context
+     * @returns {void}
+     * @memberof Unit
+     */
+    protected RunSign(context: SignContext): void {
+        const controller = this.Unit.room.controller;
+        if (!this.InRange({ x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, 1)) {
+            return;
+        }
+
+        const result = this.Unit.signController(controller, context.message);
+        this.PopState();
+    }
+
+    /**
+     * Claims the room controller.
+     *
+     * @protected
+     * @returns {void}
+     * @memberof Unit
+     */
+    protected RunClaim(): void {
+        const controller = this.Unit.room.controller;
+        if (!this.InRange({ x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, 1)) {
+            return;
+        }
+
+        const result = this.Unit.claimController(controller);
+        if (result === OK) {
+            this.PopState();
+        }
+    }
+
+    /**
+     * Reserves the room controller.
+     * Pushes to claim when gcl is high enough.
+     *
+     * @protected
+     * @returns {void}
+     * @memberof Unit
+     */
+    protected RunReserve(): void {
+        const controller = this.Unit.room.controller;
+        if (!this.InRange({ x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, 1)) {
+            return;
+        }
+        if (Game.gcl.level > _.filter(Game.rooms, (r) => r.controller.my).length) {
+            this.SetState(States.Claim);
+            this.Execute();
+            return;
+        }
+
+        this.Unit.reserveController(controller);
+    }
+
+    /**
+     * Attacks the room controller.
+     * Pushes to reserve when the controller is at level 0.
+     *
+     * @protected
+     * @returns {void}
+     * @memberof Unit
+     */
+    protected RunAttackController(): void {
+        const controller = this.Unit.room.controller;
+        if (!this.InRange({ x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, 1)) {
+            return;
+        }
+        if (controller.level === 0) {
+            this.SetState(States.Reserve);
+            this.Execute();
+            return;
+        }
+
+        this.Unit.attackController(controller);
     }
 
     /**
@@ -369,6 +454,7 @@ export abstract class Unit implements IUnit {
         const constructionSite = Game.getObjectById<ConstructionSite>(constructionSiteId);
         if (!constructionSite) {
             this.PopState();
+            this.Execute();
             return;
         }
 
@@ -395,6 +481,7 @@ export abstract class Unit implements IUnit {
         const structure = Game.getObjectById<Structure>(targetId);
         if (!structure) {
             this.PopState();
+            this.Execute();
             return;
         }
 
@@ -405,15 +492,42 @@ export abstract class Unit implements IUnit {
     }
 
     /**
-     * Heals the unit.
+     * Heals the target/self from range.
      *
      * @protected
      * @returns {void}
      * @memberof Unit
      */
-    protected RunHeal(): void {
-        this.Unit.heal(this.Unit);
-        if (this.Unit.hits >= this.Unit.hitsMax) {
+    protected RunRangedHeal(context: TargetContext): void {
+        const { targetId, range = 3 } = context;
+        const target = targetId ? Game.getObjectById<Creep>(targetId) : this.Unit;
+        if (!targetId && !this.Unit.pos.inRangeTo(target, range)) {
+            this.Unit.moveTo(target);
+        }
+
+        this.Unit.rangedHeal(target);
+        if (target.hits >= target.hitsMax) {
+            this.PopState();
+            return;
+        }
+    }
+
+    /**
+     * Heals the target/self.
+     *
+     * @protected
+     * @returns {void}
+     * @memberof Unit
+     */
+    protected RunHeal(context: TargetContext): void {
+        const { targetId, range = 1 } = context;
+        const target = targetId ? Game.getObjectById<Creep>(targetId) : this.Unit;
+        if (!targetId && !this.Unit.pos.inRangeTo(target, range)) {
+            this.Unit.moveTo(target);
+        }
+
+        this.Unit.heal(target);
+        if (target.hits >= target.hitsMax) {
             this.PopState();
             return;
         }
@@ -433,6 +547,7 @@ export abstract class Unit implements IUnit {
         const target = Game.getObjectById<Creep | Structure>(targetId);
         if (!target) {
             this.PopState();
+            this.Execute();
             return;
         }
         const distance = this.Unit.pos.getRangeTo(target.pos.x, target.pos.y);
@@ -447,6 +562,9 @@ export abstract class Unit implements IUnit {
             this.Unit.move(kiteDirection);
         }
         this.Unit.rangedAttack(target);
+        if (this.Unit.getActiveBodyparts(HEAL) && this.Unit.hits < this.Unit.hitsMax) {
+            this.PushState(States.Heal);
+        }
     }
 
     /**
@@ -463,12 +581,16 @@ export abstract class Unit implements IUnit {
         const target = Game.getObjectById<Creep | Structure>(targetId);
         if (!target) {
             this.PopState();
+            this.Execute();
             return;
         }
         if (!this.Unit.pos.inRangeTo(target, range)) {
             this.Unit.moveTo(target);
         }
         this.Unit.attack(target);
+        if (this.Unit.getActiveBodyparts(HEAL) && this.Unit.hits < this.Unit.hitsMax) {
+            this.PushState(States.Heal);
+        }
     }
 
     /**
@@ -510,6 +632,7 @@ export abstract class Unit implements IUnit {
         const spawn = Game.getObjectById<StructureSpawn>(targetId);
         if (!spawn) {
             this.PopState();
+            this.Execute();
             return;
         }
 
@@ -522,6 +645,7 @@ export abstract class Unit implements IUnit {
     private InRange(position: PositionContext, range: number): boolean {
         if (!this.Unit.pos.inRangeTo(new RoomPosition(position.x, position.y, position.room), range)) {
             this.PushState(States.MoveTo, { position, range });
+            this.Execute();
             return false;
         }
         return true;
@@ -542,8 +666,13 @@ export enum States {
     Transfer = "Transfer",
     Withdraw = "Withdraw",
     Upgrade = "Upgrade",
+    Sign = "Sign",
+    Claim = "Claim",
+    Reserve = "Reserve",
+    AttackController = "AttackController",
     Build = "Build",
     Repair = "Repair",
+    RangedHeal = "RangedHeal",
     Heal = "Heal",
     RangedAttack = "RangedAttack",
     MeleeAttack = "MeleeAttack",
@@ -565,11 +694,11 @@ export abstract class UnitDefinition implements IUnitDefinition {
     /**
      * Gets the default priority of this unit.
      *
-     * @readonly
-     * @type {number}
+     * @param {Room} room 
+     * @returns {number} 
      * @memberof UnitDefinition
      */
-    public get Priority(): number {
+    public Priority(room: Room): number {
         return 9;
     }
 
@@ -622,7 +751,7 @@ export abstract class UnitDefinition implements IUnitDefinition {
      */
     protected GetParts(size: number, partsToAdd: string[] = this.MinimumParts): string[] {
         let parts = [];
-        for (let index = 0; index < size; index++) {
+        for (var index = 0; index < size; index++) {
             parts = parts.concat(partsToAdd);
         }
         return parts;
@@ -638,7 +767,7 @@ export abstract class UnitDefinition implements IUnitDefinition {
      */
     protected GetPartsCost(parts: string[]): number {
         let cost = 0;
-        for (const part of parts) {
+        for (var part of parts) {
             cost += BODYPART_COST[part];
         }
         return cost;

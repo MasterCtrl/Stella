@@ -10,11 +10,11 @@ import {Unit, UnitDefinition, States} from "../Unit";
  */
 export class Builder extends Unit {
     /**
-     * Initializes this unit.
+     * Initializes the units state stack.
      *
      * @memberof Builder
      */
-    public RunInitialize(): void {
+    public InitializeState(): void {
         if (this.IsEmpty) {
             const source = this.Unit.pos.findClosestByPath<Source>(FIND_SOURCES);
             this.PushState(States.Harvest, {

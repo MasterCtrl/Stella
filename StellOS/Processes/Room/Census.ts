@@ -18,11 +18,11 @@ export default class Census extends RoomProcess {
      */
     public Execute(): void {
         if (!this.Room) {
-            this.Kernel.Terminate({ Name: this.Name }, true);
+            this.Kernel.Terminate({ Name: this.Name });
             return;
         }
 
-        let spawnProcess = this.Kernel.GetProcess<Spawn>({ Find: (p) => p.Type === "Spawn" && p.RoomName === this.RoomName });
+        let spawnProcess = this.Kernel.GetProcess<Spawn>({ Name: `${Spawn.name}-${this.RoomName}` });
         if (!spawnProcess) {
             spawnProcess = this.Kernel.CreateProcess<Spawn>(Spawn, this.RoomName, this.Priority + 1, { ParentId: this.ProcessId, Memory: { room: this.RoomName } });
         }
@@ -48,7 +48,7 @@ export default class Census extends RoomProcess {
 
             // otherwise push onto the spawn queue
             const options = {
-                Priority: definition.Priority,
+                Priority: definition.Priority(this.Room),
                 Type: type,
                 Body: definition.CreateBody(this.Room)
             };

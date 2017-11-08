@@ -4,7 +4,7 @@ import Logger from "../../os/Logger";
 import Process from "../../os/Process";
 
 /**
- * Initialization process used to load and start all nessecary processes.
+ * Initialization process used to load and start all necessary processes.
  *
  * @export
  * @class Init
@@ -20,14 +20,14 @@ export default class Init extends Process {
         this.Kernel.Load();
 
         // register the gc process.
-        let gcProcess = this.Kernel.GetProcess<GC>({ Find: (p) => p.Type === "GC" });
+        let gcProcess = this.Kernel.GetProcess<GC>({ Find: (p) => p.Type === GC.name });
         if (!gcProcess) {
             gcProcess = this.Kernel.CreateProcess(GC, "master", this.Priority + 1);
         }
 
         // loop through all the rooms and make sure the processes are registered for each.
         for (const room in Game.rooms) {
-            if (this.Kernel.GetProcess<Council>({ Find: (p) => p.Type === "Council" && p.RoomName === room })) {
+            if (this.Kernel.GetProcess({ Name: `${Council.name}-${room}` })) {
                 continue;
             }
             this.Kernel.CreateProcess(

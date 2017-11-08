@@ -22,21 +22,12 @@ export default abstract class Process implements IProcess {
     /**
      * Creates an instance of Process.
      *
-     * @param {Kernel} kernel
-     * @memberof Process
-     */
-    constructor(kernel: IKernel) {
-        this.kernel = kernel;
-
-    }
-
-    /**
-     * Loads this process with its data.
-     *
+     * @param {IKernel} kernel 
      * @param {IData} data 
      * @memberof Process
      */
-    public Load(data: IData) {
+    constructor(kernel: IKernel, data: IData) {
+        this.kernel = kernel;
         this.processId = data.ProcessId;
         this.priority = data.Priority;
         this.name = data.Name;

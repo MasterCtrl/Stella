@@ -19,9 +19,6 @@ export default abstract class RoomProcess extends Process {
     public get RoomName(): string {
         return this.Memory.room;
     }
-    public set RoomName(value: string) {
-        this.Memory.room = value;
-    }
 
     /**
      * Gets the room that this process is for.
@@ -32,5 +29,15 @@ export default abstract class RoomProcess extends Process {
      */
     public get Room(): Room {
         return Game.rooms[this.RoomName];
+    }
+
+    /**
+     * Gets or sets the memory of this room.
+     *
+     * @type {*}
+     * @memberof RoomProcess
+     */
+    public get RoomMemory(): any {
+        return this.Room.memory || (this.Room.memory = {});
     }
 }

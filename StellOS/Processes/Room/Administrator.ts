@@ -17,7 +17,7 @@ export default class Administrator extends RoomProcess {
      */
     public Execute(): void {
         if (!this.Room) {
-            this.Kernel.Terminate({ Name: this.Name }, true);
+            this.Kernel.Terminate({ Name: this.Name });
             return;
         }
 
