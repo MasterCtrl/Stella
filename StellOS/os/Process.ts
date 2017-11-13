@@ -35,6 +35,36 @@ export default abstract class Process implements IProcess {
         this.state = data.State;
         this.completed = false;
         this.Memory = data.Memory;
+        // this should be a decorator...
+        Object.defineProperties(
+            this,
+            {
+                Name: {
+                    enumerable: true,
+                    configurable: true
+                },
+                Type: {
+                    enumerable: true,
+                    configurable: true
+                },
+                ProcessId: {
+                    enumerable: true,
+                    configurable: true
+                },
+                Priority: {
+                    enumerable: true,
+                    configurable: true
+                },
+                ParentId: {
+                    enumerable: true,
+                    configurable: true
+                },
+                Initialized: {
+                    enumerable: true,
+                    configurable: true
+                }
+            }
+        );
     }
 
     /**
@@ -175,7 +205,7 @@ export default abstract class Process implements IProcess {
                 this.state--;
             }
         } else if (typeof this.state === "string") {
-            const waitProcess = this.Kernel.GetProcess({ Name: this.state });
+            const waitProcess = this.Kernel.GetProcess({ name: this.state });
             if (!waitProcess) {
                 this.Resume();
             }

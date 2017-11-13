@@ -5,3 +5,4 @@ export {default as Census} from "./Room/Census";
 export {default as Spawn} from "./Room/Spawn";
 export {default as Administrator} from "./Room/Administrator";
 export {default as Library} from "./Room/Library";
+export {default as General} from "./Room/General";

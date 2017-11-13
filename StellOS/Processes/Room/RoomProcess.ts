@@ -10,6 +10,25 @@ import Process from "../../os/Process";
  */
 export default abstract class RoomProcess extends Process {
     /**
+     * Creates an instance of RoomProcess.
+     * @param {IKernel} kernel 
+     * @param {IData} data 
+     * @memberof RoomProcess
+     */
+    constructor(kernel: IKernel, data: IData) {
+        super(kernel, data);
+        Object.defineProperties(
+            this,
+            {
+                RoomName: {
+                    enumerable: true,
+                    configurable: true
+                }
+            }
+        );
+    }
+
+    /**
      * Gets or sets the name of the room that this process is for.
      *
      * @readonly
