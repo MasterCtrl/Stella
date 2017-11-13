@@ -1,6 +1,6 @@
-import Logger from "./Logger";
 import Process from "./Process";
 import * as Processes from "../Processes";
+import "./Logger";
 import "../Prototypes";
 
 /**
@@ -85,13 +85,13 @@ export default class Kernel implements IKernel {
             }
             process.Completed = true;
             if (!process.CheckState()) {
-                Logger.Current.Debug(`${process.Name}: process suspended - ${process.State}.`);
+                Logger.Debug(`${process.Name}: process suspended - ${process.State}.`);
                 continue;
             }
-            Logger.Current.Debug(`${process.Name}: process executing`);
+            Logger.Debug(`${process.Name}: process executing`);
             process.Execute();
         }
-        Logger.Current.Debug("Kernel Unloading.");
+        Logger.Debug("Kernel Unloading.");
         this.Unload();
     }
 
@@ -129,7 +129,7 @@ export default class Kernel implements IKernel {
             State: true,
             Memory: options.Memory
         };
-        Logger.Current.Debug(`Creating process ${data.Name}`);
+        Logger.Debug(`Creating process ${data.Name}`);
         const process: T = new ctor(this, data);
         return this.register[process.Name] = process;
     }
@@ -154,22 +154,12 @@ export default class Kernel implements IKernel {
      * Gets a process that matches the given criteria.
      *
      * @template T 
-     * @param {ProcessFindOptions<T>} options 
+     * @param {*} options 
      * @returns {T} 
      * @memberof Kernel
      */
-    public GetProcess<T extends IProcess>(options: ProcessFindOptions<T>): T {
-
-        // TODO: this doesnt work at all... fina better way or put it back to the original, find by type is the only thing that reliably works...
-
-        if (options.Name) {
-            return this.register[options.Name] as T;
-        } else if (options.ProcessId) {
-            return _.find(this.register, (p) => p.ProcessId === options.ProcessId) as T;
-        } else if (options.Find) {
-            return _.find(this.register, options.Find) as T;
-        }
-        return undefined;
+    public GetProcess<T extends IProcess>(options: any): T {
+        return _.find(this.register, options) as T;
     }
 
     /**
@@ -180,7 +170,7 @@ export default class Kernel implements IKernel {
      * @memberof Kernel
      */
     public GetChildren(parentProcessId: number): IProcess[] {
-        return _.filter(this.register, (p) => p.ParentId === parentProcessId);
+        return _.filter(this.register, { ParentId: parentProcessId });
     }
 
     /**
@@ -190,26 +180,26 @@ export default class Kernel implements IKernel {
      * @memberof Kernel
      */
     public GetNextProcessId(): number {
-        const proc = _.max(this.register, (p) => p.ProcessId);
-        return proc ? proc.ProcessId + 1 : 0;
+        const proc = _.max(this.register, "ProcessId");
+        return proc instanceof Process ? proc.ProcessId + 1 : 0;
     }
 
     /**
      * Terminates the process with the given name and optionally all its children.
      *
      * @template T 
-     * @param {ProcessFindOptions<T>} options 
+     * @param {*} options 
      * @param {boolean} [killChildren=false] 
      * @returns 
      * @memberof Kernel
      */
-    public Terminate<T extends IProcess>(options: ProcessFindOptions<T>, killChildren: boolean = false) {
+    public Terminate<T extends IProcess>(options: any, killChildren: boolean = false) {
         const process = this.GetProcess(options);
         if (!process) {
-            Logger.Current.Warning(`process has already been terminated(${JSON.stringify(options)}).`);
+            Logger.Warning(`process has already been terminated(${JSON.stringify(options)}).`);
             return;
         }
-        Logger.Current.Debug(`${process.Name}: terminating process.`);
+        Logger.Debug(`${process.Name}: terminating process.`);
         delete this.register[process.Name];
         process.Dispose();
         if (!killChildren) {
@@ -227,7 +217,7 @@ export default class Kernel implements IKernel {
      */
     public Status(): void {
         let status = `current tick: ${Game.time}<table><tr><th>name  </th><th>pid  </th><th>ppid  </th><th>priority  </th><th>initialized  </th><th>state  </th></tr>`;
-        const processes = _.sortBy(this.register, (p) => p.Priority);
+        const processes = _.sortBy(this.register, "Priority");
         for (const current in processes) {
             const process = processes[current].Serialize();
             status += "<tr>";

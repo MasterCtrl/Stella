@@ -1,4 +1,3 @@
-import Logger from "../../os/Logger";
 import RoomProcess from "./RoomProcess";
 
 /**
@@ -34,11 +33,11 @@ export default class Spawn extends RoomProcess {
             const result = spawn.spawnCreep(options.Body, name, { dryRun: true });
             if (result !== OK) {
                 // if we couldnt spawn the unit then put the options back into the queue and continue.
-                Logger.Current.Debug(`Could not spawn unit ${name} - ${result}`, this.RoomName);
+                Logger.Debug(`Could not spawn unit ${name} - ${result}`, this.RoomName);
                 queue.unshift(options);
                 continue;
             }
-            Logger.Current.Info(`Spawning new unit ${name}`, this.RoomName);
+            Logger.Info(`Spawning new unit ${name}`, this.RoomName);
             spawn.spawnCreep(options.Body, name, { memory: { type: options.Type, room: this.RoomName } });
         }
         this.Queue = queue;

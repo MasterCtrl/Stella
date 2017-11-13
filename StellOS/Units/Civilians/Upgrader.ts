@@ -1,5 +1,4 @@
-import Logger from "../../os/Logger";
-import {Unit, UnitDefinition, States} from "../Unit";
+import { Unit, UnitDefinition, States } from "../Unit";
 
 /**
  * Upgrader unit, used to constantly upgrade the controller in the room.
@@ -15,12 +14,14 @@ export class Upgrader extends Unit {
      * @memberof Builder
      */
     public InitializeState(): void {
-        if (this.IsEmpty) {
-            const target = this.Unit.pos.findClosestByPath<Source>(FIND_SOURCES);
-            this.PushState(States.Harvest, {
-                sourceId: target.id,
-                position: { x: target.pos.x, y: target.pos.y, room: target.pos.roomName }
-            });
+        const withdrawSource = this.Unit.Source || this.FindClosestSource();
+        if (withdrawSource) {
+            this.PushState(States.Withdraw, withdrawSource);
+        }
+
+        const sourceContext = this.FindClosestSource();
+        if (sourceContext) {
+            this.PushState(States.Harvest, sourceContext);
             return;
         }
 

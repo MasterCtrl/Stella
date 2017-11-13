@@ -1,4 +1,3 @@
-import Logger from "../../os/Logger";
 import RoomProcess from "./RoomProcess";
 
 /**
@@ -35,6 +34,12 @@ export default class Library extends RoomProcess {
         }
         if (this.Room.storage || this.Room.terminal) {
             this.RoomMemory.needs = undefined;
+        }
+        if (this.RoomMemory.upgraderSource === null) {
+            this.RoomMemory.upgraderSource = undefined;
+        }
+        if (this.RoomMemory.recycleBin === null) {
+            this.RoomMemory.recycleBin = undefined;
         }
 
         this.Suspend(17);

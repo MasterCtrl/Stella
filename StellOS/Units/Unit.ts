@@ -1,5 +1,3 @@
-import Logger from "../os/Logger";
-
 /**
  * Unit base class, contains common unit logic.
  * This is my implementation of warinternal's push down automata example: 
@@ -13,6 +11,7 @@ import Logger from "../os/Logger";
 export abstract class Unit implements IUnit {
     private readonly unit;
     private readonly kernel;
+    private totalCarry: number;
 
     /**
      * Creates an instance of Unit.
@@ -28,6 +27,7 @@ export abstract class Unit implements IUnit {
             this.PushState(States.Initialize);
             this.Unit.memory.initialized = true;
         }
+        this.totalCarry = undefined;
     }
 
     /**
@@ -111,7 +111,10 @@ export abstract class Unit implements IUnit {
      * @memberof Minion
      */
     protected get TotalCarry(): number {
-        return _.sum(this.Unit.carry);
+        if (this.totalCarry === undefined) {
+            this.totalCarry = _.sum(this.Unit.carry);
+        }
+        return this.totalCarry;
     }
 
     /**
@@ -130,7 +133,7 @@ export abstract class Unit implements IUnit {
         if (!this[method]) {
             return false;
         }
-        Logger.Current.Debug(`${this.Unit.name} executing state: ${current.State}`);
+        Logger.Debug(`${this.Unit.name} executing state: ${current.State}`);
         this[method](current.Context);
         return true;
     }
@@ -165,12 +168,12 @@ export abstract class Unit implements IUnit {
     /**
      * Pushes a state onto the stack.
      *
-     * @param {string} state
-     * @param {*} [context={}]
-     * @returns {string}
+     * @param {string} state 
+     * @param {Context} [context] 
+     * @returns {string} 
      * @memberof Unit
      */
-    public PushState(state: string, context?: any): string {
+    public PushState(state: string, context?: Context): string {
         const method = `Run${state}`;
         if (!this[method]) {
             throw new Error(`${method} is not a valid state.`);
@@ -234,7 +237,7 @@ export abstract class Unit implements IUnit {
      * @param {*} context 
      * @memberof Unit
      */
-    protected RunMoveTo(context: any): void {
+    protected RunMoveTo(context: MoveContext): void {
         const { position, range } = context;
         const result = this.Unit.moveTo(new RoomPosition(position.x, position.y, position.room || this.Unit.room.name), { range: range });
         if (result === ERR_NO_PATH) {
@@ -250,12 +253,11 @@ export abstract class Unit implements IUnit {
      * @memberof Unit
      */
     protected RunHarvest(context: SourceContext): void {
-        const { sourceId, position, range = 1 } = context;
-        if (!this.InRange(position, range)) {
+        if (!this.InRange(context)) {
             return;
         }
 
-        const source = Game.getObjectById<Source|Mineral>(sourceId);
+        const source = Game.getObjectById<Source|Mineral>(context.sourceId);
         if (!source) {
             this.PopState();
             this.Execute();
@@ -277,12 +279,11 @@ export abstract class Unit implements IUnit {
      * @memberof Unit
      */
     protected RunPickup(context: TargetContext): void {
-        const { targetId, position, range = 1 } = context;
-        if (!this.InRange(position, range)) {
+        if (!this.InRange(context)) {
             return;
         }
 
-        const resource = Game.getObjectById<Resource>(targetId);
+        const resource = Game.getObjectById<Resource>(context.targetId);
         const result = this.Unit.pickup(resource);
         this.PopState();
     }
@@ -295,19 +296,18 @@ export abstract class Unit implements IUnit {
      * @memberof Unit
      */
     protected RunTransfer(context: ResourceContext): void {
-        const { targetId, resource, position, range = 1  } = context;
-        if (!this.InRange(position, range)) {
+        if (!this.InRange(context)) {
             return;
         }
 
-        const target = Game.getObjectById<Creep|Structure>(targetId);
+        const target = Game.getObjectById<Creep|Structure>(context.targetId);
         if (!target) {
             this.PopState();
             this.Execute();
             return;
         }
 
-        const result = this.Unit.transfer(target, resource);
+        const result = this.Unit.transfer(target, context.resource);
         if (this.IsEmpty || result === ERR_FULL) {
             this.PopState();
         }
@@ -321,19 +321,18 @@ export abstract class Unit implements IUnit {
      * @memberof Unit
      */
     protected RunWithdraw(context: ResourceContext): void {
-        const { targetId, resource, position, range = 1  } = context;
-        if (!this.InRange(position, range)) {
+        if (!this.InRange(context)) {
             return;
         }
 
-        const target = Game.getObjectById<Structure>(targetId);
+        const target = Game.getObjectById<Structure>(context.targetId);
         if (!target) {
             this.PopState();
             this.Execute();
             return;
         }
 
-        const result = this.Unit.withdraw(target, resource);
+        const result = this.Unit.withdraw(target, context.resource);
         if (this.IsFull || result !== OK) {
             this.PopState();
         }
@@ -347,7 +346,7 @@ export abstract class Unit implements IUnit {
      */
     protected RunUpgrade(): void {
         const controller = this.Unit.room.controller;
-        if (!this.InRange({ x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, 3)) {
+        if (!this.InRange({ position: { x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, range: 3 })) {
             return;
         }
 
@@ -367,7 +366,7 @@ export abstract class Unit implements IUnit {
      */
     protected RunSign(context: SignContext): void {
         const controller = this.Unit.room.controller;
-        if (!this.InRange({ x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, 1)) {
+        if (!this.InRange({ position: { x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, range: 1 })) {
             return;
         }
 
@@ -384,7 +383,7 @@ export abstract class Unit implements IUnit {
      */
     protected RunClaim(): void {
         const controller = this.Unit.room.controller;
-        if (!this.InRange({ x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, 1)) {
+        if (!this.InRange({ position: { x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, range: 1 })) {
             return;
         }
 
@@ -404,7 +403,7 @@ export abstract class Unit implements IUnit {
      */
     protected RunReserve(): void {
         const controller = this.Unit.room.controller;
-        if (!this.InRange({ x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, 1)) {
+        if (!this.InRange({ position: { x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, range: 1 })) {
             return;
         }
         if (Game.gcl.level > _.filter(Game.rooms, (r) => r.controller.my).length) {
@@ -426,7 +425,7 @@ export abstract class Unit implements IUnit {
      */
     protected RunAttackController(): void {
         const controller = this.Unit.room.controller;
-        if (!this.InRange({ x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, 1)) {
+        if (!this.InRange({ position: { x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, range: 1 })) {
             return;
         }
         if (controller.level === 0) {
@@ -446,12 +445,11 @@ export abstract class Unit implements IUnit {
      * @memberof Unit
      */
     protected RunBuild(context: BuildContext): void {
-        const { constructionSiteId, position, range = 3 } = context;
-        if (!this.InRange(position, range)) {
+        if (!this.InRange(context)) {
             return;
         }
 
-        const constructionSite = Game.getObjectById<ConstructionSite>(constructionSiteId);
+        const constructionSite = Game.getObjectById<ConstructionSite>(context.constructionSiteId);
         if (!constructionSite) {
             this.PopState();
             this.Execute();
@@ -473,12 +471,11 @@ export abstract class Unit implements IUnit {
      * @memberof Unit
      */
     protected RunRepair(context: RepairContext): void {
-        const { targetId, position, hits, range = 3  } = context;
-        if (!this.InRange(position, range)) {
+        if (!this.InRange(context)) {
             return;
         }
 
-        const structure = Game.getObjectById<Structure>(targetId);
+        const structure = Game.getObjectById<Structure>(context.targetId);
         if (!structure) {
             this.PopState();
             this.Execute();
@@ -486,7 +483,7 @@ export abstract class Unit implements IUnit {
         }
 
         const result = this.Unit.repair(structure);
-        if (this.IsEmpty || result !== OK || structure.hits > (hits || structure.hitsMax)) {
+        if (this.IsEmpty || result !== OK || structure.hits > (context.hits || structure.hitsMax)) {
             this.PopState();
         }
     }
@@ -601,12 +598,11 @@ export abstract class Unit implements IUnit {
      * @memberof Unit
      */
     protected RunRecycle(context: TargetContext): void {
-        const { targetId, position, range = 1  } = context;
-        if (!this.InRange(position, range)) {
+        if (!this.InRange(context)) {
             return;
         }
 
-        const spawn = Game.getObjectById<StructureSpawn>(targetId);
+        const spawn = Game.getObjectById<StructureSpawn>(context.targetId);
         if (!spawn) {
             this.Unit.suicide();
             return;
@@ -624,12 +620,11 @@ export abstract class Unit implements IUnit {
      * @memberof Unit
      */
     protected RunRenew(context: TargetContext): void {
-        const { targetId, position, range = 1  } = context;
-        if (!this.InRange(position, range)) {
+        if (!this.InRange(context)) {
             return;
         }
 
-        const spawn = Game.getObjectById<StructureSpawn>(targetId);
+        const spawn = Game.getObjectById<StructureSpawn>(context.targetId);
         if (!spawn) {
             this.PopState();
             this.Execute();
@@ -642,9 +637,153 @@ export abstract class Unit implements IUnit {
         }
     }
 
-    private InRange(position: PositionContext, range: number): boolean {
-        if (!this.Unit.pos.inRangeTo(new RoomPosition(position.x, position.y, position.room), range)) {
-            this.PushState(States.MoveTo, { position, range });
+    /**
+     * Finds the closest source to harvest.
+     *
+     * @protected
+     * @returns {SourceContext}
+     * @memberof Unit
+     */
+    protected FindClosestSource(): SourceContext {
+        if (!this.IsEmpty) {
+            return undefined;
+        }
+        const source = this.Unit.pos.findClosestByPath<Source>(FIND_SOURCES);
+        return { sourceId: source.id, position: { x: source.pos.x, y: source.pos.y, room: source.room.name }, range: 1 };
+    }
+
+    /**
+     * Finds the pile of the given resource.
+     *
+     * @protected
+     * @param {string} [resource=RESOURCE_ENERGY] 
+     * @returns {TargetContext} 
+     * @memberof Unit
+     */
+    protected FindDroppedResource(resource: string = RESOURCE_ENERGY): TargetContext {
+        if (!this.IsEmpty) {
+            return undefined;
+        }
+        const droppedResources = this.Unit.room.find<Resource>(FIND_DROPPED_RESOURCES, { filter: (r) => r.resourceType === resource });
+        if (droppedResources.length === 0) {
+            return undefined;
+        }
+        const droppedResource = _.max(droppedResources, (r) => r.amount);
+        return { targetId: droppedResource.id, position: { x: droppedResource.pos.x, y: droppedResource.pos.y, room: droppedResource.room.name }, range: 1 };
+    }
+
+    /**
+     * Finds a structure of the given types withdraw the specified resource from.
+     *
+     * @protected
+     * @param {string[]} structures
+     * @param {string} [resource=RESOURCE_ENERGY]
+     * @returns {ResourceContext}
+     * @memberof Unit
+     */
+    protected FindWithdrawSource(structures: string[], resource: string = RESOURCE_ENERGY): ResourceContext {
+        if (!this.IsEmpty) {
+            return undefined;
+        }
+        const target = this.Unit.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
+            filter: (s: StructureSpawn) => (structures.indexOf(s.structureType) !== -1) && !s.IsEmpty
+        });
+        return target ? { targetId: target.id, resource: resource, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 1  } : undefined;
+    }
+
+    /**
+     * Finds the upgrader container in the room to withdraw energy from.
+     *
+     * @protected
+     * @returns {ResourceContext}
+     * @memberof Unit
+     */
+    protected FindUpgraderSource(): ResourceContext {
+        if (!this.IsEmpty) {
+            return undefined;
+        }
+        const containerContext = this.Unit.room.UpgraderSource;
+        if (!containerContext) {
+            return undefined;
+        }
+        const upgraderContainer = Game.getObjectById<StructureContainer>(containerContext.targetId);
+        if (upgraderContainer.IsEmpty) {
+            return undefined;
+        }
+        return containerContext;
+    }
+
+    /**
+     *  Finds a structure of the given types to transfer the specified resource to. 
+     *
+     * @protected
+     * @param {string[]} structures 
+     * @param {string} [resource=RESOURCE_ENERGY] 
+     * @returns {ResourceContext} 
+     * @memberof Unit
+     */
+    protected FindTransferTarget(structures: string[], resource: string = RESOURCE_ENERGY): ResourceContext {
+        if (this.IsEmpty) {
+            return undefined;
+        }
+        const target = this.Unit.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
+            filter: (s: StructureSpawn) => (structures.indexOf(s.structureType) !== -1) && !s.IsFull
+        });
+        return target ? { targetId: target.id, resource: resource, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 1  } : undefined;
+    }
+
+    /**
+     * Finds the closest construction site.
+     *
+     * @protected
+     * @returns {BuildContext}
+     * @memberof Unit
+     */
+    protected FindConstructionSite(): BuildContext {
+        if (this.IsEmpty) {
+            return undefined;
+        }
+
+        const target = this.Unit.pos.findClosestByPath<ConstructionSite>(FIND_CONSTRUCTION_SITES);
+        return target ? { constructionSiteId: target.id, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 1  } : undefined;
+    }
+
+    /**
+     * Finds something to attack.
+     *
+     * @protected
+     * @param {number[]} attackOrder
+     * @returns {AttackContext}
+     * @memberof Unit
+     */
+    protected FindHostile(attackOrder: number[]): AttackContext {
+        for (const hostileType of attackOrder) {
+            const hostile = this.Unit.pos.findClosestByPath<Creep | Structure>(hostileType);
+            if (!hostile) {
+                continue;
+            }
+            return { targetId: hostile.id };
+        }
+        return undefined;
+    }
+
+    /**
+     * Finds a flag to move to.
+     *
+     * @protected
+     * @param {number} color
+     * @param {string} [room]
+     * @returns {MoveContext}
+     * @memberof Unit
+     */
+    protected FindFlag(color: number, room?: string): MoveContext {
+        const flag = _.find(Game.flags, (f) => f.color === color && (!room || f.room.name === room));
+        return flag ? { position: { x: flag.pos.x, y: flag.pos.y, room: flag.pos.roomName }, range: 1 } : undefined;
+    }
+
+    private InRange(context: MoveContext): boolean {
+        if (!this.Unit.pos.inRangeTo(new RoomPosition(context.position.x, context.position.y, context.position.room), context.range)) {
+            this.PushState(States.MoveTo, context);
             this.Execute();
             return false;
         }

@@ -1,5 +1,4 @@
-import Logger from "../../os/Logger";
-import {Unit, UnitDefinition, States} from "../Unit";
+import { Unit, UnitDefinition, States } from "../Unit";
 
 /**
  * Guardian unit, used defend rooms.
@@ -15,20 +14,16 @@ export class Guardian extends Unit {
      * @memberof Guardian
      */
     public InitializeState(): void {
-        const hostile = this.Unit.pos.findClosestByPath<Creep>(FIND_HOSTILE_CREEPS);
-        if (hostile) {
-            this.PushState(
-                States.RangedAttack,
-                { targetId: hostile.id }
-            );
+        const hostileContext = this.FindHostile([FIND_HOSTILE_CREEPS]);
+        if (hostileContext) {
+            this.PushState(States.RangedAttack, hostileContext);
             return;
         }
-        const flag = _.find(Game.flags, (f) => f.color === COLOR_WHITE && f.room.name === this.Unit.room.name);
-        if (flag) {
-            this.PushState(
-                States.MoveTo,
-                { position: { x: flag.pos.x, y: flag.pos.y, room: flag.pos.roomName }, range: 1 }
-            );
+
+        const flagContext = this.FindFlag(COLOR_WHITE, this.Unit.room.name);
+        if (flagContext) {
+            this.PushState(States.MoveTo, flagContext);
+            return;
         }
     }
 }

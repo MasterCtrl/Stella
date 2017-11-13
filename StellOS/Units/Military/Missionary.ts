@@ -1,5 +1,4 @@
-import Logger from "../../os/Logger";
-import {Unit, UnitDefinition, States} from "../Unit";
+import { Unit, UnitDefinition, States } from "../Unit";
 
 /**
  * Missionary unit, used sign, attack, reserve, and claim controllers.
@@ -15,26 +14,19 @@ export class Missionary extends Unit {
      * @memberof Missionary
      */
     public InitializeState(): void {
-        const flag = _.find(Game.flags, (f) => f.color === COLOR_ORANGE);
-        if (flag && this.Unit.room.name !== flag.room.name) {
-            this.PushState(
-                States.MoveTo,
-                { position: { x: flag.pos.x, y: flag.pos.y, room: flag.pos.roomName }, range: 1 }
-            );
+        const flagContext = this.FindFlag(COLOR_ORANGE);
+        if (flagContext) {
+            this.PushState(States.MoveTo, flagContext);
             return;
         }
+
         const controller = this.Unit.room.controller;
-        if (controller.sign.username !== this.Unit.owner.username) {
-            this.PushState(
-                States.Sign,
-                { position: { x: controller.pos.x, y: controller.pos.y, room: controller.pos.roomName } }
-            );
+        if (controller.sign.username !== this.Unit.owner.username && Memory.Settings.Sign) {
+            this.PushState(States.Sign, Memory.Settings.Sign);
             return;
         }
-        this.PushState(
-            States.AttackController,
-            { position: { x: controller.pos.x, y: controller.pos.y, room: controller.pos.roomName } }
-        );
+
+        this.PushState(States.AttackController);
     }
 }
 

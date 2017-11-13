@@ -1,5 +1,6 @@
 import Administrator from "./Administrator";
 import Census from "./Census";
+import General from "./General";
 import Library from "./Library";
 import RoomProcess from "./RoomProcess";
 
@@ -23,7 +24,7 @@ export default class Council extends RoomProcess {
         }
 
         // spin up a census to keep track of our population.
-        if (!this.Kernel.GetProcess<Census>({ Name: `${Census.name}-${this.RoomName}` })) {
+        if (!this.Kernel.GetProcess({ Name: Census.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
                 Census,
                 this.RoomName,
@@ -32,18 +33,28 @@ export default class Council extends RoomProcess {
             );
         }
 
-        // spin up an administrator to manage the units in this room.
-        if (!this.Kernel.GetProcess<Administrator>({ Name: `${Administrator.name}-${this.RoomName}` })) {
+        // spin up a general to manage the military units in this room.
+        if (!this.Kernel.GetProcess({ Name: General.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
-                Administrator,
+                General,
                 this.RoomName,
                 this.Priority + 1,
                 { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
             );
         }
 
+        // spin up an administrator to manage the civilian units in this room.
+        if (!this.Kernel.GetProcess({ Name: Administrator.name, RoomName: this.RoomName })) {
+            this.Kernel.CreateProcess(
+                Administrator,
+                this.RoomName,
+                this.Priority + 2,
+                { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
+            );
+        }
+
         // spin up a library process to manage this rooms memory.
-        if (!this.Kernel.GetProcess<Library>({ Name: `${Library.name}-${this.RoomName}` })) {
+        if (!this.Kernel.GetProcess({ Name: Library.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
                 Library,
                 this.RoomName,

@@ -1,5 +1,3 @@
-import Logger from "./Logger";
-
 /**
  * Process base class.
  *
@@ -191,7 +189,7 @@ export default abstract class Process implements IProcess {
      * @memberof Process
      */
     public Resume(): void {
-        Logger.Current.Debug(`${this.Name}: resuming process.`);
+        Logger.Debug(`${this.Name}: resuming process.`);
         this.state = true;
     }
 
@@ -203,7 +201,7 @@ export default abstract class Process implements IProcess {
      * @memberof Process
      */
     public Suspend(state: State = false, suspendChildren: boolean = false): void {
-        Logger.Current.Debug(`${this.Name}: suspending process - ${state}.`);
+        Logger.Debug(`${this.Name}: suspending process - ${state}.`);
         this.state = state;
         if (!suspendChildren) {
             return;
@@ -237,7 +235,7 @@ export default abstract class Process implements IProcess {
      * @memberof Process
      */
     public Dispose(): void {
-        Logger.Current.Debug(`${this.Name}: disposing process.`);
+        Logger.Debug(`${this.Name}: disposing process.`);
         delete Memory.Process[this.ProcessId];
     }
 }

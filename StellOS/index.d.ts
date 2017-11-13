@@ -6,10 +6,10 @@ interface IKernel {
     readonly UnderLimit: boolean;
     CreateProcess<T extends IProcess>(processClass: any, identifier: string, priority: number, options?: { ParentId?: number, Memory?: any }): T;
     GetNextProcess(): IProcess;
-    GetProcess<T extends IProcess>(options: ProcessFindOptions<T>): T;
+    GetProcess<T extends IProcess>(options: any): T;
     GetChildren(parentProcessId: number): IProcess[];
     GetNextProcessId(): number;
-    Terminate<T extends IProcess>(options: ProcessFindOptions<T>, killChildren?: boolean): void;
+    Terminate<T extends IProcess>(options: any, killChildren?: boolean): void;
     Status(): void;
 }
 
@@ -46,12 +46,6 @@ interface IData {
     Memory?: any;
 }
 
-interface ProcessFindOptions<T extends IProcess> {
-    Name?: string;
-    ProcessId?: number;
-    Find?: any; 
-}
-
 interface IUnitOptions {
     Priority: number;
     Type: string;
@@ -82,6 +76,8 @@ declare namespace NodeJS {
     }    
 }
 
+declare const Logger: ILogger;
+
 interface IUnit {
     readonly Unit: Creep;
     readonly Kernel: IKernel;
@@ -101,21 +97,36 @@ interface IState {
 }
 
 type PositionContext = { x: number, y: number, room: string };
+type MoveContext = { position: PositionContext, range?: number };
 type SourceContext = { sourceId: string, position: PositionContext, range?: number };
 type ResourceContext = { targetId: string, resource: string, position: PositionContext, range?: number };
-type BuildContext = { constructionSiteId: string, resource: string, position: PositionContext, range?: number };
+type BuildContext = { constructionSiteId: string, position: PositionContext, range?: number };
 type TargetContext = { targetId: string, position: PositionContext, range?: number };
 type RepairContext = { targetId: string, position: PositionContext, hits?: number, range?: number };
 type AttackContext = { targetId: string, range?: number };
 type SignContext = { message: string };
+type Context = MoveContext | SourceContext | ResourceContext | BuildContext | TargetContext | RepairContext | AttackContext | SignContext;
 
 interface Room {
     readonly Defcon: Defcon;
     readonly IsLinkMining: boolean;
     readonly IsContainerMining: boolean;
+    readonly UpgraderSource: ResourceContext;
+    readonly RecycleBin: TargetContext;
+    readonly Sources: SourceContext[];
+    FindSource(unit: Creep): SourceContext;
 }
 
 interface Defcon {
     level: number, 
     tick: number
+}
+
+interface Structure {
+    readonly IsFull: boolean;
+    IsEmpty(resource: string): boolean;
+}
+
+interface Creep {
+    readonly Source: SourceContext;
 }

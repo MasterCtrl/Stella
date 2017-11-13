@@ -4,25 +4,14 @@
  * @export
  * @class Logger
  */
-export default class Logger implements ILogger {
-    private constructor() {
+class Logger implements ILogger {
+    constructor() {
         if (Memory.Settings === undefined) {
             Memory.Settings = {};
         }
         if (Memory.Settings.LogLevel === undefined) {
             Memory.Settings.LogLevel = LogLevel.INFO;
         }
-    }
-
-    /**
-     * Gets the logger singleton.
-     *
-     * @static
-     * @returns 
-     * @memberof Logger
-     */
-    public static get Current(): ILogger {
-        return global.Logger || (global.Logger = new Logger());
     }
 
     /**
@@ -137,4 +126,8 @@ export enum LogLevel {
     WARNING = 2,
     ERROR = 3,
     CRITICAL = 4
+}
+
+if (!global.Logger) {
+    global.Logger = new Logger();
 }

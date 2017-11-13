@@ -1,5 +1,4 @@
-import Logger from "../../os/Logger";
-import {Unit, UnitDefinition, States} from "../Unit";
+import { Unit, UnitDefinition, States } from "../Unit";
 
 /**
  * Builder minion, used to build and repair structures.
@@ -15,32 +14,23 @@ export class Builder extends Unit {
      * @memberof Builder
      */
     public InitializeState(): void {
-        if (this.IsEmpty) {
-            const source = this.Unit.pos.findClosestByPath<Source>(FIND_SOURCES);
-            this.PushState(States.Harvest, {
-                sourceId: source.id,
-                position: { x: source.pos.x, y: source.pos.y, room: source.pos.roomName }
-            });
+        const sourceContext = this.Unit.Source || this.FindClosestSource();
+        if (sourceContext) {
+            this.PushState(States.Harvest, sourceContext);
             return;
         }
 
-        const target = this.Unit.pos.findClosestByPath<ConstructionSite>(FIND_CONSTRUCTION_SITES);
-        if (target) {
-            this.PushState(States.Build, {
-                constructionSiteId: target.id,
-                position: { x: target.pos.x, y: target.pos.y, room: target.pos.roomName }
-            });
+        const buildContext = this.FindConstructionSite();
+        if (buildContext) {
+            this.PushState(States.Build, buildContext);
             return;
         }
 
-        const spawn = this.Unit.pos.findClosestByPath<StructureSpawn>(FIND_MY_SPAWNS);
-        if (!spawn) {
+        if (this.Unit.room.RecycleBin) {
+            this.PushState(States.Recycle, this.Unit.room.RecycleBin);
+        } else {
             this.Unit.suicide();
         }
-        this.PushState(States.Recycle, {
-            spawnId: spawn.id,
-            position: { x: spawn.pos.x, y: spawn.pos.y, room: spawn.pos.roomName }
-        });
     }
 }
 
