@@ -1,4 +1,5 @@
-import Process from "./Process";
+import {enumerable} from "../Decorators/Property";
+import Process from "../Processes/Process";
 import * as Processes from "../Processes";
 import "./Logger";
 import "../Prototypes";
@@ -32,6 +33,12 @@ export default class Kernel implements IKernel {
         }
         if (!Memory.Process) {
             Memory.Process = {};
+        }
+        if (!Memory.Settings) {
+            Memory.Settings = {};
+        }
+        if (Memory.Settings.Running === Game.time) {
+            Memory.Settings.Running = true;
         }
         global.StellOS = this;
     }
@@ -78,7 +85,7 @@ export default class Kernel implements IKernel {
      * @memberof Kernel
      */
     public Run(): void {
-        while (this.UnderLimit) {
+        while (Memory.Settings.Running === true && this.UnderLimit) {
             const process = this.GetNextProcess();
             if (!process) {
                 break;
@@ -91,7 +98,7 @@ export default class Kernel implements IKernel {
             Logger.Debug(`${process.Name}: process executing`);
             process.Execute();
         }
-        Logger.Debug("Kernel Unloading.");
+        Logger.Debug(`Kernel Unloading - CPU=${Game.cpu.getUsed()}`);
         this.Unload();
     }
 
@@ -231,5 +238,28 @@ export default class Kernel implements IKernel {
         }
         status += "</table>";
         console.log(status);
+    }
+
+    /**
+     * Resumes the kernel immediately.
+     *
+     * @memberof Kernel
+     */
+    public Resume(): void {
+        Memory.Settings.Running = true;
+    }
+
+    /**
+     * Suspends the kernel untill the specified tick/forever
+     *
+     * @param {number} [tick] 
+     * @memberof Kernel
+     */
+    public Suspend(tick?: number): void {
+        if (tick === undefined) {
+            Memory.Settings.Running = false;
+        } else {
+            Memory.Settings.Running = Game.time + tick;
+        }
     }
 }

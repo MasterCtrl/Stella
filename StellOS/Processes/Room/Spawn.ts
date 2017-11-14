@@ -25,7 +25,8 @@ export default class Spawn extends RoomProcess {
         const available = _.filter(spawns, (s) => !s.spawning);
         if (available.length === 0) {
             // if there are no spawns available then suspend till one is done.
-            this.Suspend(_.min(spawns, (s) => s.spawning.remainingTime).spawning.remainingTime);
+            this.Suspend(_.min(spawns.map((s) => s.spawning.remainingTime)));
+            return;
         }
         for (const spawn of available) {
             const options = queue.shift();

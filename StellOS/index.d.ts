@@ -11,6 +11,8 @@ interface IKernel {
     GetNextProcessId(): number;
     Terminate<T extends IProcess>(options: any, killChildren?: boolean): void;
     Status(): void;
+    Resume(): void;
+    Suspend(tick?: number): void;
 }
 
 interface IRegister {
@@ -109,11 +111,14 @@ type Context = MoveContext | SourceContext | ResourceContext | BuildContext | Ta
 
 interface Room {
     readonly Defcon: Defcon;
-    readonly IsLinkMining: boolean;
+    readonly Containers: ResourceContext[];
     readonly IsContainerMining: boolean;
     readonly UpgraderSource: ResourceContext;
     readonly RecycleBin: TargetContext;
     readonly Sources: SourceContext[];
+    readonly Links: TargetContext[];
+    readonly IsLinkMining: boolean;
+    readonly CentralLink: TargetContext;
     FindSource(unit: Creep): SourceContext;
 }
 

@@ -653,6 +653,28 @@ export abstract class Unit implements IUnit {
     }
 
     /**
+     * Finds the source this miner should harvest and where it should stand.
+     *
+     * @protected
+     * @returns {SourceContext}
+     * @memberof Unit
+     */
+    protected FindMinerSource(): SourceContext {
+        if (!this.IsEmpty) {
+            return undefined;
+        }
+        const sourceId = this.Unit.Source.sourceId;
+        let sourceContext;
+        if (this.Unit.room.IsContainerMining) {
+            sourceContext = _.find(this.Unit.room.Containers, { sourceId: sourceId });
+            sourceContext.range = 0;
+        } else if (this.Unit.room.IsLinkMining) {
+            sourceContext = _.find(this.Unit.room.Links, { sourceId: sourceId });
+        }
+        return sourceContext;
+    }
+
+    /**
      * Finds the pile of the given resource.
      *
      * @protected
@@ -781,6 +803,18 @@ export abstract class Unit implements IUnit {
         return flag ? { position: { x: flag.pos.x, y: flag.pos.y, room: flag.pos.roomName }, range: 1 } : undefined;
     }
 
+    /**
+     * Finds the closest spawn.
+     *
+     * @protected
+     * @returns {TargetContext}
+     * @memberof Unit
+     */
+    protected FindSpawn(): TargetContext {
+        const spawn = this.Unit.pos.findClosestByPath<StructureSpawn>(FIND_MY_SPAWNS);
+        return spawn ? { targetId: spawn.id, position: { x: spawn.pos.x, y: spawn.pos.y, room: spawn.room.name }, range: 1  } : undefined;
+    }
+
     private InRange(context: MoveContext): boolean {
         if (!this.Unit.pos.inRangeTo(new RoomPosition(context.position.x, context.position.y, context.position.room), context.range)) {
             this.PushState(States.MoveTo, context);
@@ -877,6 +911,26 @@ export abstract class UnitDefinition implements IUnitDefinition {
         const cost = this.GetPartsCost(parts);
         const size = Math.max(Math.floor(room.energyAvailable / cost), 1);
         return this.GetParts(size, parts);
+    }
+
+    /**
+     * Builds a list of parts with a different set of base parts based on the room.
+     *
+     * @protected
+     * @param {Room} room 
+     * @param {number} max 
+     * @param {string[]} base 
+     * @param {string[]} additional 
+     * @returns {string[]} 
+     * @memberof UnitDefinition
+     */
+    protected GetAdditionalParts(room: Room, max: number, base: string[], additional: string[]): string[] {
+        const baseCost = this.GetPartsCost(base);
+        const additionalCost = this.GetPartsCost(additional);
+        const energy = room.energyAvailable - baseCost;
+        const size = Math.max(Math.floor(energy / additionalCost), 1);
+        const additionalParts = this.GetParts(size, additional);
+        return additionalParts.concat(base);
     }
 
     /**

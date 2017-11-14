@@ -18,28 +18,22 @@ export default class Library extends RoomProcess {
             this.Kernel.Terminate({ Name: this.Name });
             return;
         }
-        /** 
-         * TODO:
-         * 1) Source miner positions
-         * 2) Link positions
-         * 3) Upgrader container
-         * 4) Mineral/energy needs
-         * 5) Reset memory to keep it live.
-         */
-        if (this.RoomMemory.containerMining === false) {
-            this.RoomMemory.containerMining = undefined;
-        }
-        if (this.RoomMemory.linkMining === false) {
-            this.RoomMemory.linkMining = undefined;
-        }
+
         if (this.Room.storage || this.Room.terminal) {
             this.RoomMemory.needs = undefined;
         }
-        if (this.RoomMemory.upgraderSource === null) {
-            this.RoomMemory.upgraderSource = undefined;
+        const sourceCount = this.Room.Sources.length;
+        if (this.Room.Containers.length < sourceCount + 2) {
+            if (this.RoomMemory.containerMining === false) {
+                this.RoomMemory.containerMining = undefined;
+            }
+            this.RoomMemory.containers = undefined;
         }
-        if (this.RoomMemory.recycleBin === null) {
-            this.RoomMemory.recycleBin = undefined;
+        if (this.Room.Links.length < sourceCount + 1) {
+            if (this.RoomMemory.linkMining === false) {
+                this.RoomMemory.linkMining = undefined;
+            }
+            this.RoomMemory.links = undefined;
         }
 
         this.Suspend(17);

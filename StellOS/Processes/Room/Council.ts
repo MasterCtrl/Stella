@@ -24,7 +24,7 @@ export default class Council extends RoomProcess {
         }
 
         // spin up a census to keep track of our population.
-        if (!this.Kernel.GetProcess({ Name: Census.name, RoomName: this.RoomName })) {
+        if (!this.Kernel.GetProcess({ Type: Census.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
                 Census,
                 this.RoomName,
@@ -34,7 +34,7 @@ export default class Council extends RoomProcess {
         }
 
         // spin up a general to manage the military units in this room.
-        if (!this.Kernel.GetProcess({ Name: General.name, RoomName: this.RoomName })) {
+        if (!this.Kernel.GetProcess({ Type: General.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
                 General,
                 this.RoomName,
@@ -44,7 +44,7 @@ export default class Council extends RoomProcess {
         }
 
         // spin up an administrator to manage the civilian units in this room.
-        if (!this.Kernel.GetProcess({ Name: Administrator.name, RoomName: this.RoomName })) {
+        if (!this.Kernel.GetProcess({ Type: Administrator.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
                 Administrator,
                 this.RoomName,
@@ -54,7 +54,7 @@ export default class Council extends RoomProcess {
         }
 
         // spin up a library process to manage this rooms memory.
-        if (!this.Kernel.GetProcess({ Name: Library.name, RoomName: this.RoomName })) {
+        if (!this.Kernel.GetProcess({ Type: Library.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
                 Library,
                 this.RoomName,

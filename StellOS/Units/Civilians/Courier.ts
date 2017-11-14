@@ -17,12 +17,14 @@ export class Courier extends Unit {
         const droppedEnergyContext = this.FindDroppedResource();
         if (droppedEnergyContext) {
             this.PushState(States.Pickup, droppedEnergyContext);
+            return;
         }
 
         const withdrawContext = this.FindWithdrawSource([STRUCTURE_CONTAINER]) ||
                                 this.FindWithdrawSource([STRUCTURE_STORAGE]);
         if (withdrawContext) {
             this.PushState(States.Withdraw, withdrawContext);
+            return;
         }
 
         const transferContext = this.FindTransferTarget([STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER]) ||

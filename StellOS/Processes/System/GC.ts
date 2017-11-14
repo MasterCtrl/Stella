@@ -1,4 +1,4 @@
-import Process from "../../os/Process";
+import Process from "../Process";
 
 /**
  * Garbage collector for cleaning up unused memory.

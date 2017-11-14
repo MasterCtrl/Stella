@@ -14,9 +14,10 @@ export class Upgrader extends Unit {
      * @memberof Builder
      */
     public InitializeState(): void {
-        const withdrawSource = this.Unit.Source || this.FindClosestSource();
+        const withdrawSource = this.Unit.room.UpgraderSource;
         if (withdrawSource) {
             this.PushState(States.Withdraw, withdrawSource);
+            return;
         }
 
         const sourceContext = this.FindClosestSource();

@@ -14,9 +14,8 @@ export class Builder extends Unit {
      * @memberof Builder
      */
     public InitializeState(): void {
-        const sourceContext = this.Unit.Source || this.FindClosestSource();
-        if (sourceContext) {
-            this.PushState(States.Harvest, sourceContext);
+        if (this.IsEmpty && this.Unit.Source) {
+            this.PushState(States.Harvest, this.Unit.Source);
             return;
         }
 

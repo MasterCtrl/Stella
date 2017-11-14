@@ -1,3 +1,4 @@
+import {enumerable} from "../Decorators/Property";
 /**
  * Process base class.
  *
@@ -34,37 +35,9 @@ export default abstract class Process implements IProcess {
         this.initialized = data.Initialized;
         this.state = data.State;
         this.completed = false;
-        this.Memory = data.Memory;
-        // this should be a decorator...
-        Object.defineProperties(
-            this,
-            {
-                Name: {
-                    enumerable: true,
-                    configurable: true
-                },
-                Type: {
-                    enumerable: true,
-                    configurable: true
-                },
-                ProcessId: {
-                    enumerable: true,
-                    configurable: true
-                },
-                Priority: {
-                    enumerable: true,
-                    configurable: true
-                },
-                ParentId: {
-                    enumerable: true,
-                    configurable: true
-                },
-                Initialized: {
-                    enumerable: true,
-                    configurable: true
-                }
-            }
-        );
+        if (data.Memory) {
+            this.Memory = data.Memory;
+        }
     }
 
     /**
@@ -85,6 +58,7 @@ export default abstract class Process implements IProcess {
      * @type {number}
      * @memberof Process
      */
+    @enumerable(true)
     public get ProcessId(): number {
         return this.processId;
     }
@@ -96,6 +70,7 @@ export default abstract class Process implements IProcess {
      * @type {number}
      * @memberof Process
      */
+    @enumerable(true)
     public get Priority(): number {
         return this.priority;
     }
@@ -107,6 +82,7 @@ export default abstract class Process implements IProcess {
      * @type {string}
      * @memberof Process
      */
+    @enumerable(true)
     public get Name(): string {
         return this.name;
     }
@@ -118,6 +94,7 @@ export default abstract class Process implements IProcess {
      * @type {string}
      * @memberof Process
      */
+    @enumerable(true)
     public get Type(): string {
         return this.type;
     }
@@ -129,6 +106,7 @@ export default abstract class Process implements IProcess {
      * @type {number}
      * @memberof Process
      */
+    @enumerable(true)
     public get ParentId(): number {
         return this.parentId;
     }
@@ -140,6 +118,7 @@ export default abstract class Process implements IProcess {
      * @type {number}
      * @memberof Process
      */
+    @enumerable(true)
     public get Initialized(): number {
         return this.initialized;
     }
@@ -265,7 +244,7 @@ export default abstract class Process implements IProcess {
      * @memberof Process
      */
     public Dispose(): void {
-        Logger.Debug(`${this.Name}: disposing process.`);
+        Logger.Debug(`${this.Name}: disposing process, Keys=${Object.keys(Memory.Process).length}.`);
         delete Memory.Process[this.ProcessId];
     }
 }

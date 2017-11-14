@@ -36,51 +36,6 @@ Object.defineProperties(
         },
 
         /**
-         * Gets if we are link mining in this room.
-         *
-         * @type {boolean} 
-         * @memberof Room
-         */
-        IsLinkMining: {
-            get: function(): boolean {
-                const room = this as Room;
-                if (room.memory.linkMining === undefined) {
-                    const sources = room.find(FIND_SOURCES).length;
-                    const links = room.find(FIND_MY_STRUCTURES, { filter: (l) => l.structureType === STRUCTURE_LINK }).length;
-                    room.memory.linkMining = links > sources;
-                }
-                return room.memory.linkMining;
-            },
-            enumerable: true,
-            configurable: true
-        },
-
-        /**
-         * Gets if we are container mining in this room.
-         *
-         * @type {boolean} 
-         * @memberof Room
-         */
-        IsContainerMining: {
-            get: function(): boolean {
-                const room = this as Room;
-                if (room.memory.containerMining === undefined) {
-                    let isContainerMining = false;
-                    for (var source of room.find<Source>(FIND_SOURCES)) {
-                        if (!source.pos.findInRange(FIND_STRUCTURES, 1, { filter: (c) => c.structureType === STRUCTURE_CONTAINER })) {
-                            isContainerMining = false;
-                            break;
-                        }
-                    }
-                    room.memory.containerMining = isContainerMining;
-                }
-                return room.memory.containerMining;
-            },
-            enumerable: true,
-            configurable: true
-        },
-
-        /**
          * Gets the resources this room needs.
          *
          * @type {string[]} 
@@ -110,67 +65,6 @@ Object.defineProperties(
         },
 
         /**
-         * Gets the container an upgrader should use as its source.
-         * 
-         * @type {ResourceContext}
-         * @memberof Room
-         */
-        UpgraderSource: {
-            get: function(): ResourceContext {
-                const room = this as Room;
-                if (room.memory.upgraderSource === undefined) {
-                    const containers = room.controller.pos.findInRange<StructureContainer>(FIND_STRUCTURES, 4, { filter: (s) => s.structureType === STRUCTURE_CONTAINER });
-                    if (containers.length !== 1) {
-                        room.memory.upgraderSource = null;
-                    } else {
-                        const container = containers[0];
-                        room.memory.upgraderSource = {
-                            sourceId: container.id,
-                            resource: RESOURCE_ENERGY,
-                            position: { x: container.pos.x, y: container.pos.y, room: room.name },
-                            range: 1
-                        };
-                    }
-                }
-                return room.memory.upgraderSource;
-            },
-            enumerable: true,
-            configurable: true
-        },
-
-        /**
-         * Gets the recycle bin for the room.
-         *
-         * @type {TargetContext}
-         * @memberof Room
-         */
-        RecycleBin: {
-            get: function(): ResourceContext {
-                const room = this as Room;
-                if (room.memory.recycleBin === undefined) {
-                    const spawns = room.find<StructureSpawn>(FIND_MY_SPAWNS);
-                    let container: StructureContainer;
-                    for (const spawn of spawns) {
-                        const containers = spawn.pos.findInRange<StructureContainer>(FIND_STRUCTURES, 1, { filter: (s) => s.structureType === STRUCTURE_CONTAINER });
-                        if (containers.length === 1) {
-                            container = containers[0];
-                            break;
-                        }
-                    }
-                    if (container) {
-                        room.memory.recycleBin = {
-                            targetId: container.id,
-                            position: { x: container.pos.x, y: container.pos.y, room: room.name },
-                            range: 0
-                        };
-                    }
-                }
-                return room.memory.recycleBin;
-            },
-            enumerable: true,
-            configurable: true
-        },
-        /**
          * Gets the sources in this room.
          *
          * @type {SourceContext[]}
@@ -191,6 +85,147 @@ Object.defineProperties(
                     room.memory.sources = sources;
                 }
                 return room.memory.sources;
+            },
+            enumerable: true,
+            configurable: true
+        },
+
+        /**
+         * Gets the containers in ths room.
+         *
+         * @type {ResourceContext[]}
+         * @memberof Room
+         */
+        Containers: {
+            get: function(): ResourceContext[] {
+                const room = this as Room;
+                if (room.memory.containers === undefined) {
+                    let containers = [];
+                    for (const container of room.find<StructureContainer>(FIND_MY_STRUCTURES, { filter: (c) => c.structureType === STRUCTURE_CONTAINER })) {
+                        const sources = container.pos.findInRange<Source>(FIND_SOURCES, 2);
+                        containers.push({
+                            targetId: container.id,
+                            resource: RESOURCE_ENERGY,
+                            position: { x: container.pos.x, y: container.pos.y, room: container.room.name },
+                            range: 1,
+                            sourceId: sources.length === 1 ? sources[0].id : undefined, // Is 1 source within 2 of this container => Source
+                            upgrader: container.pos.getRangeTo(room.controller) <= 4, // Is the controller with 4 of this container => Upgrader source
+                            recycle: container.pos.findInRange(FIND_MY_SPAWNS, 2).length >= 0 // Is a spawn within 2 of this container => Recycle bin
+                        });
+                    }
+                    room.memory.containers = containers;
+                }
+                return room.memory.containers;
+            },
+            enumerable: true,
+            configurable: true
+        },
+
+        /**
+         * Gets if we are container mining in this room.
+         *
+         * @type {boolean} 
+         * @memberof Room
+         */
+        IsContainerMining: {
+            get: function(): boolean {
+                const room = this as Room;
+                if (room.memory.containerMining === undefined) {
+                    room.memory.containerMining = _.filter(room.Containers, "sourceId").length > room.Sources.length;
+                }
+                return room.memory.containerMining;
+            },
+            enumerable: true,
+            configurable: true
+        },
+
+        /**
+         * Gets the container an upgrader should use as its source.
+         * 
+         * @type {ResourceContext}
+         * @memberof Room
+         */
+        UpgraderSource: {
+            get: function(): ResourceContext {
+                const room = this as Room;
+                return _.find(room.Containers, "upgrader");
+            },
+            enumerable: true,
+            configurable: true
+        },
+
+        /**
+         * Gets the recycle bin for the room.
+         *
+         * @type {TargetContext}
+         * @memberof Room
+         */
+        RecycleBin: {
+            get: function(): TargetContext {
+                const room = this as Room;
+                return _.find(room.Containers, "recycle");
+            },
+            enumerable: true,
+            configurable: true
+        },
+
+        /**
+         * Gets the links in this room.
+         *
+         * @type {TargetContext[]}
+         * @memberof Room
+         */
+        Links: {
+            get: function(): TargetContext[] {
+                const room = this as Room;
+                if (room.memory.links === undefined) {
+                    let links = [];
+                    for (const link of room.find<StructureLink>(FIND_MY_STRUCTURES, { filter: (l) => l.structureType === STRUCTURE_LINK })) {
+                        const sources = link.pos.findInRange<Source>(FIND_SOURCES, 2);
+                        links.push({
+                            targetId: link.id,
+                            position: { x: link.pos.x, y: link.pos.y, room: link.room.name },
+                            range: 1,
+                            sourceId: sources.length === 1 ? sources[0].id : undefined, // Is 1 source within 2 of this container => Source
+                            center: link.pos.findInRange(FIND_MY_SPAWNS, 2).length >= 0 // Is there a spawn within 2 of this container => Center
+                        });
+                    }
+                    room.memory.links = links;
+                }
+                return room.memory.links;
+            },
+            enumerable: true,
+            configurable: true
+        },
+
+        /**
+         * Gets if we are link mining in this room.
+         *
+         * @type {boolean} 
+         * @memberof Room
+         */
+        IsLinkMining: {
+            get: function(): boolean {
+                const room = this as Room;
+                if (room.memory.linkMining === undefined) {
+                    room.memory.linkMining = _.filter(room.Containers, "sourceId").length > room.Sources.length;
+                }
+                return room.memory.linkMining;
+            },
+            enumerable: true,
+            configurable: true
+        },
+
+        /**
+         * Gets the central link in this room.
+         *
+         * @type {TargetContext}
+         * @memberof Room
+         */
+        CentralLink: {
+            get: function(): TargetContext {
+                const room = this as Room;
+                return _.find(room.Links, "center");
             },
             enumerable: true,
             configurable: true
