@@ -93,14 +93,14 @@ Object.defineProperties(
         /**
          * Gets the containers in ths room.
          *
-         * @type {ResourceContext[]}
+         * @type {ContainerContext[]}
          * @memberof Room
          */
         Containers: {
-            get: function(): ResourceContext[] {
+            get: function(): ContainerContext[] {
                 const room = this as Room;
                 if (room.memory.containers === undefined) {
-                    let containers = [];
+                    let containers = new Array<ContainerContext>();
                     for (const container of room.find<StructureContainer>(FIND_MY_STRUCTURES, { filter: (c) => c.structureType === STRUCTURE_CONTAINER })) {
                         const sources = container.pos.findInRange<Source>(FIND_SOURCES, 2);
                         containers.push({
@@ -142,11 +142,11 @@ Object.defineProperties(
         /**
          * Gets the container an upgrader should use as its source.
          * 
-         * @type {ResourceContext}
+         * @type {ContainerContext}
          * @memberof Room
          */
         UpgraderSource: {
-            get: function(): ResourceContext {
+            get: function(): ContainerContext {
                 const room = this as Room;
                 return _.find(room.Containers, "upgrader");
             },
@@ -157,11 +157,11 @@ Object.defineProperties(
         /**
          * Gets the recycle bin for the room.
          *
-         * @type {TargetContext}
+         * @type {ContainerContext}
          * @memberof Room
          */
         RecycleBin: {
-            get: function(): TargetContext {
+            get: function(): ContainerContext {
                 const room = this as Room;
                 return _.find(room.Containers, "recycle");
             },
@@ -172,18 +172,19 @@ Object.defineProperties(
         /**
          * Gets the links in this room.
          *
-         * @type {TargetContext[]}
+         * @type {LinkContext[]}
          * @memberof Room
          */
         Links: {
-            get: function(): TargetContext[] {
+            get: function(): LinkContext[] {
                 const room = this as Room;
                 if (room.memory.links === undefined) {
-                    let links = [];
+                    let links = new Array<LinkContext>();
                     for (const link of room.find<StructureLink>(FIND_MY_STRUCTURES, { filter: (l) => l.structureType === STRUCTURE_LINK })) {
                         const sources = link.pos.findInRange<Source>(FIND_SOURCES, 2);
                         links.push({
                             targetId: link.id,
+                            resource: RESOURCE_ENERGY,
                             position: { x: link.pos.x, y: link.pos.y, room: link.room.name },
                             range: 1,
                             sourceId: sources.length === 1 ? sources[0].id : undefined, // Is 1 source within 2 of this container => Source

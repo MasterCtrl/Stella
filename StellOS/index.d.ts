@@ -21,11 +21,11 @@ interface IRegister {
 
 interface IProcess {
     readonly ProcessId: number;
-    readonly Priority: number;
     readonly Name: string;
     readonly Type: string;
     readonly ParentId: number;
     readonly Initialized: number;
+    Priority: number;
     State: State;
     Memory: any;
     Completed: boolean;
@@ -107,18 +107,20 @@ type TargetContext = { targetId: string, position: PositionContext, range?: numb
 type RepairContext = { targetId: string, position: PositionContext, hits?: number, range?: number };
 type AttackContext = { targetId: string, range?: number };
 type SignContext = { message: string };
-type Context = MoveContext | SourceContext | ResourceContext | BuildContext | TargetContext | RepairContext | AttackContext | SignContext;
+type LinkContext = { targetId: string, resource: string, position: PositionContext, range: number, sourceId: string, center: boolean };
+type ContainerContext = { targetId: string, resource: string, position: PositionContext, range: number, sourceId: string, upgrader: boolean, recycle: boolean };
+type Context = MoveContext | SourceContext | ResourceContext | BuildContext | TargetContext | RepairContext | AttackContext | SignContext | LinkContext | ContainerContext;
 
 interface Room {
     readonly Defcon: Defcon;
-    readonly Containers: ResourceContext[];
+    readonly Containers: ContainerContext[];
     readonly IsContainerMining: boolean;
-    readonly UpgraderSource: ResourceContext;
-    readonly RecycleBin: TargetContext;
+    readonly UpgraderSource: ContainerContext;
+    readonly RecycleBin: ContainerContext;
     readonly Sources: SourceContext[];
-    readonly Links: TargetContext[];
+    readonly Links: LinkContext[];
     readonly IsLinkMining: boolean;
-    readonly CentralLink: TargetContext;
+    readonly CentralLink: LinkContext;
     FindSource(unit: Creep): SourceContext;
 }
 
@@ -134,4 +136,8 @@ interface Structure {
 
 interface Creep {
     readonly Source: SourceContext;
+}
+
+interface Mineral {
+    readonly HasExtractor: boolean;
 }

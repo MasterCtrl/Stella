@@ -60,6 +60,6 @@ export class FillerDefinition extends UnitDefinition {
      * @memberof FillerDefinition
      */
     public CreateBody(room: Room): string[] {
-        return this.GetPartsFromRoom(room, 4, [CARRY, CARRY, CARRY, MOVE]);
+        return [CARRY, CARRY, CARRY, MOVE];
     }
 }

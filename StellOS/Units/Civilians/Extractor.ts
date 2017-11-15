@@ -15,7 +15,23 @@ export class Extractor extends Unit {
      * @memberof Extractor
      */
     public InitializeState(): void {
-        // TODO
+        const sourceContext = this.FindMineral();
+        if (sourceContext) {
+            this.PushState(States.Harvest, sourceContext);
+            return;
+        }
+
+        const transferContext = this.FindTransferTarget([STRUCTURE_TERMINAL]) || this.FindTransferTarget([STRUCTURE_SPAWN]);
+        if (transferContext) {
+            this.PushState(States.Transfer, transferContext);
+            return;
+        }
+
+        if (this.Unit.room.RecycleBin) {
+            this.PushState(States.Recycle, this.Unit.room.RecycleBin);
+        } else {
+            this.Unit.suicide();
+        }
     }
 }
 
@@ -35,11 +51,7 @@ export class ExtractorDefinition extends UnitDefinition {
      * @memberof ExtractorDefinition
      */
     public Population(room: Room): number {
-        const minerals: Mineral[] = room.find(FIND_MINERALS);
-        // TODO: this sucks
-        if (minerals.length > 0 && minerals[0].mineralAmount > 0 && room.find(FIND_STRUCTURES, { filter: (e) => e.structureType === STRUCTURE_EXTRACTOR }).length === 1) {
-            return 1;
-        }
-        return 0;
+        const mineral = _.first(room.find<Mineral>(FIND_MINERALS));
+        return mineral && mineral.HasExtractor && mineral.mineralAmount > 0 ? 1 : 0;
     }
 }

@@ -14,7 +14,7 @@ export class Courier extends Unit {
      * @memberof Courier
      */
     public InitializeState(): void {
-        const droppedEnergyContext = this.FindDroppedResource();
+        const droppedEnergyContext = this.FindDroppedResource(RESOURCE_ENERGY);
         if (droppedEnergyContext) {
             this.PushState(States.Pickup, droppedEnergyContext);
             return;
@@ -28,7 +28,8 @@ export class Courier extends Unit {
         }
 
         const transferContext = this.FindTransferTarget([STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER]) ||
-                                this.FindTransferTarget([STRUCTURE_STORAGE]);
+                                this.FindTransferTarget([STRUCTURE_STORAGE]) ||
+                                this.FindTransferTarget([STRUCTURE_TERMINAL]);
         if (transferContext) {
             this.PushState(States.Transfer, transferContext);
             return;

@@ -64,18 +64,6 @@ export default abstract class Process implements IProcess {
     }
 
     /**
-     * Gets the Priority of this process.
-     *
-     * @readonly
-     * @type {number}
-     * @memberof Process
-     */
-    @enumerable(true)
-    public get Priority(): number {
-        return this.priority;
-    }
-
-    /**
      * Gets the Name of this process.
      *
      * @readonly
@@ -121,6 +109,21 @@ export default abstract class Process implements IProcess {
     @enumerable(true)
     public get Initialized(): number {
         return this.initialized;
+    }
+
+    /**
+     * Gets the Priority of this process.
+     *
+     * @readonly
+     * @type {number}
+     * @memberof Process
+     */
+    @enumerable(true)
+    public get Priority(): number {
+        return this.priority;
+    }
+    public set Priority(value: number) {
+        this.priority = value;
     }
 
     /**

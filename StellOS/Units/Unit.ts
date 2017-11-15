@@ -678,15 +678,16 @@ export abstract class Unit implements IUnit {
      * Finds the pile of the given resource.
      *
      * @protected
-     * @param {string} [resource=RESOURCE_ENERGY] 
+     * @param {string} [resource] 
      * @returns {TargetContext} 
      * @memberof Unit
      */
-    protected FindDroppedResource(resource: string = RESOURCE_ENERGY): TargetContext {
+    protected FindDroppedResource(resource?: string): TargetContext {
         if (!this.IsEmpty) {
             return undefined;
         }
-        const droppedResources = this.Unit.room.find<Resource>(FIND_DROPPED_RESOURCES, { filter: (r) => r.resourceType === resource });
+        // Need to think about doubling up...
+        const droppedResources = this.Unit.room.find<Resource>(FIND_DROPPED_RESOURCES, { filter: (r) => (!resource || r.resourceType === resource) && r.amount > 20 });
         if (droppedResources.length === 0) {
             return undefined;
         }
@@ -707,8 +708,9 @@ export abstract class Unit implements IUnit {
         if (!this.IsEmpty) {
             return undefined;
         }
+        const upgraderSource = this.Unit.room.UpgraderSource || { targetId: "" };
         const target = this.Unit.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
-            filter: (s: StructureSpawn) => (structures.indexOf(s.structureType) !== -1) && !s.IsEmpty
+            filter: (s) => (structures.indexOf(s.structureType) !== -1) && !s.IsEmpty && s.id !== upgraderSource.targetId
         });
         return target ? { targetId: target.id, resource: resource, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 1  } : undefined;
     }
@@ -813,6 +815,21 @@ export abstract class Unit implements IUnit {
     protected FindSpawn(): TargetContext {
         const spawn = this.Unit.pos.findClosestByPath<StructureSpawn>(FIND_MY_SPAWNS);
         return spawn ? { targetId: spawn.id, position: { x: spawn.pos.x, y: spawn.pos.y, room: spawn.room.name }, range: 1  } : undefined;
+    }
+
+    /**
+     * Finds the closest mineral to harvest.
+     *
+     * @protected
+     * @returns {SourceContext}
+     * @memberof Unit
+     */
+    protected FindMineral(): SourceContext {
+        if (!this.IsEmpty) {
+            return undefined;
+        }
+        const mineral = this.Unit.pos.findClosestByPath<Mineral>(FIND_MINERALS, { filter: (m) => m.HasExtractor });
+        return { sourceId: mineral.id, position: { x: mineral.pos.x, y: mineral.pos.y, room: mineral.room.name }, range: 1 };
     }
 
     private InRange(context: MoveContext): boolean {

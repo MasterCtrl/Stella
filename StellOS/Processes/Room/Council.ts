@@ -1,4 +1,5 @@
 import Administrator from "./Administrator";
+import Artillery from "./Artillery";
 import Census from "./Census";
 import General from "./General";
 import Library from "./Library";
@@ -59,6 +60,16 @@ export default class Council extends RoomProcess {
                 Library,
                 this.RoomName,
                 this.Priority + 5,
+                { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
+            );
+        }
+
+        // spin up an artillery process to manage the towers in the room.
+        if (!this.Kernel.GetProcess({ Type: Artillery.name, RoomName: this.RoomName })) {
+            this.Kernel.CreateProcess(
+                Artillery,
+                this.RoomName,
+                5,
                 { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
             );
         }
