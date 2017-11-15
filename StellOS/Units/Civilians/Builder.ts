@@ -14,8 +14,21 @@ export class Builder extends Unit {
      * @memberof Builder
      */
     public InitializeState(): void {
+        const withdrawContext = this.FindWithdrawSource([STRUCTURE_CONTAINER]) ||
+                                this.FindWithdrawSource([STRUCTURE_STORAGE]);
+        if (withdrawContext) {
+            this.PushState(States.Withdraw, withdrawContext);
+            return;
+        }
+
         if (this.IsEmpty && this.Unit.Source) {
             this.PushState(States.Harvest, this.Unit.Source);
+            return;
+        }
+
+        const repairContext = this.FindRepair();
+        if (repairContext) {
+            this.PushState(States.Repair, repairContext);
             return;
         }
 
@@ -28,6 +41,7 @@ export class Builder extends Unit {
         if (this.Unit.room.RecycleBin) {
             this.PushState(States.Recycle, this.Unit.room.RecycleBin);
         } else {
+            this.PopState();
             this.Unit.suicide();
         }
     }

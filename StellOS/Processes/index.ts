@@ -4,6 +4,7 @@ export {default as Census} from "./Room/Census";
 export {default as Council} from "./Room/Council";
 export {default as General} from "./Room/General";
 export {default as Library} from "./Room/Library";
+export {default as Network} from "./Room/Network";
 export {default as Spawn} from "./Room/Spawn";
 export {default as GC} from "./System/GC";
 export {default as Init} from "./System/Init";

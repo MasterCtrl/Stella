@@ -101,7 +101,7 @@ Object.defineProperties(
                 const room = this as Room;
                 if (room.memory.containers === undefined) {
                     let containers = new Array<ContainerContext>();
-                    for (const container of room.find<StructureContainer>(FIND_MY_STRUCTURES, { filter: (c) => c.structureType === STRUCTURE_CONTAINER })) {
+                    for (const container of room.find<StructureContainer>(FIND_STRUCTURES, { filter: (c) => c.structureType === STRUCTURE_CONTAINER })) {
                         const sources = container.pos.findInRange<Source>(FIND_SOURCES, 2);
                         containers.push({
                             targetId: container.id,
@@ -110,7 +110,7 @@ Object.defineProperties(
                             range: 1,
                             sourceId: sources.length === 1 ? sources[0].id : undefined, // Is 1 source within 2 of this container => Source
                             upgrader: container.pos.getRangeTo(room.controller) <= 4, // Is the controller with 4 of this container => Upgrader source
-                            recycle: container.pos.findInRange(FIND_MY_SPAWNS, 2).length >= 0 // Is a spawn within 2 of this container => Recycle bin
+                            recycle: container.pos.findInRange(FIND_MY_SPAWNS, 1).length > 0 // Is a spawn within 2 of this container => Recycle bin
                         });
                     }
                     room.memory.containers = containers;

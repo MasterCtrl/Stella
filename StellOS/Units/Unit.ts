@@ -11,6 +11,7 @@
 export abstract class Unit implements IUnit {
     private readonly unit;
     private readonly kernel;
+    private readonly log;
     private totalCarry: number;
 
     /**
@@ -23,6 +24,7 @@ export abstract class Unit implements IUnit {
     public constructor(unit: Creep, kernel: IKernel) {
         this.unit = unit;
         this.kernel = kernel;
+        this.log = [];
         if (!this.Unit.memory.initialized) {
             this.PushState(States.Initialize);
             this.Unit.memory.initialized = true;
@@ -128,12 +130,17 @@ export abstract class Unit implements IUnit {
             this.Unit.say("🚬");
             return false;
         }
+        if (Game.cpu.getUsed() > Game.cpu.limit * 0.99) {
+            Logger.Error(`Unit execution aborted due to tick limit: name=${this.Unit.name} - cpu=${Game.cpu.getUsed()} - count=${this.log.length} - stack=${JSON.stringify(this.log)}`);
+            return false;
+        }
         const current = this.Stack[0];
         const method = `Run${current.State}`;
         if (!this[method]) {
             return false;
         }
         Logger.Debug(`${this.Unit.name} executing state: ${current.State}`);
+        this.log.push(method);
         this[method](current.Context);
         return true;
     }
@@ -227,7 +234,9 @@ export abstract class Unit implements IUnit {
      */
     protected RunInitialize(): void {
         this.InitializeState();
-        this.Execute();
+        if (this.GetState(States.Initialize) !== States.Initialize) {
+            this.Execute();
+        }
     }
 
     /**
@@ -602,7 +611,14 @@ export abstract class Unit implements IUnit {
             return;
         }
 
-        const spawn = Game.getObjectById<StructureSpawn>(context.targetId);
+        // the context is actually the recycle bin...
+        const recycleBin = Game.getObjectById<StructureContainer>(context.targetId);
+        if (!recycleBin) {
+            this.Unit.suicide();
+            return;
+        }
+
+        const spawn = recycleBin.pos.findClosestByRange<StructureSpawn>(FIND_MY_SPAWNS);
         if (!spawn) {
             this.Unit.suicide();
             return;
@@ -712,7 +728,7 @@ export abstract class Unit implements IUnit {
         const target = this.Unit.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
             filter: (s) => (structures.indexOf(s.structureType) !== -1) && !s.IsEmpty && s.id !== upgraderSource.targetId
         });
-        return target ? { targetId: target.id, resource: resource, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 1  } : undefined;
+        return target ? { targetId: target.id, resource: resource, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 1 } : undefined;
     }
 
     /**
@@ -751,9 +767,9 @@ export abstract class Unit implements IUnit {
             return undefined;
         }
         const target = this.Unit.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
-            filter: (s: StructureSpawn) => (structures.indexOf(s.structureType) !== -1) && !s.IsFull
+            filter: (s) => (structures.indexOf(s.structureType) !== -1) && !s.IsFull
         });
-        return target ? { targetId: target.id, resource: resource, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 1  } : undefined;
+        return target ? { targetId: target.id, resource: resource, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 1 } : undefined;
     }
 
     /**
@@ -769,7 +785,26 @@ export abstract class Unit implements IUnit {
         }
 
         const target = this.Unit.pos.findClosestByPath<ConstructionSite>(FIND_CONSTRUCTION_SITES);
-        return target ? { constructionSiteId: target.id, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 1  } : undefined;
+        return target ? { constructionSiteId: target.id, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 3 } : undefined;
+    }
+
+    /**
+     * Finds a structure to repair given the list of excluded types.
+     *
+     * @protected
+     * @param {string[]} [exclusions=[STRUCTURE_RAMPART, STRUCTURE_WALL]] 
+     * @returns {RepairContext} 
+     * @memberof Unit
+     */
+    protected FindRepair(exclusions: string[] = [STRUCTURE_RAMPART, STRUCTURE_WALL]): RepairContext {
+        if (this.IsEmpty) {
+            return undefined;
+        }
+        const target = this.Unit.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
+            filter: (s) => (exclusions.indexOf(s.structureType) === -1) && s.hits < s.hitsMax / 2
+        });
+        return target ? { targetId: target.id, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 3 } : undefined;
+
     }
 
     /**
@@ -814,7 +849,7 @@ export abstract class Unit implements IUnit {
      */
     protected FindSpawn(): TargetContext {
         const spawn = this.Unit.pos.findClosestByPath<StructureSpawn>(FIND_MY_SPAWNS);
-        return spawn ? { targetId: spawn.id, position: { x: spawn.pos.x, y: spawn.pos.y, room: spawn.room.name }, range: 1  } : undefined;
+        return spawn ? { targetId: spawn.id, position: { x: spawn.pos.x, y: spawn.pos.y, room: spawn.room.name }, range: 1 } : undefined;
     }
 
     /**
