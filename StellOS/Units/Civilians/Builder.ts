@@ -1,4 +1,4 @@
-import { Unit, UnitDefinition, States } from "../Unit";
+import {Unit, UnitDefinition, States} from "../Unit";
 
 /**
  * Builder minion, used to build and repair structures.
@@ -14,6 +14,12 @@ export class Builder extends Unit {
      * @memberof Builder
      */
     public InitializeState(): void {
+        const droppedEnergyContext = this.FindDroppedResource(RESOURCE_ENERGY);
+        if (droppedEnergyContext) {
+            this.PushState(States.Pickup, droppedEnergyContext);
+            return;
+        }
+
         const withdrawContext = this.FindWithdrawSource([STRUCTURE_CONTAINER]) ||
                                 this.FindWithdrawSource([STRUCTURE_STORAGE]);
         if (withdrawContext) {
@@ -26,22 +32,21 @@ export class Builder extends Unit {
             return;
         }
 
-        const repairContext = this.FindRepair();
-        if (repairContext) {
-            this.PushState(States.Repair, repairContext);
-            return;
-        }
-
         const buildContext = this.FindConstructionSite();
         if (buildContext) {
             this.PushState(States.Build, buildContext);
             return;
         }
 
+        if (this.Memory.DeathRow < 3) {
+            this.Memory.DeathRow++;
+            return;
+        }
+
         if (this.Unit.room.RecycleBin) {
             this.PushState(States.Recycle, this.Unit.room.RecycleBin);
         } else {
-            this.PopState();
+            this.ClearState();
             this.Unit.suicide();
         }
     }
@@ -63,6 +68,6 @@ export class BuilderDefinition extends UnitDefinition {
      * @memberof BuilderDefinition
      */
     public Population(room: Room): number {
-        return room.find(FIND_CONSTRUCTION_SITES).length > 0 ? room.find(FIND_SOURCES).length : 0;
+        return room.find(FIND_CONSTRUCTION_SITES).length > 0 ? room.Sources.length : 0;
     }
 }

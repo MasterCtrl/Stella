@@ -32,10 +32,27 @@ Object.defineProperties(
  */
 Structure.prototype.IsEmpty = function(resource: string): boolean {
     if (this.store && resource) {
-        return this.store[resource] !== 0;
+        return this.store[resource] === 0;
     }
     if (this.energy) {
-        return this.energy !== 0;
+        return this.energy === 0;
     }
     return false;
+};
+
+/**
+ * Gets how full this structure is of the given resource
+ *
+ * @param {string} resource
+ * @returns {number}
+ * @memberof Structure
+ */
+Structure.prototype.StorePercentage = function(resource: string): number {
+    if (this.store && resource) {
+        return this.store[resource] / this.storeCapacity;
+    }
+    if (this.energy) {
+        return this.energy / this.energyCapacity;
+    }
+    return 0;
 };

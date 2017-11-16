@@ -132,10 +132,12 @@ interface Defcon {
 interface Structure {
     readonly IsFull: boolean;
     IsEmpty(resource: string): boolean;
+    StorePercentage(resource: string): number;
 }
 
 interface Creep {
     readonly Source: SourceContext;
+    readonly CurrentTarget: string;
 }
 
 interface Mineral {

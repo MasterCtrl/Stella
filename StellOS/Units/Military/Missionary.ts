@@ -1,7 +1,7 @@
-import { Unit, UnitDefinition, States } from "../Unit";
+import {Unit, UnitDefinition, States} from "../Unit";
 
 /**
- * Missionary unit, used sign, attack, reserve, and claim controllers.
+ * Missionary unit, used to sign, attack, reserve, and claim controllers.
  *
  * @export
  * @class Missionary
@@ -14,8 +14,8 @@ export class Missionary extends Unit {
      * @memberof Missionary
      */
     public InitializeState(): void {
-        const flagContext = this.FindFlag(COLOR_ORANGE);
-        if (flagContext) {
+        const flagContext = this.FindFlag(FlagColor);
+        if (flagContext && flagContext.position.room !== this.Unit.room.name) {
             this.PushState(States.MoveTo, flagContext);
             return;
         }
@@ -46,7 +46,7 @@ export class MissionaryDefinition extends UnitDefinition {
      * @memberof MissionaryDefinition
      */
     public Population(room: Room): number {
-        return _.filter(Game.flags, (f) => f.color === COLOR_ORANGE).length - _.filter(Memory.creeps, (c) => c.type === Missionary.name).length;
+        return _.filter(Game.flags, (f) => f.color === FlagColor).length - _.filter(Memory.creeps, (c) => c.type === Missionary.name).length;
     }
 
     /**
@@ -59,4 +59,6 @@ export class MissionaryDefinition extends UnitDefinition {
     public CreateBody(room: Room): string[] {
         return [CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE];
     }
- }
+}
+
+const FlagColor = COLOR_ORANGE;

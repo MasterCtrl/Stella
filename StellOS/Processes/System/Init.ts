@@ -30,9 +30,7 @@ export default class Init extends Process {
                 continue;
             }
             this.Kernel.CreateProcess(
-                Council,
-                room,
-                this.Priority + 2,
+                Council, room, this.Priority + 2,
                 { Memory: { room: room } }
             );
         }

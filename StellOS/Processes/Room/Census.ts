@@ -23,7 +23,10 @@ export default class Census extends RoomProcess {
 
         let spawnProcess = this.Kernel.GetProcess<Spawn>({ name: Spawn.name, RoomName: this.RoomName });
         if (!spawnProcess) {
-            spawnProcess = this.Kernel.CreateProcess<Spawn>(Spawn, this.RoomName, this.Priority + 1, { ParentId: this.ProcessId, Memory: { room: this.RoomName } });
+            spawnProcess = this.Kernel.CreateProcess<Spawn>(
+                Spawn, this.RoomName, this.Priority + 1,
+                { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
+            );
         }
         // Update the spawn queue.
         spawnProcess.Queue = this.GetSpawnQueue(spawnProcess.Queue);

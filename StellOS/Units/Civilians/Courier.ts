@@ -1,4 +1,4 @@
-import { Unit, UnitDefinition, States } from "../Unit";
+import {Unit, UnitDefinition, States} from "../Unit";
 /**
  * Courier unit, used to move energy around the room.
  * 
@@ -27,7 +27,9 @@ export class Courier extends Unit {
             return;
         }
 
-        const transferContext = this.FindTransferTarget([STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER]) ||
+        const transferContext = this.FindTransferTarget([STRUCTURE_SPAWN, STRUCTURE_EXTENSION]) ||
+                                this.FindUpgraderTarget() ||
+                                this.FindTransferTarget([STRUCTURE_TOWER]) ||
                                 this.FindTransferTarget([STRUCTURE_STORAGE]) ||
                                 this.FindTransferTarget([STRUCTURE_TERMINAL]);
         if (transferContext) {

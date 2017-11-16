@@ -1,4 +1,4 @@
-import { Unit, UnitDefinition, States } from "../Unit";
+import {Unit, UnitDefinition, States} from "../Unit";
 
 /**
  * Upgrader unit, used to constantly upgrade the controller in the room.
@@ -14,7 +14,7 @@ export class Upgrader extends Unit {
      * @memberof Builder
      */
     public InitializeState(): void {
-        const withdrawSource = this.Unit.room.UpgraderSource;
+        const withdrawSource = this.FindUpgraderSource();
         if (withdrawSource) {
             this.PushState(States.Withdraw, withdrawSource);
             return;

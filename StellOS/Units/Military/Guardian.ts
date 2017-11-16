@@ -1,4 +1,4 @@
-import { Unit, UnitDefinition, States } from "../Unit";
+import {Unit, UnitDefinition, States} from "../Unit";
 
 /**
  * Guardian unit, used defend rooms.
@@ -67,6 +67,6 @@ export class GuardianDefinition extends UnitDefinition {
      * @memberof GuardianDefinition
      */
     public CreateBody(room: Room): string[] {
-        return this.GetPartsFromRoom(room, 4, [TOUGH, RANGED_ATTACK, MOVE, MOVE]);
+        return this.GetSpecificParts(room, 4, [TOUGH], [RANGED_ATTACK, MOVE, MOVE]);
     }
  }

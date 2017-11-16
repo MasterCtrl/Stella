@@ -154,7 +154,7 @@ export default class Kernel implements IKernel {
         }
 
         // TODO: index this somehow?
-        return _.sortBy(processesToRun, "Priority").reverse()[0];
+        return _.sortBy(processesToRun, "Priority")[0];
     }
 
     /**
@@ -207,8 +207,8 @@ export default class Kernel implements IKernel {
             return;
         }
         Logger.Debug(`${process.Name}: terminating process.`);
-        delete this.register[process.Name];
         process.Dispose();
+        delete this.register[process.Name];
         if (!killChildren) {
             return;
         }
@@ -224,7 +224,7 @@ export default class Kernel implements IKernel {
      */
     public Status(): void {
         let status = `current tick: ${Game.time}<table><tr><th>name  </th><th>pid  </th><th>ppid  </th><th>priority  </th><th>initialized  </th><th>state  </th></tr>`;
-        const processes = _.sortBy(this.register, "Priority");
+        const processes = _.sortByAll(_.values<IProcess>(this.register), ["Priority", "ParentId", "State", "Initialized"]);
         for (const current in processes) {
             const process = processes[current].Serialize();
             status += "<tr>";

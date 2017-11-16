@@ -2,17 +2,17 @@ import * as Implementations from "../../Units/Military";
 import RoomProcess from "./RoomProcess";
 
 /**
- * General process responsible for all military units in a room.
+ * Commander process responsible for all military units in a room.
  *
  * @export
- * @class General
+ * @class Commander
  * @extends {RoomProcess}
  */
-export default class General extends RoomProcess {
+export default class Commander extends RoomProcess {
     /**
-     * Executes the general process.
+     * Executes the Commander process.
      *
-     * @memberof General
+     * @memberof Commander
      */
     public Execute(): void {
         if (!this.Room) {

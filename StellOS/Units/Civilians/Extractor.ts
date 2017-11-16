@@ -27,9 +27,15 @@ export class Extractor extends Unit {
             return;
         }
 
+        if (this.Memory.DeathRow < 3) {
+            this.Memory.DeathRow++;
+            return;
+        }
+
         if (this.Unit.room.RecycleBin) {
             this.PushState(States.Recycle, this.Unit.room.RecycleBin);
         } else {
+            this.ClearState();
             this.Unit.suicide();
         }
     }

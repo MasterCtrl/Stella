@@ -1,9 +1,10 @@
 import Administrator from "./Administrator";
 import Artillery from "./Artillery";
 import Census from "./Census";
-import General from "./General";
+import Commander from "./Commander";
 import Library from "./Library";
 import RoomProcess from "./RoomProcess";
+import Transfer from "./Transfer";
 
 /**
  * Council process responsible for all aspects of running a room.
@@ -27,19 +28,23 @@ export default class Council extends RoomProcess {
         // spin up a census to keep track of our population.
         if (!this.Kernel.GetProcess({ Type: Census.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
-                Census,
-                this.RoomName,
-                this.Priority + 1,
+                Census, this.RoomName, this.Priority + 1,
                 { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
             );
         }
 
-        // spin up a general to manage the military units in this room.
-        if (!this.Kernel.GetProcess({ Type: General.name, RoomName: this.RoomName })) {
+        // spin up a commander to manage the military units in this room.
+        if (!this.Kernel.GetProcess({ Type: Commander.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
-                General,
-                this.RoomName,
-                this.Priority + 1,
+                Commander, this.RoomName, this.Priority + 1,
+                { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
+            );
+        }
+
+        // spin up a transfer process to manager the links in the room.
+        if (this.Room.IsLinkMining && !this.Kernel.GetProcess({ Type: Transfer.name, RoomName: this.RoomName })) {
+            this.Kernel.CreateProcess(
+                Transfer, this.RoomName, this.Priority + 1,
                 { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
             );
         }
@@ -47,19 +52,7 @@ export default class Council extends RoomProcess {
         // spin up an administrator to manage the civilian units in this room.
         if (!this.Kernel.GetProcess({ Type: Administrator.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
-                Administrator,
-                this.RoomName,
-                this.Priority + 2,
-                { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
-            );
-        }
-
-        // spin up a library process to manage this rooms memory.
-        if (!this.Kernel.GetProcess({ Type: Library.name, RoomName: this.RoomName })) {
-            this.Kernel.CreateProcess(
-                Library,
-                this.RoomName,
-                this.Priority + 5,
+                Administrator, this.RoomName, this.Priority + 2,
                 { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
             );
         }
@@ -67,9 +60,15 @@ export default class Council extends RoomProcess {
         // spin up an artillery process to manage the towers in the room.
         if (!this.Kernel.GetProcess({ Type: Artillery.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
-                Artillery,
-                this.RoomName,
-                5,
+                Artillery, this.RoomName, 5,
+                { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
+            );
+        }
+
+        // spin up a library process to manage this rooms memory.
+        if (!this.Kernel.GetProcess({ Type: Library.name, RoomName: this.RoomName })) {
+            this.Kernel.CreateProcess(
+                Library, this.RoomName, this.Priority + 5,
                 { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
             );
         }

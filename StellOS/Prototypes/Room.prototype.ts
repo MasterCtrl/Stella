@@ -131,7 +131,7 @@ Object.defineProperties(
             get: function(): boolean {
                 const room = this as Room;
                 if (room.memory.containerMining === undefined) {
-                    room.memory.containerMining = _.filter(room.Containers, "sourceId").length > room.Sources.length;
+                    room.memory.containerMining = _.filter(room.Containers, "sourceId").length >= room.Sources.length;
                 }
                 return room.memory.containerMining;
             },
@@ -209,7 +209,7 @@ Object.defineProperties(
             get: function(): boolean {
                 const room = this as Room;
                 if (room.memory.linkMining === undefined) {
-                    room.memory.linkMining = _.filter(room.Containers, "sourceId").length > room.Sources.length;
+                    room.memory.linkMining = room.Links.length > room.Sources.length;
                 }
                 return room.memory.linkMining;
             },

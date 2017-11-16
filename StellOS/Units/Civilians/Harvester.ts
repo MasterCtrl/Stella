@@ -1,4 +1,4 @@
-import { Unit, UnitDefinition, States } from "../Unit";
+import {Unit, UnitDefinition, States} from "../Unit";
 
 /**
  * Harvester minion, used to mine and fill spawns, extensions, towers, and containers.
@@ -19,9 +19,11 @@ export class Harvester extends Unit {
             return;
         }
 
-        const resourceContext = this.FindTransferTarget([STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER]);
-        if (resourceContext) {
-            this.PushState(States.Transfer, resourceContext);
+        const transferContext = this.FindTransferTarget([STRUCTURE_SPAWN, STRUCTURE_EXTENSION]) ||
+                                this.FindUpgraderTarget() ||
+                                this.FindTransferTarget([STRUCTURE_TOWER]);
+        if (transferContext) {
+            this.PushState(States.Transfer, transferContext);
             return;
         }
 

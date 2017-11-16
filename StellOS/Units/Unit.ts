@@ -25,9 +25,12 @@ export abstract class Unit implements IUnit {
         this.unit = unit;
         this.kernel = kernel;
         this.log = [];
-        if (!this.Unit.memory.initialized) {
+        if (!this.Memory.DeathRow) {
+            this.Memory.DeathRow = 0;
+        }
+        if (!this.Memory.initialized) {
             this.PushState(States.Initialize);
-            this.Unit.memory.initialized = true;
+            this.Memory.initialized = true;
         }
         this.totalCarry = undefined;
     }
@@ -131,7 +134,12 @@ export abstract class Unit implements IUnit {
             return false;
         }
         if (Game.cpu.getUsed() > Game.cpu.limit * 0.99) {
-            Logger.Error(`Unit execution aborted due to tick limit: name=${this.Unit.name} - cpu=${Game.cpu.getUsed()} - count=${this.log.length} - stack=${JSON.stringify(this.log)}`);
+            const message = "Unit execution aborted due to tick limit:" +
+                `\n name=${this.Unit.name}` +
+                `\n cpu=${Game.cpu.getUsed()}` +
+                `\n count=${this.log.length}` +
+                `\n stack=${JSON.stringify(this.log)}`;
+            Logger.Error(message, this.Unit.room.name);
             return false;
         }
         const current = this.Stack[0];
@@ -181,6 +189,9 @@ export abstract class Unit implements IUnit {
      * @memberof Unit
      */
     public PushState(state: string, context?: Context): string {
+        if (this.Memory.DeathRow !== 0) {
+            this.Memory.DeathRow = 0;
+        }
         const method = `Run${state}`;
         if (!this[method]) {
             throw new Error(`${method} is not a valid state.`);
@@ -215,7 +226,7 @@ export abstract class Unit implements IUnit {
      */
     public ClearState(): void {
         this.Stack = undefined;
-        this.Unit.memory.initialized = false;
+        this.Memory.initialized = false;
     }
 
     /**
@@ -235,6 +246,7 @@ export abstract class Unit implements IUnit {
     protected RunInitialize(): void {
         this.InitializeState();
         if (this.GetState(States.Initialize) !== States.Initialize) {
+            // If we actually found another state to transition to then execute it immediately.
             this.Execute();
         }
     }
@@ -248,10 +260,14 @@ export abstract class Unit implements IUnit {
      */
     protected RunMoveTo(context: MoveContext): void {
         const { position, range } = context;
-        const result = this.Unit.moveTo(new RoomPosition(position.x, position.y, position.room || this.Unit.room.name), { range: range });
-        if (result === ERR_NO_PATH) {
+        const roomPosition = new RoomPosition(position.x, position.y, position.room || this.Unit.room.name);
+        if (this.Unit.pos.inRangeTo(roomPosition, range)) {
             this.PopState();
+            this.Execute();
+            return;
         }
+
+        const result = this.Unit.moveTo(roomPosition, { range: range });
     }
 
     /**
@@ -267,14 +283,14 @@ export abstract class Unit implements IUnit {
         }
 
         const source = Game.getObjectById<Source|Mineral>(context.sourceId);
-        if (!source) {
+        if (!source || this.IsFull) {
             this.PopState();
             this.Execute();
             return;
         }
 
         const result = this.Unit.harvest(source);
-        if (this.IsFull || result === ERR_NOT_ENOUGH_RESOURCES) {
+        if (result === ERR_NOT_ENOUGH_RESOURCES) {
             this.PopState();
         }
     }
@@ -310,14 +326,14 @@ export abstract class Unit implements IUnit {
         }
 
         const target = Game.getObjectById<Creep|Structure>(context.targetId);
-        if (!target) {
+        if (!target || this.IsEmpty) {
             this.PopState();
             this.Execute();
             return;
         }
 
         const result = this.Unit.transfer(target, context.resource);
-        if (this.IsEmpty || result === ERR_FULL) {
+        if (result === ERR_FULL) {
             this.PopState();
         }
     }
@@ -335,14 +351,14 @@ export abstract class Unit implements IUnit {
         }
 
         const target = Game.getObjectById<Structure>(context.targetId);
-        if (!target) {
+        if (!target || this.IsFull) {
             this.PopState();
             this.Execute();
             return;
         }
 
         const result = this.Unit.withdraw(target, context.resource);
-        if (this.IsFull || result !== OK) {
+        if (result !== OK) {
             this.PopState();
         }
     }
@@ -358,9 +374,14 @@ export abstract class Unit implements IUnit {
         if (!this.InRange({ position: { x: controller.pos.x, y: controller.pos.y, room: controller.room.name }, range: 3 })) {
             return;
         }
+        if (this.IsEmpty) {
+            this.PopState();
+            this.Execute();
+            return;
+        }
 
         const result = this.Unit.upgradeController(controller);
-        if (this.IsEmpty || result !== OK) {
+        if (result !== OK) {
             this.PopState();
         }
     }
@@ -459,14 +480,14 @@ export abstract class Unit implements IUnit {
         }
 
         const constructionSite = Game.getObjectById<ConstructionSite>(context.constructionSiteId);
-        if (!constructionSite) {
+        if (!constructionSite || this.IsEmpty) {
             this.PopState();
             this.Execute();
             return;
         }
 
         const result = this.Unit.build(constructionSite);
-        if (this.IsEmpty || result !== OK) {
+        if (result !== OK) {
             this.PopState();
         }
     }
@@ -485,14 +506,14 @@ export abstract class Unit implements IUnit {
         }
 
         const structure = Game.getObjectById<Structure>(context.targetId);
-        if (!structure) {
+        if (!structure || this.IsEmpty || structure.hits >= (context.hits || structure.hitsMax)) {
             this.PopState();
             this.Execute();
             return;
         }
 
         const result = this.Unit.repair(structure);
-        if (this.IsEmpty || result !== OK || structure.hits > (context.hits || structure.hitsMax)) {
+        if (result !== OK) {
             this.PopState();
         }
     }
@@ -516,6 +537,9 @@ export abstract class Unit implements IUnit {
             this.PopState();
             return;
         }
+        if (this.Unit.hits < this.Unit.hitsMax) {
+            this.PushState(States.Heal, { targetId: this.Unit.id });
+        }
     }
 
     /**
@@ -536,6 +560,9 @@ export abstract class Unit implements IUnit {
         if (target.hits >= target.hitsMax) {
             this.PopState();
             return;
+        }
+        if (this.Unit.hits < this.Unit.hitsMax) {
+            this.PushState(States.Heal, { targetId: this.Unit.id });
         }
     }
 
@@ -569,7 +596,7 @@ export abstract class Unit implements IUnit {
         }
         this.Unit.rangedAttack(target);
         if (this.Unit.getActiveBodyparts(HEAL) && this.Unit.hits < this.Unit.hitsMax) {
-            this.PushState(States.Heal);
+            this.PushState(States.Heal, { targetId: this.Unit.id });
         }
     }
 
@@ -595,7 +622,7 @@ export abstract class Unit implements IUnit {
         }
         this.Unit.attack(target);
         if (this.Unit.getActiveBodyparts(HEAL) && this.Unit.hits < this.Unit.hitsMax) {
-            this.PushState(States.Heal);
+            this.PushState(States.Heal, { targetId: this.Unit.id });
         }
     }
 
@@ -607,6 +634,9 @@ export abstract class Unit implements IUnit {
      * @memberof Unit
      */
     protected RunRecycle(context: TargetContext): void {
+        if (context.range !== 0) {
+            context.range = 0;
+        }
         if (!this.InRange(context)) {
             return;
         }
@@ -665,7 +695,7 @@ export abstract class Unit implements IUnit {
             return undefined;
         }
         const source = this.Unit.pos.findClosestByPath<Source>(FIND_SOURCES);
-        return { sourceId: source.id, position: { x: source.pos.x, y: source.pos.y, room: source.room.name }, range: 1 };
+        return source && source.pos ? { sourceId: source.id, position: { x: source.pos.x, y: source.pos.y, room: source.room.name }, range: 1 } : undefined;
     }
 
     /**
@@ -702,12 +732,14 @@ export abstract class Unit implements IUnit {
         if (!this.IsEmpty) {
             return undefined;
         }
-        // Need to think about doubling up...
-        const droppedResources = this.Unit.room.find<Resource>(FIND_DROPPED_RESOURCES, { filter: (r) => (!resource || r.resourceType === resource) && r.amount > 20 });
+        const assignedTargets = this.Unit.room.find<Creep>(FIND_MY_CREEPS).map((c) => c.CurrentTarget);
+        const droppedResources = this.Unit.room.find<Resource>(FIND_DROPPED_RESOURCES, {
+            filter: (r) => (!resource || r.resourceType === resource) && assignedTargets.indexOf(r.id) === -1 && r.amount > 20
+        });
         if (droppedResources.length === 0) {
             return undefined;
         }
-        const droppedResource = _.max(droppedResources, (r) => r.amount);
+        const droppedResource = _.max(droppedResources, "amount");
         return { targetId: droppedResource.id, position: { x: droppedResource.pos.x, y: droppedResource.pos.y, room: droppedResource.room.name }, range: 1 };
     }
 
@@ -724,11 +756,15 @@ export abstract class Unit implements IUnit {
         if (!this.IsEmpty) {
             return undefined;
         }
-        const upgraderSource = this.Unit.room.UpgraderSource || { targetId: "" };
-        const target = this.Unit.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
-            filter: (s) => (structures.indexOf(s.structureType) !== -1) && !s.IsEmpty && s.id !== upgraderSource.targetId
+        const upgraderSource = this.Unit.room.UpgraderSource || { targetId: undefined };
+        const targets = this.Unit.room.find<Structure>(FIND_STRUCTURES, {
+            filter: (s) => (structures.indexOf(s.structureType) !== -1) && !s.IsEmpty(resource) && s.id !== upgraderSource.targetId
         });
-        return target ? { targetId: target.id, resource: resource, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 1 } : undefined;
+        if (targets.length === 0) {
+            return undefined;
+        }
+        const target = _.max(targets, (t) => t.StorePercentage(resource));
+        return target && target.pos ? { targetId: target.id, resource: resource, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 1 } : undefined;
     }
 
     /**
@@ -747,7 +783,7 @@ export abstract class Unit implements IUnit {
             return undefined;
         }
         const upgraderContainer = Game.getObjectById<StructureContainer>(containerContext.targetId);
-        if (upgraderContainer.IsEmpty) {
+        if (upgraderContainer.IsEmpty(RESOURCE_ENERGY)) {
             return undefined;
         }
         return containerContext;
@@ -769,7 +805,29 @@ export abstract class Unit implements IUnit {
         const target = this.Unit.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
             filter: (s) => (structures.indexOf(s.structureType) !== -1) && !s.IsFull
         });
-        return target ? { targetId: target.id, resource: resource, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 1 } : undefined;
+        return target && target.pos ? { targetId: target.id, resource: resource, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 1 } : undefined;
+    }
+
+    /**
+     * Finds the upgrader container in the room to transfer energy to.
+     *
+     * @protected
+     * @returns {ResourceContext} 
+     * @memberof Unit
+     */
+    protected FindUpgraderTarget(): ResourceContext {
+        if (this.IsEmpty) {
+            return undefined;
+        }
+        const containerContext = this.Unit.room.UpgraderSource;
+        if (!containerContext) {
+            return undefined;
+        }
+        const upgraderContainer = Game.getObjectById<StructureContainer>(containerContext.targetId);
+        if (upgraderContainer.IsFull) {
+            return undefined;
+        }
+        return containerContext;
     }
 
     /**
@@ -784,8 +842,8 @@ export abstract class Unit implements IUnit {
             return undefined;
         }
 
-        const target = this.Unit.pos.findClosestByPath<ConstructionSite>(FIND_CONSTRUCTION_SITES);
-        return target ? { constructionSiteId: target.id, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 3 } : undefined;
+        const target = this.Unit.pos.findClosestByRange<ConstructionSite>(FIND_CONSTRUCTION_SITES);
+        return target && target.pos ? { constructionSiteId: target.id, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 3 } : undefined;
     }
 
     /**
@@ -800,11 +858,14 @@ export abstract class Unit implements IUnit {
         if (this.IsEmpty) {
             return undefined;
         }
-        const target = this.Unit.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
-            filter: (s) => (exclusions.indexOf(s.structureType) === -1) && s.hits < s.hitsMax / 2
+        const targets = this.Unit.room.find<Structure>(FIND_STRUCTURES, {
+            filter: (s) => (exclusions.indexOf(s.structureType) === -1) && s.hits < s.hitsMax
         });
-        return target ? { targetId: target.id, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 3 } : undefined;
-
+        if (targets.length === 0) {
+            return undefined;
+        }
+        const target = _.min(targets, "hits");
+        return { targetId: target.id, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 3 };
     }
 
     /**
@@ -827,6 +888,18 @@ export abstract class Unit implements IUnit {
     }
 
     /**
+     * Finds an ally to heal;
+     *
+     * @protected
+     * @returns {TargetContext} 
+     * @memberof Unit
+     */
+    protected FindAlly(): TargetContext {
+        const ally = this.Unit.pos.findClosestByPath<Creep>(FIND_MY_CREEPS, { filter: (c) => c.hits < (c.hitsMax * 0.75) });
+        return ally ? { targetId: ally.id, range: 3, position: undefined } : undefined;
+    }
+
+    /**
      * Finds a flag to move to.
      *
      * @protected
@@ -837,7 +910,10 @@ export abstract class Unit implements IUnit {
      */
     protected FindFlag(color: number, room?: string): MoveContext {
         const flag = _.find(Game.flags, (f) => f.color === color && (!room || f.room.name === room));
-        return flag ? { position: { x: flag.pos.x, y: flag.pos.y, room: flag.pos.roomName }, range: 1 } : undefined;
+        if (!flag || !flag.pos || this.Unit.pos.inRangeTo(flag, 1)) {
+            return undefined;
+        }
+        return { position: { x: flag.pos.x, y: flag.pos.y, room: flag.pos.roomName }, range: 1 };
     }
 
     /**
@@ -849,7 +925,7 @@ export abstract class Unit implements IUnit {
      */
     protected FindSpawn(): TargetContext {
         const spawn = this.Unit.pos.findClosestByPath<StructureSpawn>(FIND_MY_SPAWNS);
-        return spawn ? { targetId: spawn.id, position: { x: spawn.pos.x, y: spawn.pos.y, room: spawn.room.name }, range: 1 } : undefined;
+        return spawn && spawn.pos ? { targetId: spawn.id, position: { x: spawn.pos.x, y: spawn.pos.y, room: spawn.room.name }, range: 1 } : undefined;
     }
 
     /**
@@ -864,7 +940,7 @@ export abstract class Unit implements IUnit {
             return undefined;
         }
         const mineral = this.Unit.pos.findClosestByPath<Mineral>(FIND_MINERALS, { filter: (m) => m.HasExtractor });
-        return { sourceId: mineral.id, position: { x: mineral.pos.x, y: mineral.pos.y, room: mineral.room.name }, range: 1 };
+        return mineral && mineral.pos ? { sourceId: mineral.id, position: { x: mineral.pos.x, y: mineral.pos.y, room: mineral.room.name }, range: 1 } : undefined;
     }
 
     private InRange(context: MoveContext): boolean {
@@ -935,7 +1011,7 @@ export abstract class UnitDefinition implements IUnitDefinition {
      * @memberof UnitDefinition
      */
     public Population(room: Room): number {
-        return room.find(FIND_SOURCES).length;
+        return room.Sources.length;
     }
 
     /**
@@ -961,28 +1037,30 @@ export abstract class UnitDefinition implements IUnitDefinition {
      */
     protected GetPartsFromRoom(room: Room, max: number, parts: string[] = this.MinimumParts): string[] {
         const cost = this.GetPartsCost(parts);
-        const size = Math.max(Math.floor(room.energyAvailable / cost), 1);
+        const size = Math.max(Math.min(Math.floor(room.energyAvailable / cost), max), 1);
         return this.GetParts(size, parts);
     }
 
     /**
-     * Builds a list of parts with a different set of base parts based on the room.
+     * Builds a list of parts with a specific core and front/rear loaded with specific parts.
+     * Example: in an attacker we want all the TOUGH parts at the front and in a healer we want all the HEAL parts in the rear.
      *
      * @protected
      * @param {Room} room 
      * @param {number} max 
-     * @param {string[]} base 
-     * @param {string[]} additional 
+     * @param {string[]} [front=[]] 
+     * @param {string[]} [core=[]] 
+     * @param {string[]} [rear=[]] 
      * @returns {string[]} 
      * @memberof UnitDefinition
      */
-    protected GetAdditionalParts(room: Room, max: number, base: string[], additional: string[]): string[] {
-        const baseCost = this.GetPartsCost(base);
-        const additionalCost = this.GetPartsCost(additional);
-        const energy = room.energyAvailable - baseCost;
-        const size = Math.max(Math.floor(energy / additionalCost), 1);
-        const additionalParts = this.GetParts(size, additional);
-        return additionalParts.concat(base);
+    protected GetSpecificParts(room: Room, max: number, front: string[] = [], core: string[] = [], rear: string[] = []): string[] {
+        const frontCost = this.GetPartsCost(front);
+        const middleCost = this.GetPartsCost(core);
+        const rearCost = this.GetPartsCost(rear);
+        const total = frontCost + middleCost + rearCost;
+        const size = Math.max(Math.min(Math.floor(room.energyAvailable / total), max), 1);
+        return this.GetParts(size, front, this.GetParts(size, core), rear);
     }
 
     /**
@@ -990,16 +1068,16 @@ export abstract class UnitDefinition implements IUnitDefinition {
      *
      * @protected
      * @param {number} size 
-     * @param {string[]} [partsToAdd=this.MinimumParts] 
+     * @param {string[]} [front=this.MinimumParts] 
+     * @param {string[]} [rear=[]] 
      * @returns {string[]} 
      * @memberof UnitDefinition
      */
-    protected GetParts(size: number, partsToAdd: string[] = this.MinimumParts): string[] {
-        let parts = [];
+    protected GetParts(size: number, front: string[] = [], core: string[] = [], rear: string[] = []): string[] {
         for (var index = 0; index < size; index++) {
-            parts = parts.concat(partsToAdd);
+            core = front.concat(core.concat(rear));
         }
-        return parts;
+        return core;
     }
 
     /**
