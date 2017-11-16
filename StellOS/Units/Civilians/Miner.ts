@@ -62,15 +62,17 @@ export class MinerDefinition extends UnitDefinition {
         let body: string[];
         let max: number;
         if (room.IsContainerMining) {
-            body = [WORK, WORK, MOVE];
+            body = [WORK, MOVE, WORK, MOVE];
+            max = 7;
         } else if (room.IsLinkMining) {
-            body = [WORK, CARRY, MOVE];
+            body = [CARRY, WORK, MOVE, WORK, MOVE];
+            max = 8;
         } else {
             return [];
         }
         const baseCost = this.GetPartsCost(body);
         let energy = room.energyAvailable - baseCost;
-        while (energy >= BODYPART_COST[WORK]) {
+        while (energy >= BODYPART_COST[WORK] && body.length < max) {
             body.unshift(WORK);
             energy -= BODYPART_COST[WORK];
         }
