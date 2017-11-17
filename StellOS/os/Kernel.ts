@@ -66,6 +66,11 @@ export default class Kernel implements IKernel {
             processes.push(process.Serialize());
         });
         Memory.StellOS.ProcessTable = processes;
+        const processCount = Object.keys(this.register).length;
+        const memoryCount = Object.keys(Memory.Process).length;
+        if (processCount < memoryCount) {
+            Logger.Warning(`More process memory(${memoryCount}) then processes(${processCount}).`);
+        }
         delete global.StellOS;
     }
 
