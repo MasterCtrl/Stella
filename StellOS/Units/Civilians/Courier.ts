@@ -53,6 +53,17 @@ export class Courier extends Unit {
  */
 export class CourierDefinition extends UnitDefinition {
     /**
+     * Gets the priority of this unit.
+     *
+     * @param {Room} room 
+     * @returns {number} 
+     * @memberof UnitDefinition
+     */
+    public Priority(room: Room): number {
+        return 5;
+    }
+
+    /**
      * Gets the courier population to maintain. 
      *
      * @param {Room} room

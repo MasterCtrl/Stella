@@ -41,6 +41,17 @@ export class Miner extends Unit {
  */
 export class MinerDefinition extends UnitDefinition {
     /**
+     * Gets the priority of this unit.
+     *
+     * @param {Room} room 
+     * @returns {number} 
+     * @memberof UnitDefinition
+     */
+    public Priority(room: Room): number {
+        return 6;
+    }
+
+    /**
      * Gets the Miner population to maintain. 
      *
      * @param {Room} room
@@ -62,11 +73,11 @@ export class MinerDefinition extends UnitDefinition {
         let body: string[];
         let max: number;
         if (room.IsContainerMining) {
-            body = [WORK, MOVE, WORK, MOVE];
-            max = 7;
+            body = [WORK, WORK, MOVE, WORK, MOVE];
+            max = 6;
         } else if (room.IsLinkMining) {
-            body = [CARRY, WORK, MOVE, WORK, MOVE];
-            max = 8;
+            body = [WORK, CARRY, WORK, MOVE, WORK, MOVE];
+            max = 7;
         } else {
             return [];
         }

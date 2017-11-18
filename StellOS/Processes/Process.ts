@@ -146,10 +146,10 @@ export default abstract class Process implements IProcess {
      * @memberof Process
      */
     public get Memory(): any {
-        return Memory.Process[this.ProcessId] || (Memory.Process[this.ProcessId] = {});
+        return Memory.StellOS.Context[this.ProcessId] || (Memory.StellOS.Context[this.ProcessId] = {});
     }
     public set Memory(value: any) {
-        Memory.Process[this.ProcessId] = value;
+        Memory.StellOS.Context[this.ProcessId] = value;
     }
 
     /**
@@ -247,7 +247,7 @@ export default abstract class Process implements IProcess {
      * @memberof Process
      */
     public Dispose(): void {
-        Logger.Debug(`${this.Name}: disposing process, Keys=${Object.keys(Memory.Process).length}.`);
-        delete Memory.Process[this.ProcessId];
+        Logger.Debug(`${this.Name}: disposing process, Keys=${Object.keys(Memory.StellOS.Context).length}.`);
+        delete Memory.StellOS.Context[this.ProcessId];
     }
 }

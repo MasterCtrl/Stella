@@ -23,24 +23,8 @@ export default class Kernel implements IKernel {
     constructor() {
         this.limit = Game.cpu.limit * 0.9;
         this.register = {};
-        this.Initialize();
-        this.CreateProcess(Processes.Init, "master", 0);
-    }
-
-    private Initialize(): void {
-        if (!Memory.StellOS) {
-            Memory.StellOS = {};
-        }
-        if (!Memory.Process) {
-            Memory.Process = {};
-        }
-        if (!Memory.Settings) {
-            Memory.Settings = {};
-        }
-        if (Memory.Settings.Running === Game.time) {
-            Memory.Settings.Running = true;
-        }
         global.StellOS = this;
+        this.CreateProcess(Processes.Init, "master", 0);
     }
 
     /**
@@ -49,7 +33,7 @@ export default class Kernel implements IKernel {
      * @memberof Kernel
      */
     public Load(): void {
-        _.forEach(Memory.StellOS.ProcessTable, (data: IData) => {
+        _.forEach(Memory.StellOS.Register, (data: IData) => {
             const process = new Processes[data.Type](this, data);
             this.register[data.Name] = process;
         });
@@ -65,10 +49,10 @@ export default class Kernel implements IKernel {
         _.forEach(this.register, (process: Process) => {
             processes.push(process.Serialize());
         });
-        Memory.StellOS.ProcessTable = processes;
+        Memory.StellOS.Register = processes;
         const processCount = Object.keys(this.register).length;
-        const memoryCount = Object.keys(Memory.Process).length;
-        if (processCount < memoryCount) {
+        const memoryCount = Object.keys(Memory.StellOS.Context).length;
+        if (processCount < memoryCount && Memory.StellOS.Settings.Running) {
             Logger.Warning(`More process memory(${memoryCount}) then processes(${processCount}).`);
         }
         delete global.StellOS;
@@ -81,7 +65,6 @@ export default class Kernel implements IKernel {
      */
     public Reset(): void {
         delete Memory.StellOS;
-        delete Memory.Process;
     }
 
     /**
@@ -90,7 +73,7 @@ export default class Kernel implements IKernel {
      * @memberof Kernel
      */
     public Run(): void {
-        while (Memory.Settings.Running === true && this.UnderLimit) {
+        while (Memory.StellOS.Settings.Running === true && this.UnderLimit) {
             const process = this.GetNextProcess();
             if (!process) {
                 break;
@@ -251,7 +234,7 @@ export default class Kernel implements IKernel {
      * @memberof Kernel
      */
     public Resume(): void {
-        Memory.Settings.Running = true;
+        Memory.StellOS.Settings.Running = true;
     }
 
     /**
@@ -262,9 +245,13 @@ export default class Kernel implements IKernel {
      */
     public Suspend(tick?: number): void {
         if (tick === undefined) {
-            Memory.Settings.Running = false;
+            Memory.StellOS.Settings.Running = false;
         } else {
-            Memory.Settings.Running = Game.time + tick;
+            Memory.StellOS.Settings.Running = Game.time + tick;
         }
     }
+}
+
+if (Memory.StellOS.Settings.Running === Game.time || Memory.StellOS.Settings.Running === undefined) {
+    Memory.StellOS.Settings.Running = true;
 }

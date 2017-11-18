@@ -52,6 +52,16 @@ export class Janitor extends Unit {
  */
 export class JanitorDefinition extends UnitDefinition {
     /**
+     * Gets the priority of this unit.
+     *
+     * @param {Room} room 
+     * @returns {number} 
+     * @memberof UnitDefinition
+     */
+    public Priority(room: Room): number {
+        return 10;
+    }
+    /**
      * Gets the Janitor population to maintain. 
      *
      * @param {Room} room

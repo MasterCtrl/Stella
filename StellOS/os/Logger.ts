@@ -6,11 +6,8 @@
  */
 class Logger implements ILogger {
     constructor() {
-        if (Memory.Settings === undefined) {
-            Memory.Settings = {};
-        }
-        if (Memory.Settings.LogLevel === undefined) {
-            Memory.Settings.LogLevel = LogLevel.INFO;
+        if (this.LogLevel === undefined) {
+            this.LogLevel = LogLevel.INFO;
         }
     }
 
@@ -20,10 +17,10 @@ class Logger implements ILogger {
      * @memberof Logger
      */
     public get LogLevel() {
-        return Memory.Settings.LogLevel;
+        return Memory.StellOS.Settings.LogLevel;
     }
     public set LogLevel(value: LogLevel) {
-        Memory.Settings.LogLevel = value;
+        Memory.StellOS.Settings.LogLevel = value;
     }
 
     /**
@@ -126,6 +123,14 @@ export enum LogLevel {
     WARNING = 2,
     ERROR = 3,
     CRITICAL = 4
+}
+
+if (!Memory.StellOS) {
+    Memory.StellOS = {
+        Register: {},
+        Context: {},
+        Settings: {}
+    };
 }
 
 if (!global.Logger) {
