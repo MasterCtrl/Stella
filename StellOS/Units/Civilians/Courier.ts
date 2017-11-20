@@ -27,11 +27,7 @@ export class Courier extends Unit {
             return;
         }
 
-        const transferContext = this.FindTransferTarget([STRUCTURE_SPAWN, STRUCTURE_EXTENSION]) ||
-                                this.FindUpgraderTarget() ||
-                                this.FindTransferTarget([STRUCTURE_TOWER]) ||
-                                this.FindTransferTarget([STRUCTURE_STORAGE]) ||
-                                this.FindTransferTarget([STRUCTURE_TERMINAL]);
+        const transferContext = this.FindCourierTarget();
         if (transferContext) {
             this.PushState(States.Transfer, transferContext);
             return;
@@ -41,6 +37,24 @@ export class Courier extends Unit {
         if (moveContext) {
             this.PushState(States.MoveTo, moveContext);
         }
+    }
+
+    private FindCourierTarget(): ResourceContext {
+        let targetQueue = [() => this.FindTransferTarget([STRUCTURE_SPAWN, STRUCTURE_EXTENSION]),
+                           () => this.FindTransferTarget([STRUCTURE_TOWER])];
+        if (this.Unit.room.Defcon.level > 2 && (this.Unit.room.energyAvailable / this.Unit.room.energyCapacityAvailable) > 0.5) {
+            targetQueue = targetQueue.reverse();
+        }
+        targetQueue.push(() => this.FindUpgraderTarget());
+        targetQueue.push(() => this.FindTransferTarget([STRUCTURE_STORAGE]));
+        targetQueue.push(() => this.FindTransferTarget([STRUCTURE_TERMINAL]));
+        for (const target of targetQueue) {
+            const transferContext = target();
+            if (transferContext) {
+                return transferContext;
+            }
+        }
+        return undefined;
     }
 }
 

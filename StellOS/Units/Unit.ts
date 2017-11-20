@@ -267,7 +267,7 @@ export abstract class Unit implements IUnit {
             return;
         }
 
-        const result = this.Unit.moveTo(roomPosition, { range: range });
+        const result = this.Unit.travelTo(roomPosition, { range: range });
     }
 
     /**
@@ -529,7 +529,7 @@ export abstract class Unit implements IUnit {
         const { targetId, range = 3 } = context;
         const target = targetId ? Game.getObjectById<Creep>(targetId) : this.Unit;
         if (!targetId && !this.Unit.pos.inRangeTo(target, range)) {
-            this.Unit.moveTo(target);
+            this.Unit.travelTo(target, { range: range, movingTarget: true });
         }
 
         this.Unit.rangedHeal(target);
@@ -553,7 +553,7 @@ export abstract class Unit implements IUnit {
         const { targetId, range = 1 } = context;
         const target = targetId ? Game.getObjectById<Creep>(targetId) : this.Unit;
         if (!targetId && !this.Unit.pos.inRangeTo(target, range)) {
-            this.Unit.moveTo(target);
+            this.Unit.travelTo(target, { range: range, movingTarget: true });
         }
 
         this.Unit.heal(target);
@@ -585,7 +585,7 @@ export abstract class Unit implements IUnit {
         }
         const distance = this.Unit.pos.getRangeTo(target.pos.x, target.pos.y);
         if (distance > range) {
-            this.Unit.moveTo(target);
+            this.Unit.travelTo(target, { range: range });
         } else if (distance < range) {
             const targetDirection = this.Unit.pos.getDirectionTo(target);
             let kiteDirection = (targetDirection + 4) % 8;
@@ -618,7 +618,7 @@ export abstract class Unit implements IUnit {
             return;
         }
         if (!this.Unit.pos.inRangeTo(target, range)) {
-            this.Unit.moveTo(target);
+            this.Unit.travelTo(target, { range: range });
         }
         this.Unit.attack(target);
         if (this.Unit.getActiveBodyparts(HEAL) && this.Unit.hits < this.Unit.hitsMax) {
@@ -783,7 +783,7 @@ export abstract class Unit implements IUnit {
             return undefined;
         }
         const upgraderContainer = Game.getObjectById<StructureContainer>(containerContext.targetId);
-        if (upgraderContainer.IsEmpty(RESOURCE_ENERGY)) {
+        if (!upgraderContainer || upgraderContainer.IsEmpty(RESOURCE_ENERGY)) {
             return undefined;
         }
         return containerContext;
@@ -824,7 +824,7 @@ export abstract class Unit implements IUnit {
             return undefined;
         }
         const upgraderContainer = Game.getObjectById<StructureContainer>(containerContext.targetId);
-        if (upgraderContainer.IsFull) {
+        if (!upgraderContainer || upgraderContainer.IsFull) {
             return undefined;
         }
         return containerContext;

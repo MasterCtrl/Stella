@@ -19,8 +19,8 @@ export default class Architect extends RoomProcess {
             return;
         }
 
-        if (this.Room.find(FIND_CONSTRUCTION_SITES).length > 1) {
-            // if we already have a construction site, suspend
+        if (this.Room.find(FIND_CONSTRUCTION_SITES).length >= 2) {
+            // if we already have enough construction sites, suspend
             this.Suspend(43);
         }
 
@@ -29,6 +29,8 @@ export default class Architect extends RoomProcess {
          *        load from my bunker design
          *        roads to connect the major features(sources, controller)
          *        error correction if it cant place something in the exact place i want it.
+         *        Bunker layout json should be relative to the first(main?) spawner
+         *        ramparts too
          */
     }
 }

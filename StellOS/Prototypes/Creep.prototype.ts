@@ -1,3 +1,5 @@
+import {Traveler} from "./Traveler";
+
 Object.defineProperties(
     Creep.prototype,
     {
@@ -37,3 +39,7 @@ Object.defineProperties(
         }
     }
 );
+
+Creep.prototype.travelTo = function(destination: RoomPosition|{pos: RoomPosition}, options?: TravelToOptions) {
+    return Traveler.travelTo(this, destination, options);
+};

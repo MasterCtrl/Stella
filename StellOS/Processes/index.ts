@@ -5,6 +5,7 @@ export {default as Census} from "./Room/Census";
 export {default as Council} from "./Room/Council";
 export {default as Commander} from "./Room/Commander";
 export {default as Library} from "./Room/Library";
+export {default as Overlay} from "./Room/Overlay";
 export {default as Transfer} from "./Room/Transfer";
 export {default as Spawn} from "./Room/Spawn";
 export {default as GC} from "./System/GC";

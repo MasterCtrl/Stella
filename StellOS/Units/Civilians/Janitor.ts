@@ -33,7 +33,8 @@ export class Janitor extends Unit {
             return;
         }
 
-        const repairContext = this.FindRepair([]);
+        const repairContext = this.FindRepair([STRUCTURE_ROAD]) ||
+                              this.FindRepair([]);
         if (repairContext) {
             this.PushState(States.Repair, repairContext);
             return;

@@ -3,6 +3,7 @@ import Artillery from "./Artillery";
 import Census from "./Census";
 import Commander from "./Commander";
 import Library from "./Library";
+import Overlay from "./Overlay";
 import RoomProcess from "./RoomProcess";
 import Transfer from "./Transfer";
 
@@ -69,6 +70,14 @@ export default class Council extends RoomProcess {
         if (!this.Kernel.GetProcess({ Type: Library.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
                 Library, this.RoomName, this.Priority + 5,
+                { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
+            );
+        }
+
+        // spin up a overlay process to manage this rooms visuals.
+        if (!this.Kernel.GetProcess({ Type: Overlay.name, RoomName: this.RoomName })) {
+            this.Kernel.CreateProcess(
+                Overlay, this.RoomName, this.Priority + 10,
                 { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
             );
         }
