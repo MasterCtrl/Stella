@@ -1665,7 +1665,7 @@ declare class RoomVisual {
      * You can directly create new RoomVisual object in any room, even if it's invisible to your script.
      * @param roomName The room name.
      */
-    constructor(roomName: string);
+    constructor(roomName?: string);
     /**
      * Draw a line.
      * @param x1 The start X coordinate.

@@ -91,6 +91,27 @@ Object.defineProperties(
         },
 
         /**
+         * Gets the main spawn in this room.
+         *
+         * @type {PositionContext}
+         * @memberof Room
+         */
+        Spawn: {
+            get: function(): PositionContext {
+                const room = this as Room;
+                if (room.memory.spawn === undefined) {
+                    const spawn = _.find(Game.spawns, { room: room });
+                    if (spawn) {
+                        room.memory.spawn = { x: spawn.pos.x, y: spawn.pos.y };
+                    }
+                }
+                return room.memory.spawn;
+            },
+            enumerable: true,
+            configurable: true
+        },
+
+        /**
          * Gets the containers in ths room.
          *
          * @type {ContainerContext[]}

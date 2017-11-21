@@ -98,7 +98,7 @@ interface IState {
     Context?: any;
 }
 
-type PositionContext = { x: number, y: number, room: string };
+type PositionContext = { x: number, y: number, room?: string };
 type MoveContext = { position: PositionContext, range?: number };
 type SourceContext = { sourceId: string, position: PositionContext, range?: number };
 type ResourceContext = { targetId: string, resource: string, position: PositionContext, range?: number };
@@ -113,11 +113,12 @@ type Context = MoveContext | SourceContext | ResourceContext | BuildContext | Ta
 
 interface Room {
     readonly Defcon: Defcon;
+    readonly Sources: SourceContext[];
+    readonly Spawn: PositionContext;
     readonly Containers: ContainerContext[];
     readonly IsContainerMining: boolean;
     readonly UpgraderSource: ContainerContext;
     readonly RecycleBin: ContainerContext;
-    readonly Sources: SourceContext[];
     readonly Links: LinkContext[];
     readonly IsLinkMining: boolean;
     readonly CentralLink: LinkContext;
@@ -144,8 +145,6 @@ interface Creep {
 interface Mineral {
     readonly HasExtractor: boolean;
 }
-
-type StructureFilter = { include: string[], exculde: string[] }
 
 interface PathfinderReturn {
     path: RoomPosition[];
@@ -201,3 +200,5 @@ interface TravelState {
 
 type Coord = {x: number, y: number};
 type HasPos = {pos: RoomPosition}
+
+type ArchitectContext = { x: number, y: number, structureType: string };

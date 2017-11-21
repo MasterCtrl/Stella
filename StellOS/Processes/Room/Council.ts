@@ -1,4 +1,5 @@
 import Administrator from "./Administrator";
+import Architect from "./Architect";
 import Artillery from "./Artillery";
 import Census from "./Census";
 import Commander from "./Commander";
@@ -70,6 +71,14 @@ export default class Council extends RoomProcess {
         if (!this.Kernel.GetProcess({ Type: Library.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
                 Library, this.RoomName, this.Priority + 5,
+                { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
+            );
+        }
+
+        // spin up a architect process to manage this rooms construction sites.
+        if (!this.Kernel.GetProcess({ Type: Architect.name, RoomName: this.RoomName })) {
+            this.Kernel.CreateProcess(
+                Architect, this.RoomName, this.Priority + 5,
                 { ParentId: this.ProcessId, Memory: { room: this.RoomName } }
             );
         }
