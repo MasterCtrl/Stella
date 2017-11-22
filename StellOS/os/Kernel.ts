@@ -67,14 +67,21 @@ export default class Kernel implements IKernel {
         }
         const average = _.sum(Memory.StellOS.Stats.cpu) / Memory.StellOS.Stats.cpu.length;
         new RoomVisual().text(
-            `CPU: ${this.Format(current)}/${Game.cpu.limit}  ` +
-            `Average: ${this.Format(average)}/${Memory.StellOS.Stats.cpu.length}  ` +
+            `CPU: ${this.FormatNumber(current)}/${Game.cpu.limit}  ` +
+            `Average: ${this.FormatNumber(average)}/${Memory.StellOS.Stats.cpu.length}  ` +
             `Bucket: ${Game.cpu.bucket}`,
             1, 1, {align: "left"});
     }
 
-    private Format(cpu: number): string {
-        return cpu.toLocaleString("en", { useGrouping: false, maximumSignificantDigits: 3, minimumSignificantDigits: 3 });
+    /**
+     * Formats a number for display.
+     *
+     * @param {number} value 
+     * @returns {string}
+     * @memberof Kernel
+     */
+    public FormatNumber(value: number): string {
+        return value.toLocaleString("en", { useGrouping: false, maximumSignificantDigits: 3, minimumSignificantDigits: 3 });
     }
 
     /**

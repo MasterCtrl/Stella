@@ -1,6 +1,7 @@
 interface IKernel {
     Load(): void;
     Unload(): void;
+    FormatNumber(value: number): string;
     Reset(): void;
     Run(): void;
     readonly UnderLimit: boolean;
