@@ -129,7 +129,8 @@ if (!Memory.StellOS) {
     Memory.StellOS = {
         Register: {},
         Context: {},
-        Settings: {}
+        Settings: {},
+        Stats: {}
     };
 }
 

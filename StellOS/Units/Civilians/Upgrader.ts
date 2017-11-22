@@ -14,7 +14,8 @@ export class Upgrader extends Unit {
      * @memberof Builder
      */
     public InitializeState(): void {
-        const withdrawSource = this.FindUpgraderSource();
+        const withdrawSource = this.FindUpgraderSource() ||
+                               this.FindWithdrawSource([STRUCTURE_STORAGE]);
         if (withdrawSource) {
             this.PushState(States.Withdraw, withdrawSource);
             return;

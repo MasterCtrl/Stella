@@ -38,7 +38,7 @@ export default class Spawn extends RoomProcess {
                 queue.unshift(options);
                 continue;
             }
-            Logger.Info(`Spawning new unit ${name}`, this.RoomName);
+            Logger.Debug(`Spawning new unit ${name}`, this.RoomName);
             spawn.spawnCreep(options.Body, name, { memory: { type: options.Type, room: this.RoomName } });
         }
         this.Queue = queue;

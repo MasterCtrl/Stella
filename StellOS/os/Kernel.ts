@@ -55,9 +55,26 @@ export default class Kernel implements IKernel {
         if (processCount < memoryCount && Memory.StellOS.Settings.Running) {
             Logger.Warning(`More process memory(${memoryCount}) then processes(${processCount}).`);
         }
-        const cpu = Game.cpu.getUsed().toLocaleString("en", { useGrouping: false, maximumSignificantDigits: 3, minimumSignificantDigits: 3 });
-        new RoomVisual().text(`CPU:${cpu}/${Game.cpu.limit}  Bucket:${Game.cpu.bucket}`, 1, 1, {align: "left"});
+        this.LogStats();
         delete global.StellOS;
+    }
+
+    private LogStats(): void {
+        const current = Game.cpu.getUsed();
+        Memory.StellOS.Stats.cpu.unshift(current);
+        if (Memory.StellOS.Stats.cpu.length > Memory.StellOS.Stats.average) {
+            Memory.StellOS.Stats.cpu = Memory.StellOS.Stats.cpu.slice(0, Memory.StellOS.Stats.average);
+        }
+        const average = _.sum(Memory.StellOS.Stats.cpu) / Memory.StellOS.Stats.cpu.length;
+        new RoomVisual().text(
+            `CPU: ${this.Format(current)}/${Game.cpu.limit}  ` +
+            `Average: ${this.Format(average)}/${Memory.StellOS.Stats.cpu.length}  ` +
+            `Bucket: ${Game.cpu.bucket}`,
+            1, 1, {align: "left"});
+    }
+
+    private Format(cpu: number): string {
+        return cpu.toLocaleString("en", { useGrouping: false, maximumSignificantDigits: 3, minimumSignificantDigits: 3 });
     }
 
     /**
@@ -256,4 +273,16 @@ export default class Kernel implements IKernel {
 
 if (Memory.StellOS.Settings.Running === Game.time || Memory.StellOS.Settings.Running === undefined) {
     Memory.StellOS.Settings.Running = true;
+}
+
+if (!Memory.StellOS.Stats) {
+    Memory.StellOS.Stats = {};
+}
+
+if (!Memory.StellOS.Stats.average) {
+    Memory.StellOS.Stats.average = 25;
+}
+
+if (!Memory.StellOS.Stats.cpu) {
+    Memory.StellOS.Stats.cpu = [];
 }

@@ -74,10 +74,10 @@ export class MinerDefinition extends UnitDefinition {
         let max: number;
         if (room.IsContainerMining) {
             body = [WORK, WORK, MOVE, WORK, MOVE];
-            max = 6;
+            max = 7;
         } else if (room.IsLinkMining) {
             body = [WORK, CARRY, WORK, MOVE, WORK, MOVE];
-            max = 7;
+            max = 8;
         } else {
             return [];
         }
