@@ -60,7 +60,7 @@ export class JanitorDefinition extends UnitDefinition {
      * @memberof UnitDefinition
      */
     public Priority(room: Room): number {
-        return 10;
+        return 8;
     }
     /**
      * Gets the Janitor population to maintain. 

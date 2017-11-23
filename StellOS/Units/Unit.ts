@@ -864,7 +864,7 @@ export abstract class Unit implements IUnit {
         if (targets.length === 0) {
             return undefined;
         }
-        const target = _.min(targets, "hits");
+        const target = _.min(targets, (t) => t.HitPercentage);
         return { targetId: target.id, position: { x: target.pos.x, y: target.pos.y, room: target.room.name }, range: 3 };
     }
 

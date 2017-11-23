@@ -66,11 +66,12 @@ export default class Kernel implements IKernel {
             Memory.StellOS.Stats.cpu = Memory.StellOS.Stats.cpu.slice(0, Memory.StellOS.Stats.average);
         }
         const average = _.sum(Memory.StellOS.Stats.cpu) / Memory.StellOS.Stats.cpu.length;
+        const style = {align: "left", backgroundColor: "black", backgroundPadding: 0.1 } as TextStyle;
         new RoomVisual().text(
             `CPU: ${this.FormatNumber(current)}/${Game.cpu.limit}  ` +
             `Average: ${this.FormatNumber(average)}/${Memory.StellOS.Stats.cpu.length}  ` +
             `Bucket: ${Game.cpu.bucket}`,
-            1, 1, {align: "left"});
+            1, 1, style);
     }
 
     /**

@@ -38,6 +38,12 @@ export class Builder extends Unit {
             return;
         }
 
+        const repairContext = this.FindRepair([]);
+        if (repairContext) {
+            this.PushState(States.Repair, repairContext);
+            return;
+        }
+
         if (this.Memory.DeathRow < 3) {
             this.Memory.DeathRow++;
             return;

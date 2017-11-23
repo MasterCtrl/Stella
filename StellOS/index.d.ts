@@ -133,6 +133,7 @@ interface Defcon {
 
 interface Structure {
     readonly IsFull: boolean;
+    readonly HitPercentage: number;
     IsEmpty(resource: string): boolean;
     StorePercentage(resource: string): number;
 }

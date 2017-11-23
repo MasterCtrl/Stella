@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "taskName": "Build",
+            "label": "Build",
             "type": "shell",
             "command": "./node_modules/.bin/tsc -p tsconfig.json",
             "windows": {
@@ -14,7 +14,7 @@
             ]
         },
         {
-            "taskName": "Lint",
+            "label": "Lint",
             "type": "shell",
             "command": "./node_modules/.bin/tslint -c tslint.json -p tsconfig.json",
             "windows": {
@@ -27,7 +27,7 @@
             ]
         },
         {
-            "taskName": "Test",
+            "label": "Test",
             "type": "shell",
             "command": "./node_modules/.bin/mocha",
             "windows": {
@@ -43,7 +43,7 @@
             ]
         },
         {
-            "taskName": "Package",
+            "label": "Package",
             "type": "shell",
             "command": "./node_modules/.bin/webpack",
             "windows": {
@@ -56,7 +56,7 @@
             ]
         },
         {
-            "taskName": "Deploy",
+            "label": "Deploy",
             "type": "shell",
             "command": "./node_modules/.bin/grunt screeps",
             "windows": {

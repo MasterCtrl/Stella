@@ -31,7 +31,7 @@ export default class Artillery extends RoomProcess {
                                s.structureType !== STRUCTURE_RAMPART &&
                                s.hits < s.hitsMax
             });
-            const structure = _.min(structures, (s) => s.hits);
+            const structure = _.min(structures, (s) => s.HitPercentage);
             if (structure) {
                 tower.repair(structure);
                 continue;

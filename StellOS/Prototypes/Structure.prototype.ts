@@ -19,6 +19,21 @@ Object.defineProperties(
             },
             enumerable: true,
             configurable: true
+        },
+
+        /**
+         * Gets the hit percentage of this structure.
+         * 
+         * @type {number}
+         * @memberof Structure
+         */
+        HitPercentage: {
+            get: function(): number {
+                const structure = this as Structure;
+                return structure.hits / structure.hitsMax;
+            },
+            enumerable: true,
+            configurable: true
         }
     }
 );

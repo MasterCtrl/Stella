@@ -22,6 +22,10 @@ export default class Architect extends RoomProcess {
         // no matter what we are going to suspend when this is done...
         this.Suspend(43);
 
+        if (this.Room.Defcon.level > 1) {
+            return;
+        }
+
         const sitesNeeded = 2 - this.Room.find(FIND_CONSTRUCTION_SITES).length;
         let siteContexts: ArchitectContext[];
         if (sitesNeeded <= 0 || (siteContexts = this.GetBunkerSites(sitesNeeded)).length === 0) {
@@ -30,8 +34,15 @@ export default class Architect extends RoomProcess {
             return;
         }
 
-        Logger.Debug(`Adding ${siteContexts.length} construction sites(${JSON.stringify(siteContexts)}).`, this.RoomName);
-        // TODO this will only build the bunker... add more roads, and other features
+        Logger.Info(`Adding construction sites ${JSON.stringify(_.map(siteContexts, "structureType"))} .`, this.RoomName);
+        /**
+         *  TODO this will only build the bunker... add more: 
+         *  roads
+         *  source containers
+         *  source links
+         *  upgrader container
+         *  extractor
+         */
         for (const context of siteContexts) {
             const result = this.Room.createConstructionSite(context.x, context.y, context.structureType);
         }
@@ -49,8 +60,7 @@ export default class Architect extends RoomProcess {
             const maximum = CONTROLLER_STRUCTURES[type][rcl];
             const positions: PositionContext[] = Bunker.buildings[type].pos.slice(0, maximum);
             for (const position of positions) {
-                const structures = this.Room.lookAt(position.x + transform.x, position.y + transform.y);
-                if (_.some(structures, (s) => s.type === LOOK_STRUCTURES || s.type === LOOK_CONSTRUCTION_SITES)) {
+                if (!this.CanBuild(type, position.x + transform.x, position.y + transform.y)) {
                     continue;
                 }
                 sites.push({ x: position.x + transform.x, y: position.y + transform.y, structureType: type});
@@ -67,5 +77,16 @@ export default class Architect extends RoomProcess {
         const persisted: PositionContext = Bunker.buildings.spawn.pos[0];
         const actual = this.Room.Spawn;
         return actual ? {x: actual.x - persisted.x, y: actual.y - persisted.y } : undefined;
+    }
+
+    private CanBuild(type: string, x: number, y: number): boolean {
+        const results = this.Room.lookAt(x, y);
+        for (const result of results) {
+            let structure = result[LOOK_STRUCTURES] || result[LOOK_CONSTRUCTION_SITES];
+            if (structure && structure.structureType === type) {
+                return false;
+            }
+        }
+        return true;
     }
 }
