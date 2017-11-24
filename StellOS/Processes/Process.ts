@@ -188,7 +188,7 @@ export default abstract class Process implements IProcess {
             }
         } else if (typeof this.state === "string") {
             const waitProcess = this.Kernel.GetProcess({ name: this.state });
-            if (!waitProcess) {
+            if (new Function(this.state)()) {
                 this.Resume();
             }
         }

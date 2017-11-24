@@ -55,6 +55,9 @@ export default class Census extends RoomProcess {
                 Body: definition.CreateBody(this.Room)
             };
             for (let index = 0; index < needed; index++) {
+                if (index > 0) {
+                    options.Priority += index * 20;
+                }
                 queue.push(options);
                 added = true;
             }

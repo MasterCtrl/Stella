@@ -1,5 +1,6 @@
 import {Bunker} from "./Bunker";
 import RoomProcess from "./RoomProcess";
+import {StructureLimits} from "./StructureLimits";
 
 /**
  * Architect process responsible for planning construction in a room.
@@ -19,18 +20,27 @@ export default class Architect extends RoomProcess {
             this.Kernel.Terminate({ Name: this.Name });
             return;
         }
+        const rcl = this.Room.controller.level;
+        if (this.Room.Defcon.level > 1) {
+            this.Suspend("return this.Room && this.Room.Defcon && this.Room.Defcon.level === 0");
+            return;
+        } else if (this.Memory.rcl === rcl) {
+            this.Suspend("return this.Room && this.Room.controller && this.Memory.rcl !== this.Room.controller.level");
+            return;
+        }
         // no matter what we are going to suspend when this is done...
         this.Suspend(43);
 
-        if (this.Room.Defcon.level > 1) {
+        const sitesNeeded = 2 - this.Room.find(FIND_CONSTRUCTION_SITES).length;
+        if (sitesNeeded <= 0) {
+            Logger.Debug("Already have enough construction sites", this.RoomName);
             return;
         }
 
-        const sitesNeeded = 2 - this.Room.find(FIND_CONSTRUCTION_SITES).length;
         let siteContexts: ArchitectContext[];
-        if (sitesNeeded <= 0 || (siteContexts = this.GetBunkerSites(sitesNeeded)).length === 0) {
-            // if we already have enough construction sites or there are none to build, suspend
+        if ((siteContexts = this.GetBunkerSites(sitesNeeded, rcl)).length === 0) {
             Logger.Debug("Nothing to build", this.RoomName);
+            this.Memory.rcl = rcl;
             return;
         }
 
@@ -48,16 +58,15 @@ export default class Architect extends RoomProcess {
         }
     }
 
-    private GetBunkerSites(count: number): ArchitectContext[] {
+    private GetBunkerSites(count: number, rcl: number): ArchitectContext[] {
         // TODO: error correction
-        const rcl = this.Room.controller.level;
         const sites = new Array<ArchitectContext>();
         const transform = this.GetTransform();
         if (!transform) {
             return sites;
         }
         for (const type in Bunker.buildings) {
-            const maximum = CONTROLLER_STRUCTURES[type][rcl];
+            let maximum = StructureLimits[type][rcl];
             const positions: PositionContext[] = Bunker.buildings[type].pos.slice(0, maximum);
             for (const position of positions) {
                 if (!this.CanBuild(type, position.x + transform.x, position.y + transform.y)) {
