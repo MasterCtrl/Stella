@@ -943,6 +943,20 @@ export abstract class Unit implements IUnit {
         return mineral && mineral.pos ? { sourceId: mineral.id, position: { x: mineral.pos.x, y: mineral.pos.y, room: mineral.room.name }, range: 1 } : undefined;
     }
 
+    /**
+     * Finds this units home room.
+     *
+     * @protected
+     * @returns {MoveContext}
+     * @memberof Unit
+     */
+    protected FindHomeRoom(): MoveContext {
+        if (this.Unit.room.name === this.Memory.room) {
+            return undefined;
+        }
+        return { position: { x: 25, y: 25, room: this.Memory.room }, range: 20 };
+    }
+
     private InRange(context: MoveContext): boolean {
         if (!this.Unit.pos.inRangeTo(new RoomPosition(context.position.x, context.position.y, context.position.room), context.range)) {
             this.PushState(States.MoveTo, context);

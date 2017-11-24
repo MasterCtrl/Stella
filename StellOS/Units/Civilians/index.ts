@@ -5,5 +5,6 @@ export {Filler} from "./Filler";
 export {Harvester} from "./Harvester";
 export {Janitor} from "./Janitor";
 export {Miner} from "./Miner";
+export {RemoteMiner} from "./RemoteMiner";
 export {Seeder} from "./Seeder";
 export {Upgrader} from "./Upgrader";

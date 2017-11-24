@@ -27,7 +27,7 @@ export class Builder extends Unit {
             return;
         }
 
-        if (this.IsEmpty && this.Unit.Source) {
+        if (this.IsEmpty && this.Unit.Source && !this.Unit.room.IsContainerMining && !this.Unit.room.IsLinkMining) {
             this.PushState(States.Harvest, this.Unit.Source);
             return;
         }
@@ -74,6 +74,6 @@ export class BuilderDefinition extends UnitDefinition {
      * @memberof BuilderDefinition
      */
     public Population(room: Room): number {
-        return room.find(FIND_CONSTRUCTION_SITES).length > 0 ? room.Sources.length : 0;
+        return room.find(FIND_CONSTRUCTION_SITES).length > 0 ? room.Sources.length : 1;
     }
 }

@@ -25,7 +25,7 @@ export default class Architect extends RoomProcess {
             this.Suspend("return this.Room && this.Room.Defcon && this.Room.Defcon.level === 0");
             return;
         } else if (this.Memory.rcl === rcl) {
-            this.Suspend("return this.Room && this.Room.controller && this.Memory.rcl !== this.Room.controller.level");
+            this.Suspend(1000);
             return;
         }
         // no matter what we are going to suspend when this is done...
