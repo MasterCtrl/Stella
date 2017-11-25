@@ -858,8 +858,9 @@ export abstract class Unit implements IUnit {
         if (this.IsEmpty) {
             return undefined;
         }
+        const assignedTargets = this.Unit.room.find<Creep>(FIND_MY_CREEPS).map((c) => c.CurrentTarget);
         const targets = this.Unit.room.find<Structure>(FIND_STRUCTURES, {
-            filter: (s) => (exclusions.indexOf(s.structureType) === -1) && s.hits < s.hitsMax
+            filter: (s) => (exclusions.indexOf(s.structureType) === -1) && assignedTargets.indexOf(s.id) === -1 && s.hits < s.hitsMax
         });
         if (targets.length === 0) {
             return undefined;

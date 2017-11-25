@@ -24,9 +24,6 @@ export default class Architect extends RoomProcess {
         if (this.Room.Defcon.level > 1) {
             this.Suspend("return this.Room && this.Room.Defcon && this.Room.Defcon.level === 0");
             return;
-        } else if (this.Memory.rcl === rcl) {
-            this.Suspend(1000);
-            return;
         }
         // no matter what we are going to suspend when this is done...
         this.Suspend(43);
@@ -40,7 +37,7 @@ export default class Architect extends RoomProcess {
         let siteContexts: ArchitectContext[];
         if ((siteContexts = this.GetBunkerSites(sitesNeeded, rcl)).length === 0) {
             Logger.Debug("Nothing to build", this.RoomName);
-            this.Memory.rcl = rcl;
+            this.Suspend(1000);
             return;
         }
 

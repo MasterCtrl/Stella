@@ -27,6 +27,8 @@ export default class Council extends RoomProcess {
             return;
         }
 
+        // TODO: some of these dont need to exsist of we donty have a spawn in the room.
+
         // spin up a census to keep track of our population.
         if (!this.Kernel.GetProcess({ Type: Census.name, RoomName: this.RoomName })) {
             this.Kernel.CreateProcess(
