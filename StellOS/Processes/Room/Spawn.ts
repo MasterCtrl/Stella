@@ -1,3 +1,4 @@
+import * as Definitions from "../../Units";
 import RoomProcess from "./RoomProcess";
 
 /**
@@ -30,8 +31,9 @@ export default class Spawn extends RoomProcess {
         }
         for (const spawn of available) {
             const options = queue.shift();
-            const name = `${options.Type}_${options.Body.length}_${(Game.time % 2500).toLocaleString("en", { minimumIntegerDigits: 4, useGrouping: false })}`;
-            const result = spawn.spawnCreep(options.Body, name, { dryRun: true });
+            const body = Definitions[options.Type].CreateBody(this.Room);
+            const name = `${options.Type}_${body.length}_${(Game.time % 2500).toLocaleString("en", { minimumIntegerDigits: 4, useGrouping: false })}`;
+            const result = spawn.spawnCreep(body, name, { dryRun: true });
             if (result !== OK) {
                 // if we couldnt spawn the unit then put the options back into the queue and continue.
                 Logger.Debug(`Could not spawn unit ${name} - ${result}`, this.RoomName);
@@ -39,7 +41,7 @@ export default class Spawn extends RoomProcess {
                 continue;
             }
             Logger.Info(`Spawning new unit ${name}`, this.RoomName);
-            spawn.spawnCreep(options.Body, name, { memory: { type: options.Type, room: this.RoomName } });
+            spawn.spawnCreep(body, name, { memory: { type: options.Type, room: this.RoomName } });
         }
         this.Queue = queue;
     }

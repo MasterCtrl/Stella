@@ -52,7 +52,6 @@ interface IData {
 interface IUnitOptions {
     Priority: number;
     Type: string;
-    Body: string[];
 }
 
 interface IUnitDefinition {
