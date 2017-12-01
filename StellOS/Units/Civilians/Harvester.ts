@@ -40,6 +40,17 @@ export class Harvester extends Unit {
  */
 export class HarvesterDefinition extends UnitDefinition {
     /**
+     * Gets the priority of this unit.
+     *
+     * @param {Room} room 
+     * @returns {number} 
+     * @memberof HarvesterDefinition
+     */
+    public Priority(room: Room): number {
+        return 5;
+    }
+
+    /**
      * Gets the harvester population to maintain. 
      *
      * @param {Room} room

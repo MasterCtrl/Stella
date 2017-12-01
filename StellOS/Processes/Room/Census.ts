@@ -51,8 +51,7 @@ export default class Census extends RoomProcess {
             // otherwise push onto the spawn queue
             const options = {
                 Priority: definition.Priority(this.Room),
-                Type: type,
-                Body: definition.CreateBody(this.Room)
+                Type: type
             };
             for (let index = 0; index < needed; index++) {
                 if (index > 0) {
