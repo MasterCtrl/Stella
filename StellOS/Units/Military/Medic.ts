@@ -75,7 +75,7 @@ export class MedicDefinition extends UnitDefinition {
      */
     public CreateBody(room: Room): string[] {
         // Need to front load the tough parts and rear load the heal parts
-        return this.GetSpecificParts(room, 3, [TOUGH], [MOVE, MOVE, MOVE], [HEAL, HEAL]);
+        return this.GetSpecificParts(room, 8, [TOUGH], [MOVE, MOVE, MOVE], [HEAL, HEAL]);
     }
 }
 

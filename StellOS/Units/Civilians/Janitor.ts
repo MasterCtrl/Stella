@@ -81,6 +81,6 @@ export class JanitorDefinition extends UnitDefinition {
      * @memberof RemoteMinerDefinition
      */
     public CreateBody(room: Room): string[] {
-        return this.GetPartsFromRoom(room, 4, [WORK, CARRY, MOVE]);
+        return this.GetPartsFromRoom(room, 7, [WORK, CARRY, MOVE]);
     }
 }

@@ -67,6 +67,6 @@ export class GuardianDefinition extends UnitDefinition {
      * @memberof GuardianDefinition
      */
     public CreateBody(room: Room): string[] {
-        return this.GetSpecificParts(room, 4, [TOUGH], [RANGED_ATTACK, MOVE, MOVE]);
+        return this.GetSpecificParts(room, 8, [TOUGH], [RANGED_ATTACK, MOVE, MOVE]);
     }
  }

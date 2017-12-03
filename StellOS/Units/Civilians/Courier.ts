@@ -96,6 +96,6 @@ export class CourierDefinition extends UnitDefinition {
      * @memberof CourierDefinition
      */
     public CreateBody(room: Room): string[] {
-        return this.GetPartsFromRoom(room, 4, [CARRY, MOVE, CARRY, MOVE]);
+        return this.GetPartsFromRoom(room, 6, [CARRY, MOVE, CARRY, MOVE]);
     }
 }

@@ -89,7 +89,7 @@ export default class Architect extends RoomProcess {
         const results = this.Room.lookAt(x, y);
         for (const result of results) {
             let structure = result[LOOK_STRUCTURES] || result[LOOK_CONSTRUCTION_SITES];
-            if (structure && structure.structureType === type) {
+            if (structure && structure.structureType === type || result[LOOK_TERRAIN] === STRUCTURE_WALL) {
                 return false;
             }
         }

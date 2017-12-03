@@ -54,10 +54,11 @@ export default class Census extends RoomProcess {
                 Type: type
             };
             for (let index = 0; index < needed; index++) {
+                const current = _.cloneDeep(options);
                 if (index > 0) {
-                    options.Priority += index * 20;
+                    current.Priority += index * 20;
                 }
-                queue.push(options);
+                queue.push(current);
                 added = true;
             }
         }

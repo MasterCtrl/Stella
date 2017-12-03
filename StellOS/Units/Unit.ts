@@ -1037,7 +1037,7 @@ export abstract class UnitDefinition implements IUnitDefinition {
      * @memberof UnitDefinition
      */
     public CreateBody(room: Room): string[] {
-        return this.GetPartsFromRoom(room, 5);
+        return this.GetPartsFromRoom(room, 8);
     }
 
     /**

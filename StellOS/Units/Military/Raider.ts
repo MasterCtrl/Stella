@@ -57,7 +57,7 @@ export class RaiderDefinition extends UnitDefinition {
      */
     public CreateBody(room: Room): string[] {
         // Need to front load the tough parts and rear load the heal parts
-        return this.GetSpecificParts(room, 4, [TOUGH], [RANGED_ATTACK, MOVE, MOVE]);
+        return this.GetSpecificParts(room, 8, [TOUGH], [RANGED_ATTACK, MOVE, MOVE]);
     }
 }
 

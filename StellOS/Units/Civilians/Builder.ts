@@ -74,6 +74,8 @@ export class BuilderDefinition extends UnitDefinition {
      * @memberof BuilderDefinition
      */
     public Population(room: Room): number {
-        return room.find(FIND_CONSTRUCTION_SITES).length > 0 ? room.Sources.length : 1;
+        return room.find(FIND_CONSTRUCTION_SITES).length > 0 ?
+               room.Sources.length :
+               room.find(FIND_STRUCTURES, { filter: (s) => s.HitPercentage < 1 }).length > 0 ? 1 : 0;
     }
 }

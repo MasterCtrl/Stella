@@ -69,7 +69,7 @@ export class RemoteMinerDefinition extends UnitDefinition {
      * @memberof RemoteMinerDefinition
      */
     public CreateBody(room: Room): string[] {
-        return this.GetPartsFromRoom(room, 4, [WORK, CARRY, CARRY, MOVE]);
+        return this.GetPartsFromRoom(room, 8, [WORK, CARRY, CARRY, MOVE]);
     }
 }
 
